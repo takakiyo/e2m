@@ -29,6 +29,7 @@ import java.util.concurrent.Callable;
 @Command(
     name = "e2m",
     description = "Eclipse project to Maven project converter",
+    version = "1.0",
     mixinStandardHelpOptions = true
 )
 public class Main implements Callable<Integer> {
@@ -39,7 +40,8 @@ public class Main implements Callable<Integer> {
     @Option(names = "--artifactId", required = true, description = "Maven artifactId of the output project")
     private String artifactId;
 
-    @Option(names = "--artifactVersion", required = true, description = "Maven version of the output project")
+    @Option(names = "--artifactVersion", required = false, defaultValue = "1.0-SNAPSHOT",
+        description = "Maven version of the output project")
     private String artifactVersion;
 
     @Parameters(index = "0", paramLabel = "<inputDir>", description = "Eclipse project directory to convert")
