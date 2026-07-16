@@ -68,6 +68,10 @@ public class Main implements Callable<Integer> {
             System.err.println("[ERROR] 出力パスはディレクトリである必要があります: " + outputDir);
             return 1;
         }
+        if (outputPath.resolve("pom.xml").toFile().exists()) {
+            System.err.println("[ERROR] 出力パスにプロジェクトがすでに存在しています: " + outputDir);
+            return 1;
+        }
 
         System.out.println("=== e2m: Eclipse → Maven 変換開始 ===");
         System.out.println("  入力: " + inputPath.toAbsolutePath());
