@@ -53,7 +53,8 @@ public class Main implements Callable<Integer> {
     @Override
     public Integer call() {
         Path inputPath = inputDir.toPath();
-        Path outputPath = outputDir.toPath();
+        // 出力先は outputDir/artifactId
+        Path outputPath = outputDir.toPath().resolve(artifactId);
 
         // 1. 入力ディレクトリの存在確認
         if (!inputDir.isDirectory()) {
@@ -68,8 +69,8 @@ public class Main implements Callable<Integer> {
             System.err.println("[ERROR] 出力パスはディレクトリである必要があります: " + outputDir);
             return 1;
         }
-        if (outputPath.resolve("pom.xml").toFile().exists()) {
-            System.err.println("[ERROR] 出力パスにプロジェクトがすでに存在しています: " + outputDir);
+        if (outputPath.toFile().exists()) {
+            System.err.println("[ERROR] 出力先ディレクトリがすでに存在しています: " + outputPath);
             return 1;
         }
 
