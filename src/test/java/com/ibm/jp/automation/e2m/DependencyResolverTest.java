@@ -95,13 +95,10 @@ class DependencyResolverTest {
     @Test
     void resolve_foundInMavenCentral(@TempDir Path tempDir) throws Exception {
         // テスト用JARを用意（中身は空でよい）
-        Path jar = tempDir.resolve("commons-lang3-3.12.0.jar");
+        Path jar = tempDir.resolve("log4j-1.2.7.jar");
         Files.write(jar, new byte[0]);
 
-        String json = "{\"response\":{\"numFound\":1,\"start\":0,\"docs\":"
-                + "[{\"id\":\"org.apache.commons:commons-lang3:3.12.0\","
-                + "\"g\":\"org.apache.commons\",\"a\":\"commons-lang3\","
-                + "\"latestVersion\":\"3.12.0\",\"repositoryId\":\"central\"}]}}";
+        String json = "{\"responseHeader\":{\"status\":0,\"QTime\":1,\"params\":{\"q\":\"1:5b8a2a161048eb7481407ef0a81c2d90489ed412\",\"core\":\"\",\"indent\":\"off\",\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"start\":\"\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"rows\":\"20\",\"wt\":\"json\",\"version\":\"2.2\"}},\"response\":{\"numFound\":1,\"start\":0,\"docs\":[{\"id\":\"log4j:log4j:1.2.7\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.7\",\"p\":\"jar\",\"timestamp\":1131487715000,\"ec\":[\".jar\",\".pom\"]}]}}";
 
         // resolveJarをpublicにせず、resolve() 経由でテストする
         // → スタブResolverのcallMavenCentralApiが使われる
@@ -113,9 +110,9 @@ class DependencyResolverTest {
 
         assertEquals(1, results.size());
         MavenDependency dep = results.get(0);
-        assertEquals("org.apache.commons", dep.groupId());
-        assertEquals("commons-lang3", dep.artifactId());
-        assertEquals("3.12.0", dep.version());
+        assertEquals("log4j", dep.groupId());
+        assertEquals("log4j", dep.artifactId());
+        assertEquals("1.2.7", dep.version());
         assertNull(dep.scope());
         assertNull(dep.systemPath());
     }

@@ -59,7 +59,7 @@ class ProjectCopierTest {
         EclipseProject project = new EclipseProject("Foo", false, List.of("src"), "bin",
                 List.of(), null, "17", "17", null);
 
-        ProjectCopier.copy(project, inputDir, outputDir);
+        ProjectCopier.copy(project, List.of(), inputDir, outputDir);
 
         Path expected = outputDir.resolve("src/main/java/com/example/Foo.java");
         assertTrue(Files.exists(expected), "Javaファイルが src/main/java に配置される");
@@ -72,7 +72,7 @@ class ProjectCopierTest {
         EclipseProject project = new EclipseProject("App", false, List.of("src"), "bin",
                 List.of(), null, "11", "11", null);
 
-        ProjectCopier.copy(project, inputDir, outputDir);
+        ProjectCopier.copy(project, List.of(), inputDir, outputDir);
 
         Path expected = outputDir.resolve("src/main/resources/config.properties");
         assertTrue(Files.exists(expected), "リソースファイルが src/main/resources に配置される");
@@ -85,7 +85,7 @@ class ProjectCopierTest {
         EclipseProject project = new EclipseProject("Foo", false, List.of("test"), "bin",
                 List.of(), null, "17", "17", null);
 
-        ProjectCopier.copy(project, inputDir, outputDir);
+        ProjectCopier.copy(project, List.of(), inputDir, outputDir);
 
         Path expected = outputDir.resolve("src/test/java/com/example/FooTest.java");
         assertTrue(Files.exists(expected), "テストJavaファイルが src/test/java に配置される");
@@ -99,7 +99,7 @@ class ProjectCopierTest {
         EclipseProject project = new EclipseProject("WebApp", true, List.of("src"), "build/classes",
                 List.of(), "WebContent", "11", "11", "3.0");
 
-        ProjectCopier.copy(project, inputDir, outputDir);
+        ProjectCopier.copy(project, List.of(), inputDir, outputDir);
 
         assertTrue(Files.exists(outputDir.resolve("src/main/webapp/index.html")),
                 "index.html が src/main/webapp に配置される");
@@ -112,7 +112,7 @@ class ProjectCopierTest {
         EclipseProject project = new EclipseProject("App", false, List.of("nonexistent"), "bin",
                 List.of(), null, "17", "17", null);
         // 存在しないフォルダは警告を出してスキップ（例外は投げない）
-        assertDoesNotThrow(() -> ProjectCopier.copy(project, inputDir, outputDir));
+        assertDoesNotThrow(() -> ProjectCopier.copy(project, List.of(), inputDir, outputDir));
     }
 
     @Test
@@ -122,9 +122,40 @@ class ProjectCopierTest {
         EclipseProject project = new EclipseProject("WebApp", true, List.of("src"), "bin",
                 List.of(), "/WebContent", "11", "11", "3.0");  // 先頭スラッシュあり
 
-        ProjectCopier.copy(project, inputDir, outputDir);
+        ProjectCopier.copy(project, List.of(), inputDir, outputDir);
 
         assertTrue(Files.exists(outputDir.resolve("src/main/webapp/index.jsp")),
                 "先頭スラッシュが除去されてWebコンテンツがコピーされる");
+    }
+
+    @Test
+    void copy_systemScopeJar_copiedToLibs() throws Exception {
+        // 実在するJARファイルをinputDir内に作成
+        Path jarFile = createFile(inputDir, "lib/mylib.jar", "dummy");
+
+        MavenDependency systemDep = new MavenDependency(
+                "mylib", "mylib", "0.0.0", "system", jarFile.toAbsolutePath().toString());
+
+        EclipseProject project = new EclipseProject("App", false, List.of(), "bin",
+                List.of(), null, "17", "17", null);
+
+        ProjectCopier.copy(project, List.of(systemDep), inputDir, outputDir);
+
+        assertTrue(Files.exists(outputDir.resolve("libs/mylib.jar")),
+                "system スコープの JAR が libs/ にコピーされる");
+    }
+
+    @Test
+    void copy_systemScopeJar_missingFile_doesNotThrow() throws Exception {
+        MavenDependency systemDep = new MavenDependency(
+                "mylib", "mylib", "0.0.0", "system", "/nonexistent/path/mylib.jar");
+
+        EclipseProject project = new EclipseProject("App", false, List.of(), "bin",
+                List.of(), null, "17", "17", null);
+
+        // ファイルが存在しない場合はスキップ（例外は投げない）
+        assertDoesNotThrow(() -> ProjectCopier.copy(project, List.of(systemDep), inputDir, outputDir));
+        assertFalse(Files.exists(outputDir.resolve("libs")),
+                "ファイルが存在しない場合は libs/ ディレクトリも作成されない");
     }
 }

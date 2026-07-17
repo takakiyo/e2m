@@ -131,9 +131,10 @@ class PomGeneratorTest {
         assertEquals(1, scopes.getLength());
         assertEquals("system", scopes.item(0).getTextContent());
 
+        // systemPath は ${project.basedir}/libs/<ファイル名> 形式で出力される
         NodeList systemPaths = doc.getElementsByTagName("systemPath");
         assertEquals(1, systemPaths.getLength());
-        assertEquals("/opt/libs/mylib.jar", systemPaths.item(0).getTextContent());
+        assertEquals("${project.basedir}/libs/mylib.jar", systemPaths.item(0).getTextContent());
     }
 
     @Test

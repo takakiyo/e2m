@@ -102,7 +102,10 @@ public class PomGenerator {
                     addTextElement(doc, dependency, "scope", dep.scope());
                 }
                 if (dep.systemPath() != null) {
-                    addTextElement(doc, dependency, "systemPath", dep.systemPath());
+                    // system スコープの JAR は libs/ にコピーされるため ${project.basedir}/libs/<ファイル名> で参照
+                    String fileName = Path.of(dep.systemPath()).getFileName().toString();
+                    addTextElement(doc, dependency, "systemPath",
+                            "${project.basedir}/libs/" + fileName);
                 }
                 deps.appendChild(dependency);
             }

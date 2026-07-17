@@ -108,7 +108,7 @@ public class Main implements Callable<Integer> {
 
             // 5. ソース・Webコンテンツをコピー
             System.out.println("\n[4/4] ソースファイルをコピー中...");
-            ProjectCopier.copy(eclipseProject, inputPath, outputPath);
+            ProjectCopier.copy(eclipseProject, dependencies, inputPath, outputPath);
 
             System.out.println("\n=== 変換完了 ===");
             System.out.println("出力先: " + outputPath.toAbsolutePath());

@@ -39,10 +39,6 @@ public class DependencyResolver {
     private static final String MAVEN_SEARCH_URL =
             "https://search.maven.org/solrsearch/select?q=1:%s&rows=1&wt=json";
 
-    private static final Pattern GROUP_ID_PATTERN    = Pattern.compile("\"g\"\\s*:\\s*\"([^\"]+)\"");
-    private static final Pattern ARTIFACT_ID_PATTERN = Pattern.compile("\"a\"\\s*:\\s*\"([^\"]+)\"");
-    private static final Pattern VERSION_PATTERN     = Pattern.compile("\"latestVersion\"\\s*:\\s*\"([^\"]+)\"");
-    private static final Pattern NUM_FOUND_PATTERN   = Pattern.compile("\"numFound\"\\s*:\\s*(\\d+)");
 
     private final HttpClient httpClient;
 
@@ -53,9 +49,10 @@ public class DependencyResolver {
     }
 
     /**
-     * JARパスのリストを受け取り、Maven依存関係リストに解決して返す。
+     * JARが置かれたディレクトリパスのリストを受け取り、Maven依存関係リストに解決して返す。
+     * 各ディレクトリに含まれる全ての {@code .jar} ファイルについて解決を行う。
      *
-     * @param jarPaths Eclipseの.classpathから取得したパス文字列のリスト
+     * @param jarPaths Eclipseの.classpathから取得したディレクトリパス文字列のリスト
      * @param inputDir Eclipseプロジェクトのルートディレクトリ（相対パス解決の基準）
      * @return 解決済みの {@link MavenDependency} リスト
      */
@@ -63,7 +60,19 @@ public class DependencyResolver {
         DependencyResolver resolver = new DependencyResolver();
         List<MavenDependency> results = new ArrayList<>();
         for (String jarPath : jarPaths) {
-            results.add(resolver.resolveJar(jarPath, inputDir));
+            Path dir = Path.of(jarPath).isAbsolute()
+                    ? Path.of(jarPath)
+                    : inputDir.resolve(jarPath);
+            if (!Files.isDirectory(dir)) {
+                continue;
+            }
+            try (var stream = Files.list(dir)) {
+                stream.filter(p -> p.getFileName().toString().endsWith(".jar"))
+                      .sorted()
+                      .forEach(p -> results.add(resolver.resolveJar(p.toString(), inputDir)));
+            } catch (IOException e) {
+                System.err.println("  [WARN] ディレクトリの読み取りに失敗しました: " + dir);
+            }
         }
         return results;
     }
@@ -139,6 +148,15 @@ public class DependencyResolver {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return response.body();
     }
+
+    // private static final Pattern GROUP_ID_PATTERN    = Pattern.compile("\"g\"\\s*:\\s*\"([^\"]+)\"");
+    // private static final Pattern ARTIFACT_ID_PATTERN = Pattern.compile("\"a\"\\s*:\\s*\"([^\"]+)\"");
+    // private static final Pattern VERSION_PATTERN     = Pattern.compile("\"latestVersion\"\\s*:\\s*\"([^\"]+)\"");
+    // private static final Pattern NUM_FOUND_PATTERN   = Pattern.compile("\"numFound\"\\s*:\\s*(\\d+)");
+    private static final Pattern GROUP_ID_PATTERN    = Pattern.compile("\"g\":\"([^\"]+)\"");
+    private static final Pattern ARTIFACT_ID_PATTERN = Pattern.compile("\"a\":\"([^\"]+)\"");
+    private static final Pattern VERSION_PATTERN     = Pattern.compile("\"v\":\"([^\"]+)\"");
+    private static final Pattern NUM_FOUND_PATTERN   = Pattern.compile("\"numFound\"\\s*:\\s*(\\d+)");
 
     /**
      * Maven Central APIのJSONレスポンスをパースしてMavenDependencyを返す。

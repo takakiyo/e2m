@@ -76,7 +76,6 @@ public class EclipseProjectParser {
         List<String> sourceFolders = new ArrayList<>();
         List<String> jarPaths = new ArrayList<>();
         String outputFolder = null;
-        String classpathJavaVersion = DEFAULT_JAVA_VERSION;
 
         NodeList entries = cpDoc.getElementsByTagName("classpathentry");
         for (int i = 0; i < entries.getLength(); i++) {
@@ -85,21 +84,21 @@ public class EclipseProjectParser {
             String path = entry.getAttribute("path");
 
             switch (kind) {
-                case "src" -> sourceFolders.add(path);
+                case "src" -> {
+                    if (!isOptional(entry)) {
+                        sourceFolders.add(path);
+                    }
+                }
                 case "output" -> outputFolder = path;
                 case "lib" -> jarPaths.add(path);
                 case "con" -> {
-                    String version = extractJavaVersion(path);
-                    if (version != null) {
-                        classpathJavaVersion = version;
-                    }
                 }
             }
         }
 
         // ── .settings/org.eclipse.jdt.core.prefs ─────────────────
         // source/target を prefs から取得し、見つからない場合は .classpath の con エントリの値を使う
-        String[] versions = parseJdtCorePrefs(inputDir, classpathJavaVersion);
+        String[] versions = parseJdtCorePrefs(inputDir);
         String javaSourceVersion = versions[0];
         String javaTargetVersion = versions[1];
 
@@ -109,6 +108,12 @@ public class EclipseProjectParser {
         if (webProject) {
             webContentRoot = parseWebContentRoot(inputDir, builder);
             webVersion = parseWebVersion(inputDir, builder);
+            if (webContentRoot != null) {
+                Path webInfLib = inputDir.resolve(webContentRoot).resolve("WEB-INF/lib");
+                if (Files.isDirectory(webInfLib)) {
+                    jarPaths.add(webContentRoot + "/WEB-INF/lib");
+                }
+            }
         }
 
         return new EclipseProject(
@@ -128,7 +133,7 @@ public class EclipseProjectParser {
      * `.settings/org.eclipse.jdt.core.prefs` を解析して [sourceVersion, targetVersion] を返す。
      * ファイルが存在しない、またはキーが見つからない場合は fallback 値を使用する。
      */
-    private static String[] parseJdtCorePrefs(Path inputDir, String fallback) {
+    private static String[] parseJdtCorePrefs(Path inputDir) {
         Path prefsFile = inputDir.resolve(".settings")
                 .resolve("org.eclipse.jdt.core.prefs");
 
@@ -153,7 +158,7 @@ public class EclipseProjectParser {
             }
         }
 
-        return new String[]{fallback, fallback};
+        return new String[]{DEFAULT_JAVA_VERSION, DEFAULT_JAVA_VERSION};
     }
 
     /**
@@ -165,36 +170,6 @@ public class EclipseProjectParser {
             return null;
         }
         return value.trim();
-    }
-
-    /**
-     * `con` エントリの path から Java バージョン番号を抽出する。
-     * 例: "...JavaSE-17" → "17", "...java-11-openjdk" → "11"
-     */
-    private static String extractJavaVersion(String conPath) {
-        // JavaSE-XX / java-XX 形式を探す
-        int idx = conPath.lastIndexOf('/');
-        String segment = (idx >= 0) ? conPath.substring(idx + 1) : conPath;
-
-        // JavaSE-XX
-        if (segment.contains("JavaSE-")) {
-            String after = segment.substring(segment.indexOf("JavaSE-") + "JavaSE-".length());
-            String version = after.split("[^0-9.]")[0];
-            if (!version.isEmpty()) {
-                return version;
-            }
-        }
-
-        // java-XX (例: java-17-openjdk)
-        if (segment.startsWith("java-")) {
-            String after = segment.substring("java-".length());
-            String version = after.split("[^0-9.]")[0];
-            if (!version.isEmpty()) {
-                return version;
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -231,6 +206,27 @@ public class EclipseProjectParser {
         }
 
         return null;
+    }
+
+    /**
+     * {@code classpathentry} 要素が optional かどうかを返す。
+     * {@code <attributes>} 子要素内に {@code <attribute name="optional" value="true"/>} が
+     * 存在する場合に {@code true} を返す。
+     */
+    private static boolean isOptional(Element entry) {
+        NodeList attributesList = entry.getElementsByTagName("attributes");
+        if (attributesList.getLength() == 0) {
+            return false;
+        }
+        NodeList attributes = ((Element) attributesList.item(0)).getElementsByTagName("attribute");
+        for (int i = 0; i < attributes.getLength(); i++) {
+            Element attr = (Element) attributes.item(i);
+            if ("optional".equals(attr.getAttribute("name"))
+                    && "true".equals(attr.getAttribute("value"))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

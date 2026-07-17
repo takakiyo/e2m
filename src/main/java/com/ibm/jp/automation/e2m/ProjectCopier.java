@@ -39,11 +39,13 @@ public class ProjectCopier {
      * EclipseプロジェクトのファイルをMaven標準ディレクトリ構造にコピーする。
      *
      * @param eclipseProject パース済みEclipseプロジェクト情報
+     * @param dependencies   解決済み依存関係リスト（system スコープの JAR を libs/ にコピーする）
      * @param inputDir       Eclipseプロジェクトのルートディレクトリ
      * @param outputDir      Mavenプロジェクトの出力ルートディレクトリ
      * @throws IOException ファイルコピーに失敗した場合
      */
-    public static void copy(EclipseProject eclipseProject, Path inputDir, Path outputDir) throws IOException {
+    public static void copy(EclipseProject eclipseProject, List<MavenDependency> dependencies,
+                            Path inputDir, Path outputDir) throws IOException {
 
         // Javaソースフォルダのコピー
         List<String> sourceFolders = eclipseProject.sourceFolders();
@@ -65,10 +67,26 @@ public class ProjectCopier {
             Path webContentPath = resolveSourcePath(inputDir, eclipseProject.webContentRoot());
             if (Files.isDirectory(webContentPath)) {
                 Path webappDest = outputDir.resolve("src/main/webapp");
-                copyDirectory(webContentPath, webappDest);
+                // WEB-INF/lib 内のJARは<dependency>として処理済みのためコピー不要（JAR以外はコピーする）
+    //            Path webInfLib = webContentPath.resolve("WEB-INF/lib");
+                copyWebContents(webContentPath, webappDest);
                 System.out.println("  Copied web content: " + webContentPath + " → " + webappDest);
             } else {
                 System.out.println("  [WARN] Webコンテンツルートが見つかりません: " + webContentPath);
+            }
+        }
+
+        // system スコープの JAR を libs/ にコピー
+        for (MavenDependency dep : dependencies) {
+            if ("system".equals(dep.scope()) && dep.systemPath() != null) {
+                Path src = Path.of(dep.systemPath());
+                if (Files.isRegularFile(src)) {
+                    Path libsDir = outputDir.resolve("libs");
+                    Files.createDirectories(libsDir);
+                    Path dest = libsDir.resolve(src.getFileName());
+                    Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
+                    System.out.println("  Copied JAR to libs/: " + dest.getFileName());
+                }
             }
         }
     }
@@ -103,13 +121,18 @@ public class ProjectCopier {
 
     /**
      * ディレクトリを再帰的にコピーする。
+     * {@code excludeJarDir} が指定された場合、そのディレクトリ直下の {@code .jar} ファイルのみスキップする。
      *
-     * @param srcDir  コピー元ディレクトリ
-     * @param destDir コピー先ディレクトリ
+     * @param srcDir       コピー元ディレクトリ
+     * @param destDir      コピー先ディレクトリ
+     * @param excludeJarDir このディレクトリ直下の .jar ファイルを除外する（null の場合は除外なし）
      * @throws IOException ファイルコピーに失敗した場合
      */
-    private static void copyDirectory(Path srcDir, Path destDir) throws IOException {
+    private static void copyWebContents(Path srcDir, Path destDir) throws IOException {
+        Path excludeJarDir = srcDir.resolve("WEB-INF/lib");
         Files.walk(srcDir)
+                .filter(srcPath -> !srcPath.startsWith(excludeJarDir)
+                        || !srcPath.getFileName().toString().endsWith(".jar"))
                 .forEach(srcPath -> {
                     try {
                         Path relative = srcDir.relativize(srcPath);
