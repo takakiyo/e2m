@@ -35,12 +35,12 @@ class PomGeneratorTest {
 
     private EclipseProject javaProject() {
         return new EclipseProject("MyApp", false, List.of("src"), "bin",
-                List.of(), null, "17");
+                List.of(), null, "17", "17");
     }
 
     private EclipseProject webProject() {
         return new EclipseProject("MyWebApp", true, List.of("src"), "build/classes",
-                List.of(), "WebContent", "11");
+                List.of(), "WebContent", "11", "1.8");
     }
 
     private Document parsePom() throws Exception {
@@ -76,13 +76,29 @@ class PomGeneratorTest {
     }
 
     @Test
-    void javaVersion_reflectedInProperties() throws Exception {
+    void javaSourceVersion_reflectedInProperties() throws Exception {
         PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", tempDir);
         Document doc = parsePom();
-        // maven.compiler.source プロパティ
         NodeList props = doc.getElementsByTagName("maven.compiler.source");
         assertEquals(1, props.getLength());
         assertEquals("17", props.item(0).getTextContent());
+    }
+
+    @Test
+    void javaTargetVersion_reflectedInProperties() throws Exception {
+        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", tempDir);
+        Document doc = parsePom();
+        NodeList props = doc.getElementsByTagName("maven.compiler.target");
+        assertEquals(1, props.getLength());
+        assertEquals("17", props.item(0).getTextContent());
+    }
+
+    @Test
+    void sourceAndTargetCanDiffer() throws Exception {
+        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", tempDir);
+        Document doc = parsePom();
+        assertEquals("11", doc.getElementsByTagName("maven.compiler.source").item(0).getTextContent());
+        assertEquals("1.8", doc.getElementsByTagName("maven.compiler.target").item(0).getTextContent());
     }
 
     @Test
@@ -121,11 +137,10 @@ class PomGeneratorTest {
     }
 
     @Test
-    void compilerPlugin_presentWithCorrectVersion() throws Exception {
+    void compilerPlugin_sourceAndTargetCanDiffer() throws Exception {
         PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", tempDir);
         Document doc = parsePom();
-        NodeList source = doc.getElementsByTagName("source");
-        assertEquals(1, source.getLength());
-        assertEquals("11", source.item(0).getTextContent());
+        assertEquals("11", doc.getElementsByTagName("source").item(0).getTextContent());
+        assertEquals("1.8", doc.getElementsByTagName("target").item(0).getTextContent());
     }
 }

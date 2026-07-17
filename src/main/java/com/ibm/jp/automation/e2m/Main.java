@@ -83,7 +83,8 @@ public class Main implements Callable<Integer> {
             EclipseProject eclipseProject = EclipseProjectParser.parse(inputPath);
             System.out.println("  プロジェクト名: " + eclipseProject.projectName());
             System.out.println("  種別: " + (eclipseProject.webProject() ? "Webプロジェクト (WTP)" : "Javaプロジェクト"));
-            System.out.println("  Javaバージョン: " + eclipseProject.javaVersion());
+            System.out.println("  Javaソースバージョン: " + eclipseProject.javaSourceVersion());
+            System.out.println("  Javaターゲットバージョン: " + eclipseProject.javaTargetVersion());
             System.out.println("  ソースフォルダ: " + eclipseProject.sourceFolders());
             System.out.println("  JARファイル数: " + eclipseProject.jarPaths().size());
 

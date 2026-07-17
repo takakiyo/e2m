@@ -78,11 +78,12 @@ public class PomGenerator {
         }
 
         // <properties>
-        String javaVersion = eclipseProject.javaVersion();
+        String javaSourceVersion = eclipseProject.javaSourceVersion();
+        String javaTargetVersion = eclipseProject.javaTargetVersion();
         Element properties = doc.createElement("properties");
         addTextElement(doc, properties, "project.build.sourceEncoding", "UTF-8");
-        addTextElement(doc, properties, "maven.compiler.source", javaVersion);
-        addTextElement(doc, properties, "maven.compiler.target", javaVersion);
+        addTextElement(doc, properties, "maven.compiler.source", javaSourceVersion);
+        addTextElement(doc, properties, "maven.compiler.target", javaTargetVersion);
         project.appendChild(properties);
 
         // <dependencies>
@@ -112,8 +113,8 @@ public class PomGenerator {
         addTextElement(doc, plugin, "artifactId", "maven-compiler-plugin");
         addTextElement(doc, plugin, "version", "3.13.0");
         Element configuration = doc.createElement("configuration");
-        addTextElement(doc, configuration, "source", javaVersion);
-        addTextElement(doc, configuration, "target", javaVersion);
+        addTextElement(doc, configuration, "source", javaSourceVersion);
+        addTextElement(doc, configuration, "target", javaTargetVersion);
         plugin.appendChild(configuration);
         plugins.appendChild(plugin);
         build.appendChild(plugins);

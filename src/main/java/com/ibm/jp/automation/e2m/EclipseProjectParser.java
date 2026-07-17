@@ -22,10 +22,12 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Eclipseプロジェクトのメタデータファイルを解析して {@link EclipseProject} を返すパーサー。
@@ -48,7 +50,10 @@ public class EclipseProjectParser {
 
         // ── .project ──────────────────────────────────────────────
         Path projectFile = inputDir.resolve(".project");
-        Document projectDoc = builder.parse(projectFile.toFile());
+        // 行頭の空白・改行をスキップするため InputStream 経由でパース
+        Document projectDoc = builder.parse(
+                new java.io.ByteArrayInputStream(
+                        Files.readString(projectFile).stripLeading().getBytes(java.nio.charset.StandardCharsets.UTF_8)));
         projectDoc.getDocumentElement().normalize();
 
         String projectName = projectDoc.getElementsByTagName("name")
@@ -71,7 +76,7 @@ public class EclipseProjectParser {
         List<String> sourceFolders = new ArrayList<>();
         List<String> jarPaths = new ArrayList<>();
         String outputFolder = null;
-        String javaVersion = DEFAULT_JAVA_VERSION;
+        String classpathJavaVersion = DEFAULT_JAVA_VERSION;
 
         NodeList entries = cpDoc.getElementsByTagName("classpathentry");
         for (int i = 0; i < entries.getLength(); i++) {
@@ -86,11 +91,17 @@ public class EclipseProjectParser {
                 case "con" -> {
                     String version = extractJavaVersion(path);
                     if (version != null) {
-                        javaVersion = version;
+                        classpathJavaVersion = version;
                     }
                 }
             }
         }
+
+        // ── .settings/org.eclipse.jdt.core.prefs ─────────────────
+        // source/target を prefs から取得し、見つからない場合は .classpath の con エントリの値を使う
+        String[] versions = parseJdtCorePrefs(inputDir, classpathJavaVersion);
+        String javaSourceVersion = versions[0];
+        String javaTargetVersion = versions[1];
 
         // ── WTP: .settings/org.eclipse.wst.common.component ──────
         String webContentRoot = null;
@@ -105,8 +116,52 @@ public class EclipseProjectParser {
                 outputFolder,
                 List.copyOf(jarPaths),
                 webContentRoot,
-                javaVersion
+                javaSourceVersion,
+                javaTargetVersion
         );
+    }
+
+    /**
+     * `.settings/org.eclipse.jdt.core.prefs` を解析して [sourceVersion, targetVersion] を返す。
+     * ファイルが存在しない、またはキーが見つからない場合は fallback 値を使用する。
+     */
+    private static String[] parseJdtCorePrefs(Path inputDir, String fallback) {
+        Path prefsFile = inputDir.resolve(".settings")
+                .resolve("org.eclipse.jdt.core.prefs");
+
+        if (Files.exists(prefsFile)) {
+            Properties props = new Properties();
+            try (var reader = Files.newBufferedReader(prefsFile)) {
+                props.load(reader);
+                String source = normalizeJavaVersion(
+                        props.getProperty("org.eclipse.jdt.core.compiler.source"));
+                String target = normalizeJavaVersion(
+                        props.getProperty("org.eclipse.jdt.core.compiler.codegen.targetPlatform"));
+                // 両方取得できた場合はそのまま使う。片方のみの場合はもう一方も同じ値にする
+                if (source != null && target != null) {
+                    return new String[]{source, target};
+                } else if (source != null) {
+                    return new String[]{source, source};
+                } else if (target != null) {
+                    return new String[]{target, target};
+                }
+            } catch (IOException e) {
+                // 読み込み失敗時は fallback を使用
+            }
+        }
+
+        return new String[]{fallback, fallback};
+    }
+
+    /**
+     * "1.8" → "1.8"、"17" → "17" のようにそのまま返す。
+     * null や空文字の場合は null を返す。
+     */
+    private static String normalizeJavaVersion(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
     }
 
     /**

@@ -55,6 +55,7 @@ class EclipseProjectParserTest {
     @Test
     void javaProject_sourceFolders() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-java-project"));
+        // sample-java-project/.classpath: src と test の2エントリ
         assertEquals(2, project.sourceFolders().size());
         assertTrue(project.sourceFolders().contains("src"));
         assertTrue(project.sourceFolders().contains("test"));
@@ -69,15 +70,24 @@ class EclipseProjectParserTest {
     @Test
     void javaProject_jarPaths() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-java-project"));
+        // sample-java-project/.classpath: commons-lang3 と slf4j-api の2本
         assertEquals(2, project.jarPaths().size());
         assertTrue(project.jarPaths().contains("lib/commons-lang3-3.12.0.jar"));
         assertTrue(project.jarPaths().contains("lib/slf4j-api-2.0.0.jar"));
     }
 
     @Test
-    void javaProject_javaVersion() throws Exception {
+    void javaProject_javaSourceVersion() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-java-project"));
-        assertEquals("17", project.javaVersion());
+        // sample-java-project/.settings/org.eclipse.jdt.core.prefs: source=17
+        assertEquals("17", project.javaSourceVersion());
+    }
+
+    @Test
+    void javaProject_javaTargetVersion() throws Exception {
+        EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-java-project"));
+        // sample-java-project/.settings/org.eclipse.jdt.core.prefs: targetPlatform=17
+        assertEquals("17", project.javaTargetVersion());
     }
 
     @Test
@@ -93,7 +103,8 @@ class EclipseProjectParserTest {
     @Test
     void webProject_projectName() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-web-project"));
-        assertEquals("SampleWebProject", project.projectName());
+        // sample-web-project/.project: <name>TestWebApp</name>
+        assertEquals("TestWebApp", project.projectName());
     }
 
     @Test
@@ -105,27 +116,43 @@ class EclipseProjectParserTest {
     @Test
     void webProject_sourceFolders() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-web-project"));
+        // sample-web-project/.classpath: src のみ
         assertEquals(1, project.sourceFolders().size());
         assertTrue(project.sourceFolders().contains("src"));
     }
 
     @Test
-    void webProject_jarPaths() throws Exception {
+    void webProject_outputFolder() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-web-project"));
-        assertEquals(1, project.jarPaths().size());
-        assertTrue(project.jarPaths().contains("WebContent/WEB-INF/lib/commons-io-2.11.0.jar"));
+        // sample-web-project/.classpath: output=WebContent/WEB-INF/classes
+        assertEquals("WebContent/WEB-INF/classes", project.outputFolder());
     }
 
     @Test
-    void webProject_javaVersion() throws Exception {
+    void webProject_noJarPaths() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-web-project"));
-        assertEquals("11", project.javaVersion());
+        // sample-web-project/.classpath: lib エントリなし
+        assertTrue(project.jarPaths().isEmpty());
+    }
+
+    @Test
+    void webProject_javaSourceVersion() throws Exception {
+        EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-web-project"));
+        // sample-web-project/.settings/org.eclipse.jdt.core.prefs: source=11
+        assertEquals("11", project.javaSourceVersion());
+    }
+
+    @Test
+    void webProject_javaTargetVersion() throws Exception {
+        EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-web-project"));
+        // sample-web-project/.settings/org.eclipse.jdt.core.prefs: targetPlatform=1.8
+        assertEquals("1.8", project.javaTargetVersion());
     }
 
     @Test
     void webProject_webContentRoot() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-web-project"));
-        // 先頭の "/" が除去された相対パスになっているべき
+        // sample-web-project/.settings/org.eclipse.wst.common.component: source-path="/WebContent"
         assertEquals("WebContent", project.webContentRoot());
     }
 }
