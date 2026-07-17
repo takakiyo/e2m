@@ -155,4 +155,17 @@ class EclipseProjectParserTest {
         // sample-web-project/.settings/org.eclipse.wst.common.component: source-path="/WebContent"
         assertEquals("WebContent", project.webContentRoot());
     }
+
+    @Test
+    void webProject_webVersion() throws Exception {
+        EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-web-project"));
+        // sample-web-project/.settings/org.eclipse.wst.common.project.facet.core.xml: jst.web version="3.0"
+        assertEquals("3.0", project.webVersion());
+    }
+
+    @Test
+    void javaProject_webVersionIsNull() throws Exception {
+        EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-java-project"));
+        assertNull(project.webVersion(), "通常の Java プロジェクトは webVersion=null であるべき");
+    }
 }

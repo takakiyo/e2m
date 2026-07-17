@@ -85,7 +85,13 @@ public class Main implements Callable<Integer> {
             System.out.println("  種別: " + (eclipseProject.webProject() ? "Webプロジェクト (WTP)" : "Javaプロジェクト"));
             System.out.println("  Javaソースバージョン: " + eclipseProject.javaSourceVersion());
             System.out.println("  Javaターゲットバージョン: " + eclipseProject.javaTargetVersion());
+            if (eclipseProject.webProject()) {
+                System.out.println("  Web仕様バージョン: " + eclipseProject.webVersion());
+            }
             System.out.println("  ソースフォルダ: " + eclipseProject.sourceFolders());
+            if (eclipseProject.webProject()) {
+                System.out.println("  Webコンテンツフォルダ: " + eclipseProject.webContentRoot());
+            }
             System.out.println("  JARファイル数: " + eclipseProject.jarPaths().size());
 
             // 3. JAR依存関係を解決

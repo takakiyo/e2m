@@ -35,12 +35,12 @@ class PomGeneratorTest {
 
     private EclipseProject javaProject() {
         return new EclipseProject("MyApp", false, List.of("src"), "bin",
-                List.of(), null, "17", "17");
+                List.of(), null, "17", "17", null);
     }
 
     private EclipseProject webProject() {
         return new EclipseProject("MyWebApp", true, List.of("src"), "build/classes",
-                List.of(), "WebContent", "11", "1.8");
+                List.of(), "WebContent", "11", "1.8", "3.0");
     }
 
     private Document parsePom() throws Exception {
@@ -139,8 +139,74 @@ class PomGeneratorTest {
     @Test
     void compilerPlugin_sourceAndTargetCanDiffer() throws Exception {
         PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", tempDir);
+    }
+
+    @Test
+    void webProject_hasJavaEEDependencyWithProvidedScope() throws Exception {
+        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", tempDir);
         Document doc = parsePom();
-        assertEquals("11", doc.getElementsByTagName("source").item(0).getTextContent());
-        assertEquals("1.8", doc.getElementsByTagName("target").item(0).getTextContent());
+
+        // javaee-api の artifactId が出力されること
+        NodeList artifactIds = doc.getElementsByTagName("artifactId");
+        boolean foundJavaEE = false;
+        for (int i = 0; i < artifactIds.getLength(); i++) {
+            if ("javaee-api".equals(artifactIds.item(i).getTextContent())) {
+                foundJavaEE = true;
+            }
+        }
+        assertTrue(foundJavaEE, "webProject には javaee-api の dependency が出力される");
+
+        // scope=provided が出力されること
+        NodeList scopes = doc.getElementsByTagName("scope");
+        boolean foundProvided = false;
+        for (int i = 0; i < scopes.getLength(); i++) {
+            if ("provided".equals(scopes.item(i).getTextContent())) {
+                foundProvided = true;
+            }
+        }
+        assertTrue(foundProvided, "JavaEE dependency は provided スコープで出力される");
+    }
+
+    @Test
+    void webProject_javaEEDependencyVersion_matchesServletVersion() throws Exception {
+        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", tempDir);
+        Document doc = parsePom();
+
+        // groupId=javax, artifactId=javaee-api, version=6.0 (Servlet 3.0 → Java EE 6)
+        NodeList groupIds = doc.getElementsByTagName("groupId");
+        boolean foundJavax = false;
+        for (int i = 0; i < groupIds.getLength(); i++) {
+            if ("javax".equals(groupIds.item(i).getTextContent())) {
+                foundJavax = true;
+            }
+        }
+        assertTrue(foundJavax, "Servlet 3.0 の場合 groupId=javax が出力される");
+    }
+
+    @Test
+    void webProject_hasMavenWarPlugin() throws Exception {
+        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", tempDir);
+        Document doc = parsePom();
+
+        NodeList artifactIds = doc.getElementsByTagName("artifactId");
+        boolean foundWarPlugin = false;
+        for (int i = 0; i < artifactIds.getLength(); i++) {
+            if ("maven-war-plugin".equals(artifactIds.item(i).getTextContent())) {
+                foundWarPlugin = true;
+            }
+        }
+        assertTrue(foundWarPlugin, "webProject には maven-war-plugin が出力される");
+    }
+
+    @Test
+    void javaProject_noMavenWarPlugin() throws Exception {
+        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", tempDir);
+        Document doc = parsePom();
+
+        NodeList artifactIds = doc.getElementsByTagName("artifactId");
+        for (int i = 0; i < artifactIds.getLength(); i++) {
+            assertNotEquals("maven-war-plugin", artifactIds.item(i).getTextContent(),
+                    "Java プロジェクトには maven-war-plugin は出力されない");
+        }
     }
 }

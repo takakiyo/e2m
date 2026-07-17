@@ -35,6 +35,9 @@ import java.util.List;
  */
 public class PomGenerator {
 
+    private static final String MAVEN_COMPILER_PLUGIN_VERSION = "3.15.0";
+    private static final String MAVEN_WAR_PLUGIN_VERSION = "3.5.1";
+
     private PomGenerator() {}
 
     /**
@@ -87,7 +90,8 @@ public class PomGenerator {
         project.appendChild(properties);
 
         // <dependencies>
-        if (!dependencies.isEmpty()) {
+        boolean hasDependencies = !dependencies.isEmpty() || eclipseProject.webProject();
+        if (hasDependencies) {
             Element deps = doc.createElement("dependencies");
             for (MavenDependency dep : dependencies) {
                 Element dependency = doc.createElement("dependency");
@@ -102,6 +106,24 @@ public class PomGenerator {
                 }
                 deps.appendChild(dependency);
             }
+            // webProject の場合は Java EE / Jakarta EE API を provided で追加
+            if (eclipseProject.webProject() && eclipseProject.webVersion() != null) {
+                String webVersion = eclipseProject.webVersion();
+                boolean tooOld = webVersion.startsWith("2");
+                String resolvedVersion = tooOld ? "3.0" : webVersion;
+                JavaEEVersion javaEE = JavaEEVersion.of(resolvedVersion);
+                Element dependency = doc.createElement("dependency");
+                if (tooOld) {
+                    deps.appendChild(doc.createComment(
+                            " WARNING: Servlet " + webVersion + " は古すぎるため対応する javaee-api dependency が存在しません。"
+                            + " Java EE 6 (javaee-api:6.0) に置き換えています。マイグレーションが必要です。 "));
+                }
+                addTextElement(doc, dependency, "groupId", javaEE.getGroupId());
+                addTextElement(doc, dependency, "artifactId", javaEE.getArtifactId());
+                addTextElement(doc, dependency, "version", javaEE.getVersion());
+                addTextElement(doc, dependency, "scope", "provided");
+                deps.appendChild(dependency);
+            }
             project.appendChild(deps);
         }
 
@@ -111,12 +133,19 @@ public class PomGenerator {
         Element plugin = doc.createElement("plugin");
         addTextElement(doc, plugin, "groupId", "org.apache.maven.plugins");
         addTextElement(doc, plugin, "artifactId", "maven-compiler-plugin");
-        addTextElement(doc, plugin, "version", "3.13.0");
-        Element configuration = doc.createElement("configuration");
-        addTextElement(doc, configuration, "source", javaSourceVersion);
-        addTextElement(doc, configuration, "target", javaTargetVersion);
-        plugin.appendChild(configuration);
+        addTextElement(doc, plugin, "version", MAVEN_COMPILER_PLUGIN_VERSION);
         plugins.appendChild(plugin);
+        // webProject の場合は maven-war-plugin を追加
+        if (eclipseProject.webProject()) {
+            Element warPlugin = doc.createElement("plugin");
+            addTextElement(doc, warPlugin, "groupId", "org.apache.maven.plugins");
+            addTextElement(doc, warPlugin, "artifactId", "maven-war-plugin");
+            addTextElement(doc, warPlugin, "version", MAVEN_WAR_PLUGIN_VERSION);
+            Element configuration = doc.createElement("configuration");
+            addTextElement(doc, configuration, "failOnMissingWebXml", "false");
+            warPlugin.appendChild(configuration);
+            plugins.appendChild(warPlugin);
+        }
         build.appendChild(plugins);
         project.appendChild(build);
 

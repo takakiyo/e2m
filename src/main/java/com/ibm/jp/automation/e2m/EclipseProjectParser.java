@@ -105,8 +105,10 @@ public class EclipseProjectParser {
 
         // ── WTP: .settings/org.eclipse.wst.common.component ──────
         String webContentRoot = null;
+        String webVersion = null;
         if (webProject) {
             webContentRoot = parseWebContentRoot(inputDir, builder);
+            webVersion = parseWebVersion(inputDir, builder);
         }
 
         return new EclipseProject(
@@ -117,7 +119,8 @@ public class EclipseProjectParser {
                 List.copyOf(jarPaths),
                 webContentRoot,
                 javaSourceVersion,
-                javaTargetVersion
+                javaTargetVersion,
+                webVersion
         );
     }
 
@@ -221,6 +224,37 @@ public class EclipseProjectParser {
                         sourcePath = sourcePath.substring(1);
                     }
                     return sourcePath;
+                }
+            }
+        } catch (Exception e) {
+            // ファイルが壊れている場合は null を返す
+        }
+
+        return null;
+    }
+
+    /**
+     * `.settings/org.eclipse.wst.common.project.facet.core.xml` を解析して
+     * {@code jst.web} ファセットの version を返す。
+     * ファイルが存在しない、またはファセットが見つからない場合は null を返す。
+     */
+    private static String parseWebVersion(Path inputDir, DocumentBuilder builder) {
+        Path facetFile = inputDir.resolve(".settings")
+                .resolve("org.eclipse.wst.common.project.facet.core.xml");
+
+        if (!Files.exists(facetFile)) {
+            return null;
+        }
+
+        try {
+            Document doc = builder.parse(facetFile.toFile());
+            doc.getDocumentElement().normalize();
+
+            NodeList installed = doc.getElementsByTagName("installed");
+            for (int i = 0; i < installed.getLength(); i++) {
+                Element el = (Element) installed.item(i);
+                if ("jst.web".equals(el.getAttribute("facet"))) {
+                    return el.getAttribute("version");
                 }
             }
         } catch (Exception e) {
