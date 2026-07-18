@@ -16,6 +16,8 @@
 
 package com.ibm.jp.automation.e2m;
 
+import org.slf4j.Logger;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -49,6 +51,8 @@ import java.util.zip.ZipOutputStream;
  */
 public class DebugArchiver {
 
+    private static final Logger log = AppLogger.get(DebugArchiver.class);
+
     private static final DateTimeFormatter TIMESTAMP_FMT =
             DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
     private static final DateTimeFormatter FILETIME_FMT =
@@ -71,7 +75,11 @@ public class DebugArchiver {
         Path zipPath = outputDir.resolve("e2m_debug_" + timestamp + ".zip");
         Files.createDirectories(outputDir);
 
-        System.out.println("\n[DEBUG] デバッグ情報を出力中: " + zipPath);
+        log.info("");
+        log.info("[DEBUG] デバッグ情報を出力中: {}", zipPath);
+
+        // ログファイルをフラッシュしてからZIPに追加するため、先にZIPを作成してログを最後に追加する
+        Path logFile = AppLogger.getLogFile();
 
         try (OutputStream fos = Files.newOutputStream(zipPath);
              ZipOutputStream zos = new ZipOutputStream(fos, StandardCharsets.UTF_8)) {
@@ -98,9 +106,19 @@ public class DebugArchiver {
                 // ── 4. 生成したMavenプロジェクトのファイル一覧 ──────────────
                 addText(zos, "maven_files.json", buildFileListing(mavenDir));
             }
+
+            // ── 5. デバッグログファイル ────────────────────────────────────
+            if (logFile != null && Files.isRegularFile(logFile)) {
+                addFile(zos, logFile, "e2m_debug.log");
+            }
         }
 
-        System.out.println("[DEBUG] 出力完了: " + zipPath.toAbsolutePath());
+        log.info("[DEBUG] 出力完了: {}", zipPath.toAbsolutePath());
+
+        // ZIPに取り込まれたログファイルを削除
+        if (logFile != null && Files.isRegularFile(logFile)) {
+            Files.delete(logFile);
+        }
     }
 
     /**

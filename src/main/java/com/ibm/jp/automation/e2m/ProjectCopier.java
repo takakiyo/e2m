@@ -16,6 +16,8 @@
 
 package com.ibm.jp.automation.e2m;
 
+import org.slf4j.Logger;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -46,6 +48,8 @@ import java.util.regex.Pattern;
  * </ul>
  */
 public class ProjectCopier {
+
+    private static final Logger log = AppLogger.get(ProjectCopier.class);
 
     private ProjectCopier() {}
 
@@ -83,7 +87,7 @@ public class ProjectCopier {
         for (String sourceFolder : sourceFolders) {
             Path srcPath = resolveSourcePath(inputDir, sourceFolder);
             if (!Files.isDirectory(srcPath)) {
-                System.out.println("  [WARN] ソースフォルダが見つかりません: " + srcPath);
+                log.warn("  [WARN] ソースフォルダが見つかりません: {}", srcPath);
                 continue;
             }
             boolean isTest = isTestFolder(sourceFolder);
@@ -106,9 +110,9 @@ public class ProjectCopier {
             if (Files.isDirectory(webContentPath)) {
                 Path webappDest = outputDir.resolve("src/main/webapp");
                 copyWebContents(webContentPath, webappDest, convertToUtf8, sourceEncoding);
-                System.out.println("  Copied web content: " + webContentPath + " → " + webappDest);
+                log.info("  Copied web content: {} → {}", webContentPath, webappDest);
             } else {
-                System.out.println("  [WARN] Webコンテンツルートが見つかりません: " + webContentPath);
+                log.warn("  [WARN] Webコンテンツルートが見つかりません: {}", webContentPath);
             }
         }
 
@@ -121,7 +125,7 @@ public class ProjectCopier {
                     Files.createDirectories(libsDir);
                     Path dest = libsDir.resolve(src.getFileName());
                     Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
-                    System.out.println("  Copied JAR to libs/: " + dest.getFileName());
+                    log.debug("  Copied JAR to libs/: {}", dest.getFileName());
                 }
             }
         }
@@ -157,27 +161,29 @@ public class ProjectCopier {
                             Files.createDirectories(destFile.getParent());
                             if (convertToUtf8) {
                                 copyWithEncodingConversion(srcFile, destFile, sourceEncoding);
-                                System.out.println("  [UTF-8変換] " + relative);
+                                log.debug("  [Java:UTF-8変換] {}", relative);
                             } else {
                                 Files.copy(srcFile, destFile, StandardCopyOption.REPLACE_EXISTING);
+                                log.debug("  [バイナリコピー] {}", relative);
                             }
                         } else if (isProperties && convertToUtf8) {
                             // .properties: Unicode エスケープ展開 + UTF-8 で resourceDest へ
                             Path destFile = resourceDest.resolve(relative);
                             Files.createDirectories(destFile.getParent());
                             copyPropertiesWithConversion(srcFile, destFile, sourceEncoding);
-                            System.out.println("  [UTF-8変換] " + relative);
+                            log.debug("  [Properties:UTF-8変換] {}", relative);
                         } else {
                             // その他のリソース（バイナリコピー）
                             Path destFile = resourceDestNormal.resolve(relative);
                             Files.createDirectories(destFile.getParent());
                             Files.copy(srcFile, destFile, StandardCopyOption.REPLACE_EXISTING);
+                            log.debug("  [バイナリコピー] {}", relative);
                         }
                     } catch (IOException e) {
                         throw new RuntimeException("ファイルコピーに失敗しました: " + srcFile, e);
                     }
                 });
-        System.out.println("  Copied source folder: " + currentDir + " → " + javaDestBase);
+        log.info("  Copied source folder: {} → {}", currentDir, javaDestBase);
     }
 
     /**
@@ -204,6 +210,7 @@ public class ProjectCopier {
                         Path destPath = destDir.resolve(relative);
                         if (Files.isDirectory(srcPath)) {
                             Files.createDirectories(destPath);
+                            log.debug("  [ディレクトリー作成] {}", relative);
                         } else {
                             Files.createDirectories(destPath.getParent());
                             String fileName = srcPath.getFileName().toString();
@@ -211,13 +218,15 @@ public class ProjectCopier {
                                 Charset jspEncoding = extractJspPageEncoding(srcPath, sourceEncoding);
                                 if (jspEncoding != null) {
                                     copyJspWithConversion(srcPath, destPath, jspEncoding);
-                                    System.out.println("  [UTF-8変換] " + relative);
+                                    log.debug("  [JSP:UTF-8変換] {} (encode={})", relative, jspEncoding);
                                 } else {
                                     // pageEncoding が既に UTF-8 → バイナリコピー
                                     Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
+                                    log.debug("  [バイナリコピー] {}", relative);
                                 }
                             } else {
                                 Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
+                                log.debug("  [バイナリコピー] {}", relative);
                             }
                         }
                     } catch (IOException e) {
@@ -309,7 +318,7 @@ public class ProjectCopier {
             return Charset.forName(encodingName);
         } catch (Exception e) {
             // 不明なエンコーディング名の場合は fallback を使用
-            System.out.println("  [WARN] JSP の pageEncoding が不明です: " + encodingName + " → fallback を使用");
+            log.warn("  [WARN] JSP の pageEncoding が不明です: {} → fallback を使用", encodingName);
             return fallback;
         }
     }
@@ -350,8 +359,7 @@ public class ProjectCopier {
     static boolean isTestFolder(String folderPath) {
         String lower = folderPath.toLowerCase();
         for (String segment : lower.split("[/\\\\]")) {
-            if (segment.equals("test") || segment.startsWith("test-") || segment.endsWith("-test")
-                    || segment.contains("test")) {
+            if (segment.equals("test") || segment.startsWith("test-") || segment.endsWith("-test")) {
                 return true;
             }
         }

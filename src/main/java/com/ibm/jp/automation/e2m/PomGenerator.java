@@ -16,6 +16,7 @@
 
 package com.ibm.jp.automation.e2m;
 
+import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -34,6 +35,8 @@ import java.util.List;
  * EclipseProject情報と依存関係リストからMavenのpom.xmlを生成するクラス。
  */
 public class PomGenerator {
+
+    private static final Logger log = AppLogger.get(PomGenerator.class);
 
     private static final String MAVEN_COMPILER_PLUGIN_VERSION = "3.15.0";
     private static final String MAVEN_WAR_PLUGIN_VERSION = "3.5.1";
@@ -122,6 +125,7 @@ public class PomGenerator {
                 JavaEEVersion javaEE = JavaEEVersion.of(resolvedVersion);
                 Element dependency = doc.createElement("dependency");
                 if (tooOld) {
+                    log.debug("Web APIのバージョン {} は古すぎるため、3.0に置き換えて依存関係を追加します。", webVersion);
                     deps.appendChild(doc.createComment(
                             " WARNING: Servlet " + webVersion + " は古すぎるため対応する javaee-api dependency が存在しません。"
                             + " Java EE 6 (javaee-api:6.0) に置き換えています。マイグレーションが必要です。 "));
@@ -138,11 +142,11 @@ public class PomGenerator {
         // <build><plugins><plugin> maven-compiler-plugin
         Element build = doc.createElement("build");
         Element plugins = doc.createElement("plugins");
-        Element plugin = doc.createElement("plugin");
-        addTextElement(doc, plugin, "groupId", "org.apache.maven.plugins");
-        addTextElement(doc, plugin, "artifactId", "maven-compiler-plugin");
-        addTextElement(doc, plugin, "version", MAVEN_COMPILER_PLUGIN_VERSION);
-        plugins.appendChild(plugin);
+        Element compilerPlugin = doc.createElement("plugin");
+        addTextElement(doc, compilerPlugin, "groupId", "org.apache.maven.plugins");
+        addTextElement(doc, compilerPlugin, "artifactId", "maven-compiler-plugin");
+        addTextElement(doc, compilerPlugin, "version", MAVEN_COMPILER_PLUGIN_VERSION);
+        plugins.appendChild(compilerPlugin);
         // webProject の場合は maven-war-plugin を追加
         if (eclipseProject.webProject()) {
             Element warPlugin = doc.createElement("plugin");
@@ -192,7 +196,7 @@ public class PomGenerator {
         Path pomPath = outputDir.resolve("pom.xml");
         transformer.transform(new DOMSource(doc), new StreamResult(pomPath.toFile()));
 
-        System.out.println("Generated: " + pomPath);
+        log.info("Generated: {}", pomPath);
     }
 
     private static void addTextElement(Document doc, Element parent, String tagName, String text) {

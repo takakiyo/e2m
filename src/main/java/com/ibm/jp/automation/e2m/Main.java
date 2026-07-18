@@ -16,6 +16,7 @@
 
 package com.ibm.jp.automation.e2m;
 
+import org.slf4j.Logger;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ITypeConverter;
@@ -27,12 +28,16 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
 @Command(name = "e2m", description = "Eclipse project to Maven project converter", version = "1.0", mixinStandardHelpOptions = true)
 public class Main implements Callable<Integer> {
+
+    private static final Logger log = AppLogger.get(Main.class);
 
     /** コマンドライン引数のコピー（デバッグ ZIP 用）。 */
     private String[] rawArgs;
@@ -67,6 +72,7 @@ public class Main implements Callable<Integer> {
     private File outputDir;
 
     public static void main(String[] args) {
+        AppLogger.init();
         Main main = new Main();
         main.rawArgs = args.clone();
         System.exit(new CommandLine(main).execute(args));
@@ -74,61 +80,75 @@ public class Main implements Callable<Integer> {
 
     @Override
     public Integer call() {
+        // --debug が指定された場合はファイルログを有効化（outputDir 配下に一時ファイルを作成）
+        if (debug) {
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            Path logFilePath = outputDir.toPath().resolve("e2m_debug_" + timestamp + ".log");
+            AppLogger.enableDebug(logFilePath);
+            log.debug("デバッグモード有効: ログファイル={}", logFilePath);
+        }
+
         Path inputPath = inputDir.toPath();
 
         // 1. 引数の確認
         if (!inputDir.isDirectory()) {
-            System.err.println("[ERROR] 入力ディレクトリが見つかりません: " + inputDir);
+            log.error("入力ディレクトリが見つかりません: {}", inputDir);
             return 1;
         }
         if (!inputPath.resolve(".project").toFile().exists()) {
-            System.err.println("[ERROR] Eclipseプロジェクトではありません (.project ファイルが見つかりません): " + inputDir);
+            log.error("Eclipseプロジェクトではありません (.project ファイルが見つかりません): {}", inputDir);
             return 1;
         }
         if (outputDir.exists() && !outputDir.isDirectory()) {
-            System.err.println("[ERROR] 出力パスはディレクトリである必要があります: " + outputDir);
+            log.error("出力パスはディレクトリである必要があります: {}", outputDir);
             return 1;
         }
         if (javaTargetVersion != null && javaTargetVersion.isUnknown()) {
-            System.err.println("[ERROR] --javaTargetVersionが不正です: " + javaTargetVersion);
+            log.error("--javaTargetVersionが不正です: {}", javaTargetVersion);
             return 1;
         }
 
         try {
             // 2. Eclipseプロジェクト情報をパース
-            System.out.println("\n[1/5] Eclipseプロジェクトを解析中...");
+            log.info("");
+            log.info("[1/5] Eclipseプロジェクトを解析中...");
             EclipseProject eclipseProject = EclipseProjectParser.parse(inputPath);
-            System.out.println("  プロジェクト名: " + eclipseProject.projectName());
-            System.out.println("  種別: " + (eclipseProject.webProject() ? "Webプロジェクト (WTP)" : "Javaプロジェクト"));
-            System.out.println("  Javaソースバージョン: " + eclipseProject.javaSourceVersion());
-            System.out.println("  Javaターゲットバージョン: " + eclipseProject.javaTargetVersion());
+            log.info("  プロジェクト名: {}", eclipseProject.projectName());
+            log.info("  種別: {}", eclipseProject.webProject() ? "Webプロジェクト (WTP)" : "Javaプロジェクト");
+            log.info("  Javaソースバージョン: {}", eclipseProject.javaSourceVersion());
+            log.info("  Javaターゲットバージョン: {}", eclipseProject.javaTargetVersion());
             if (eclipseProject.webProject()) {
-                System.out.println("  Web仕様バージョン: " + eclipseProject.webVersion());
+                log.info("  Web仕様バージョン: {}", eclipseProject.webVersion());
             }
-            System.out.println("  ソースフォルダ: " + eclipseProject.sourceFolders());
+            log.info("  ソースフォルダ: {}", eclipseProject.sourceFolders());
             if (eclipseProject.webProject()) {
-                System.out.println("  Webコンテンツフォルダ: " + eclipseProject.webContentRoot());
+                log.info("  Webコンテンツフォルダ: {}", eclipseProject.webContentRoot());
             }
-            System.out.println("  JARファイル数: " + eclipseProject.jarPaths().size());
+            log.info("  JARファイル数: {}", eclipseProject.jarPaths().size());
 
             if (eclipseProject.javaSourceVersion().isUnknown()) {
-                System.err.println("[ERROR] Javaソースバージョンを認識できませんでした: "
-                        + eclipseProject.javaSourceVersion());
+                log.error("Javaソースバージョンを認識できませんでした: {}", eclipseProject.javaSourceVersion());
                 return 1;
             }
 
-            System.out.println("\n[2/5] 移行先のMavenプロジェクトを決定中...");
+            log.info("");
+            log.info("[2/5] 移行先のMavenプロジェクトを決定中...");
             String defaultArtifactId = convertToArtifactId(eclipseProject.projectName());
             if (groupId == null || groupId.isBlank()) {
                 // オプション未指定の場合は対話的に入力を受け付ける
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+                    log.debug("対話的入力モード開始");
                     groupId = promptIfAbsent(reader, "groupId", groupId, null);
                     artifactId = promptIfAbsent(reader, "artifactId", artifactId, defaultArtifactId);
                     artifactVersion = promptIfAbsent(reader, "artifactVersion", artifactVersion, DEFAULT_ARTIFACT_VERSION);
-                    // --convert-to-utf8 指定時は sourceEncoding も対話入力
+                    log.debug("groupId: {}", groupId);
+                    log.debug("artifactId: {}", artifactId);
+                    log.debug("version: {}", artifactVersion);
+                    // --convertToUtf8 指定時は sourceEncoding も対話入力
                     if (convertToUtf8) {
                         sourceEncoding = promptIfAbsent(reader, "sourceEncoding", sourceEncoding, null);
                     }
+                    log.debug("sourceEncoding: {}", sourceEncoding);
                 }
             } else {
                 // 少なくとも--groupIdが指定されていれば，あとは空ならデフォルトを使用する
@@ -138,24 +158,26 @@ public class Main implements Callable<Integer> {
                 if (artifactVersion == null || artifactId.isBlank()) {
                     artifactVersion = DEFAULT_ARTIFACT_VERSION;
                 }
-                System.out.println("groupId: " + groupId);
-                System.out.println("artifactId: " + artifactId);
-                System.out.println("version: " + artifactVersion);
-                // --convert-to-utf8 指定時は sourceEncoding も対話入力（--groupId 指定時で未指定の場合）
+                log.info("groupId: {}", groupId);
+                log.info("artifactId: {}", artifactId);
+                log.info("version: {}", artifactVersion);
+                // --convertToUtf8 指定時は sourceEncoding も対話入力（--groupId 指定時で未指定の場合）
                 if (convertToUtf8 && (sourceEncoding == null || sourceEncoding.isBlank())) {
+                    log.debug("対話的入力モード開始");
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
                         sourceEncoding = promptIfAbsent(reader, "sourceEncoding", sourceEncoding, null);
                     }
+                    log.debug("sourceEncoding: {}", sourceEncoding);
                 }
             }
 
-            // --convert-to-utf8 指定時の sourceEncoding バリデーション
+            // --convertToUtf8 指定時の sourceEncoding バリデーション
             Charset srcCharset = null;
             if (convertToUtf8) {
                 try {
                     srcCharset = Charset.forName(sourceEncoding);
                 } catch (Exception e) {
-                    System.err.println("[ERROR] --sourceEncoding が無効な文字セット名です: " + sourceEncoding);
+                    log.error("--sourceEncoding が無効な文字セット名です: {}", sourceEncoding);
                     return 1;
                 }
             }
@@ -163,31 +185,33 @@ public class Main implements Callable<Integer> {
             // 出力先は outputDir/artifactId
             Path outputPath = outputDir.toPath().resolve(artifactId);
             if (outputPath.toFile().exists()) {
-                System.err.println("[ERROR] 出力先ディレクトリがすでに存在しています: " + outputPath);
+                log.error("出力先ディレクトリがすでに存在しています: {}", outputPath);
                 return 1;
             }
 
-            System.out.println("\n=== e2m: Eclipse → Maven 変換開始 ===");
-            System.out.println("  入力: " + inputPath.toAbsolutePath());
-            System.out.println("  出力: " + outputPath.toAbsolutePath());
+            log.info("");
+            log.info("=== e2m: Eclipse → Maven 変換開始 ===");
+            log.info("  入力: {}", inputPath.toAbsolutePath());
+            log.info("  出力: {}", outputPath.toAbsolutePath());
 
             // 3.(続き) JAR依存関係を解決
-            System.out.println("\n[3/5] JAR依存関係を解決中...");
+            log.info("");
+            log.info("[3/5] JAR依存関係を解決中...");
             List<MavenDependency> dependencies = DependencyResolver.resolve(eclipseProject.jarPaths(), inputPath);
             long found = dependencies.stream().filter(d -> !"system".equals(d.scope())).count();
             long system = dependencies.stream().filter(d -> "system".equals(d.scope())).count();
-            System.out.println("  Maven Central で見つかった依存: " + found + " 件");
-            System.out.println("  system スコープの依存: " + system + " 件");
+            log.info("  Maven Central で見つかった依存: {} 件", found);
+            log.info("  system スコープの依存: {} 件", system);
 
             // 4. pom.xml を生成
-            System.out.println("\n[4/5] pom.xml を生成中...");
+            log.info("");
+            log.info("[4/5] pom.xml を生成中...");
             // --javaTargetVersion が指定された場合はソースバージョンと比較してバリデーション
             JavaVersion sourceVer = eclipseProject.javaSourceVersion();
             if (javaTargetVersion != null) {
                 if (!sourceVer.isUnknown() && javaTargetVersion.compareTo(sourceVer) < 0) {
-                    System.err.println("[ERROR] --javaTargetVersion (" + javaTargetVersion
-                            + ") はJavaソースバージョン (" + eclipseProject.javaSourceVersion()
-                            + ") より低いバージョンを指定することはできません。");
+                    log.error("--javaTargetVersion ({}) はJavaソースバージョン ({}) より低いバージョンを指定することはできません。",
+                            javaTargetVersion, eclipseProject.javaSourceVersion());
                     return 1;
                 }
             }
@@ -199,15 +223,17 @@ public class Main implements Callable<Integer> {
                     effectiveTargetVersion, convertToUtf8, outputPath);
 
             // 5. ソース・Webコンテンツをコピー
-            System.out.println("\n[5/5] ソースファイルをコピー中...");
+            log.info("");
+            log.info("[5/5] ソースファイルをコピー中...");
             if (convertToUtf8) {
-                System.out.println("  エンコーディング変換モード: " + sourceEncoding + " → UTF-8");
+                log.info("  エンコーディング変換モード: {} → UTF-8", sourceEncoding);
             }
             ProjectCopier.copy(eclipseProject, dependencies, inputPath, outputPath,
                     convertToUtf8, srcCharset, effectiveTargetVersion);
 
-            System.out.println("\n=== 変換完了 ===");
-            System.out.println("出力先: " + outputPath.toAbsolutePath());
+            log.info("");
+            log.info("=== 変換完了 ===");
+            log.info("出力先: {}", outputPath.toAbsolutePath());
 
             // --debug オプション: デバッグ ZIP を生成
             if (debug) {
@@ -217,8 +243,8 @@ public class Main implements Callable<Integer> {
             return 0;
 
         } catch (Exception e) {
-            System.err.println("[ERROR] 変換中にエラーが発生しました: " + e.getMessage());
-            e.printStackTrace(System.err);
+            log.error("変換中にエラーが発生しました: {}", e.getMessage());
+            log.debug("スタックトレース:", e);
             return 2;
         }
     }
@@ -255,7 +281,8 @@ public class Main implements Callable<Integer> {
                 if (defaultValue != null) {
                     return defaultValue;
                 }
-                System.err.println("  値を入力してください。");
+                // 対話的入力モードでのメッセージは，ロガーを使わず，直接System.outに出力
+                System.out.print("  値を入力してください。");
                 continue;
             }
             return trimmed;
