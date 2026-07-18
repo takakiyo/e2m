@@ -25,6 +25,7 @@ import picocli.CommandLine.Parameters;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -49,6 +50,12 @@ public class Main implements Callable<Integer> {
     @Option(names = {"--javaTargetVersion"}, required = false, converter = JavaVersionConverter.class,
             description = "Override maven.compiler.target in the generated pom.xml (default: taken from the Eclipse project settings)")
     private JavaVersion javaTargetVersion;
+
+    @Option(names = {"--convertToUtf8"}, description = "Convert source files to UTF-8 encoding during copy")
+    private boolean convertToUtf8;
+
+    @Option(names = {"-e", "--sourceEncoding"}, required = false, description = "Source encoding of the input files (e.g. Shift_JIS). Required when --convertToUtf8 is specified.")
+    private String sourceEncoding;
 
     @Option(names = {"--debug"}, description = "Output debug information as e2m_debug_<datetime>.zip in the output directory")
     private boolean debug;
@@ -118,6 +125,10 @@ public class Main implements Callable<Integer> {
                     groupId = promptIfAbsent(reader, "groupId", groupId, null);
                     artifactId = promptIfAbsent(reader, "artifactId", artifactId, defaultArtifactId);
                     artifactVersion = promptIfAbsent(reader, "artifactVersion", artifactVersion, DEFAULT_ARTIFACT_VERSION);
+                    // --convert-to-utf8 指定時は sourceEncoding も対話入力
+                    if (convertToUtf8) {
+                        sourceEncoding = promptIfAbsent(reader, "sourceEncoding", sourceEncoding, null);
+                    }
                 }
             } else {
                 // 少なくとも--groupIdが指定されていれば，あとは空ならデフォルトを使用する
@@ -130,6 +141,23 @@ public class Main implements Callable<Integer> {
                 System.out.println("groupId: " + groupId);
                 System.out.println("artifactId: " + artifactId);
                 System.out.println("version: " + artifactVersion);
+                // --convert-to-utf8 指定時は sourceEncoding も対話入力（--groupId 指定時で未指定の場合）
+                if (convertToUtf8 && (sourceEncoding == null || sourceEncoding.isBlank())) {
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+                        sourceEncoding = promptIfAbsent(reader, "sourceEncoding", sourceEncoding, null);
+                    }
+                }
+            }
+
+            // --convert-to-utf8 指定時の sourceEncoding バリデーション
+            Charset srcCharset = null;
+            if (convertToUtf8) {
+                try {
+                    srcCharset = Charset.forName(sourceEncoding);
+                } catch (Exception e) {
+                    System.err.println("[ERROR] --sourceEncoding が無効な文字セット名です: " + sourceEncoding);
+                    return 1;
+                }
             }
 
             // 出力先は outputDir/artifactId
@@ -163,12 +191,20 @@ public class Main implements Callable<Integer> {
                     return 1;
                 }
             }
+            // 実効 javaTargetVersion を確定（--javaTargetVersion 指定 > Eclipseプロジェクト設定）
+            JavaVersion effectiveTargetVersion = (javaTargetVersion != null && !javaTargetVersion.isUnknown())
+                    ? javaTargetVersion
+                    : eclipseProject.javaTargetVersion();
             PomGenerator.generate(eclipseProject, dependencies, groupId, artifactId, artifactVersion,
-                    javaTargetVersion, outputPath);
+                    effectiveTargetVersion, convertToUtf8, outputPath);
 
             // 5. ソース・Webコンテンツをコピー
             System.out.println("\n[5/5] ソースファイルをコピー中...");
-            ProjectCopier.copy(eclipseProject, dependencies, inputPath, outputPath);
+            if (convertToUtf8) {
+                System.out.println("  エンコーディング変換モード: " + sourceEncoding + " → UTF-8");
+            }
+            ProjectCopier.copy(eclipseProject, dependencies, inputPath, outputPath,
+                    convertToUtf8, srcCharset, effectiveTargetVersion);
 
             System.out.println("\n=== 変換完了 ===");
             System.out.println("出力先: " + outputPath.toAbsolutePath());

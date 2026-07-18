@@ -38,6 +38,11 @@ class PomGeneratorTest {
                 List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
     }
 
+    private EclipseProject javaProject8() {
+        return new EclipseProject("MyApp", false, List.of("src"), "bin",
+                List.of(), null, JavaVersion.of("1.8"), JavaVersion.of("1.8"), null);
+    }
+
     private EclipseProject webProject() {
         return new EclipseProject("MyWebApp", true, List.of("src"), "build/classes",
                 List.of(), "WebContent", JavaVersion.of("11"), JavaVersion.of("1.8"), "3.0");
@@ -49,9 +54,20 @@ class PomGeneratorTest {
         return db.parse(tempDir.resolve("pom.xml").toFile());
     }
 
+    /** 変換なしで generate() を呼ぶ際の共通ヘルパー */
+    private void generateNoConvert(EclipseProject project, List<MavenDependency> deps,
+                                    String groupId, String artifactId, String version,
+                                    JavaVersion targetOverride) throws Exception {
+        // Main と同じロジックで effectiveTargetVersion を計算して渡す
+        JavaVersion effective = (targetOverride != null && !targetOverride.isUnknown())
+                ? targetOverride : project.javaTargetVersion();
+        PomGenerator.generate(project, deps, groupId, artifactId, version,
+                effective, false, tempDir);
+    }
+
     @Test
     void javaProject_noPackagingElement() throws Exception {
-        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", null, tempDir);
+        generateNoConvert(javaProject(), List.of(), "com.example", "myapp", "1.0", null);
         Document doc = parsePom();
         NodeList packaging = doc.getElementsByTagName("packaging");
         assertEquals(0, packaging.getLength(), "<packaging> 要素はJavaプロジェクトでは省略される");
@@ -59,7 +75,7 @@ class PomGeneratorTest {
 
     @Test
     void javaProject_coordinates() throws Exception {
-        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "2.0", null, tempDir);
+        generateNoConvert(javaProject(), List.of(), "com.example", "myapp", "2.0", null);
         Document doc = parsePom();
         assertEquals("com.example", doc.getElementsByTagName("groupId").item(0).getTextContent());
         assertEquals("myapp", doc.getElementsByTagName("artifactId").item(0).getTextContent());
@@ -68,7 +84,7 @@ class PomGeneratorTest {
 
     @Test
     void webProject_hasWarPackaging() throws Exception {
-        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", null, tempDir);
+        generateNoConvert(webProject(), List.of(), "com.example", "webapp", "1.0", null);
         Document doc = parsePom();
         NodeList packaging = doc.getElementsByTagName("packaging");
         assertEquals(1, packaging.getLength());
@@ -77,7 +93,7 @@ class PomGeneratorTest {
 
     @Test
     void javaSourceVersion_reflectedInProperties() throws Exception {
-        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", null, tempDir);
+        generateNoConvert(javaProject(), List.of(), "com.example", "myapp", "1.0", null);
         Document doc = parsePom();
         NodeList props = doc.getElementsByTagName("maven.compiler.source");
         assertEquals(1, props.getLength());
@@ -86,7 +102,7 @@ class PomGeneratorTest {
 
     @Test
     void javaTargetVersion_reflectedInProperties() throws Exception {
-        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", null, tempDir);
+        generateNoConvert(javaProject(), List.of(), "com.example", "myapp", "1.0", null);
         Document doc = parsePom();
         NodeList props = doc.getElementsByTagName("maven.compiler.target");
         assertEquals(1, props.getLength());
@@ -95,7 +111,7 @@ class PomGeneratorTest {
 
     @Test
     void sourceAndTargetCanDiffer() throws Exception {
-        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", null, tempDir);
+        generateNoConvert(webProject(), List.of(), "com.example", "webapp", "1.0", null);
         Document doc = parsePom();
         assertEquals("11", doc.getElementsByTagName("maven.compiler.source").item(0).getTextContent());
         assertEquals("1.8", doc.getElementsByTagName("maven.compiler.target").item(0).getTextContent());
@@ -104,7 +120,7 @@ class PomGeneratorTest {
     @Test
     void dependency_centralFound_noScope() throws Exception {
         MavenDependency dep = new MavenDependency("org.apache.commons", "commons-lang3", "3.12.0", null, null);
-        PomGenerator.generate(javaProject(), List.of(dep), "com.example", "myapp", "1.0", null, tempDir);
+        generateNoConvert(javaProject(), List.of(dep), "com.example", "myapp", "1.0", null);
         Document doc = parsePom();
 
         NodeList groupIds = doc.getElementsByTagName("groupId");
@@ -124,7 +140,7 @@ class PomGeneratorTest {
     @Test
     void dependency_systemScope_hasScopeAndSystemPath() throws Exception {
         MavenDependency dep = new MavenDependency("mylib", "mylib", "0.0.0", "system", "/opt/libs/mylib.jar");
-        PomGenerator.generate(javaProject(), List.of(dep), "com.example", "myapp", "1.0", null, tempDir);
+        generateNoConvert(javaProject(), List.of(dep), "com.example", "myapp", "1.0", null);
         Document doc = parsePom();
 
         NodeList scopes = doc.getElementsByTagName("scope");
@@ -139,12 +155,12 @@ class PomGeneratorTest {
 
     @Test
     void compilerPlugin_sourceAndTargetCanDiffer() throws Exception {
-        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", null, tempDir);
+        generateNoConvert(webProject(), List.of(), "com.example", "webapp", "1.0", null);
     }
 
     @Test
     void webProject_hasJavaEEDependencyWithProvidedScope() throws Exception {
-        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", null, tempDir);
+        generateNoConvert(webProject(), List.of(), "com.example", "webapp", "1.0", null);
         Document doc = parsePom();
 
         // javaee-api の artifactId が出力されること
@@ -170,7 +186,7 @@ class PomGeneratorTest {
 
     @Test
     void webProject_javaEEDependencyVersion_matchesServletVersion() throws Exception {
-        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", null, tempDir);
+        generateNoConvert(webProject(), List.of(), "com.example", "webapp", "1.0", null);
         Document doc = parsePom();
 
         // groupId=javax, artifactId=javaee-api, version=6.0 (Servlet 3.0 → Java EE 6)
@@ -186,7 +202,7 @@ class PomGeneratorTest {
 
     @Test
     void webProject_hasMavenWarPlugin() throws Exception {
-        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", null, tempDir);
+        generateNoConvert(webProject(), List.of(), "com.example", "webapp", "1.0", null);
         Document doc = parsePom();
 
         NodeList artifactIds = doc.getElementsByTagName("artifactId");
@@ -201,7 +217,7 @@ class PomGeneratorTest {
 
     @Test
     void javaProject_noMavenWarPlugin() throws Exception {
-        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", null, tempDir);
+        generateNoConvert(javaProject(), List.of(), "com.example", "myapp", "1.0", null);
         Document doc = parsePom();
 
         NodeList artifactIds = doc.getElementsByTagName("artifactId");
@@ -213,7 +229,7 @@ class PomGeneratorTest {
 
     @Test
     void javaTargetOverride_appliedToProperty() throws Exception {
-        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", JavaVersion.of("21"), tempDir);
+        generateNoConvert(javaProject(), List.of(), "com.example", "myapp", "1.0", JavaVersion.of("21"));
         Document doc = parsePom();
         // source は Eclipse プロジェクトの値 (17) のまま
         assertEquals("17", doc.getElementsByTagName("maven.compiler.source").item(0).getTextContent());
@@ -221,4 +237,75 @@ class PomGeneratorTest {
         assertEquals("21", doc.getElementsByTagName("maven.compiler.target").item(0).getTextContent());
     }
 
+    // =========================================================
+    // native2ascii-maven-plugin テスト
+    // =========================================================
+
+    @Test
+    void convertToUtf8_java8_hasNative2AsciiPlugin() throws Exception {
+        // Java 8 + convertToUtf8=true → native2ascii-maven-plugin が追加される
+        PomGenerator.generate(javaProject8(), List.of(), "com.example", "myapp", "1.0",
+                JavaVersion.of("1.8"), true, tempDir);
+        Document doc = parsePom();
+
+        NodeList artifactIds = doc.getElementsByTagName("artifactId");
+        boolean found = false;
+        for (int i = 0; i < artifactIds.getLength(); i++) {
+            if ("native2ascii-maven-plugin".equals(artifactIds.item(i).getTextContent())) {
+                found = true;
+            }
+        }
+        assertTrue(found, "Java 8 + convertToUtf8=true では native2ascii-maven-plugin が出力される");
+    }
+
+    @Test
+    void convertToUtf8_java17_noNative2AsciiPlugin() throws Exception {
+        // Java 17 + convertToUtf8=true → native2ascii-maven-plugin は追加されない
+        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0",
+                JavaVersion.of("17"), true, tempDir);
+        Document doc = parsePom();
+
+        NodeList artifactIds = doc.getElementsByTagName("artifactId");
+        for (int i = 0; i < artifactIds.getLength(); i++) {
+            assertNotEquals("native2ascii-maven-plugin", artifactIds.item(i).getTextContent(),
+                    "Java 17 では native2ascii-maven-plugin は出力されない");
+        }
+    }
+
+    @Test
+    void convertToUtf8_false_noNative2AsciiPlugin() throws Exception {
+        // Java 8 でも convertToUtf8=false → native2ascii-maven-plugin は追加されない
+        PomGenerator.generate(javaProject8(), List.of(), "com.example", "myapp", "1.0",
+                JavaVersion.of("1.8"), false, tempDir);
+        Document doc = parsePom();
+
+        NodeList artifactIds = doc.getElementsByTagName("artifactId");
+        for (int i = 0; i < artifactIds.getLength(); i++) {
+            assertNotEquals("native2ascii-maven-plugin", artifactIds.item(i).getTextContent(),
+                    "convertToUtf8=false では native2ascii-maven-plugin は出力されない");
+        }
+    }
+
+    @Test
+    void convertToUtf8_java8_native2AsciiPlugin_configuration() throws Exception {
+        // native2ascii-maven-plugin の設定値が正しいことを確認
+        PomGenerator.generate(javaProject8(), List.of(), "com.example", "myapp", "1.0",
+                JavaVersion.of("1.8"), true, tempDir);
+        Document doc = parsePom();
+
+        // srcDir の値
+        NodeList srcDirs = doc.getElementsByTagName("srcDir");
+        assertEquals(1, srcDirs.getLength());
+        assertEquals("${project.basedir}/src/main/resources-utf8", srcDirs.item(0).getTextContent());
+
+        // outputDir の値
+        NodeList outputDirs = doc.getElementsByTagName("outputDir");
+        assertEquals(1, outputDirs.getLength());
+        assertEquals("${project.build.outputDirectory}", outputDirs.item(0).getTextContent());
+
+        // encoding の値
+        NodeList encodings = doc.getElementsByTagName("encoding");
+        assertEquals(1, encodings.getLength());
+        assertEquals("UTF-8", encodings.item(0).getTextContent());
+    }
 }

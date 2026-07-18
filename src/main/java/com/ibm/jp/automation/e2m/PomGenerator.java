@@ -37,20 +37,21 @@ public class PomGenerator {
 
     private static final String MAVEN_COMPILER_PLUGIN_VERSION = "3.15.0";
     private static final String MAVEN_WAR_PLUGIN_VERSION = "3.5.1";
+    private static final String NATIVE2ASCII_PLUGIN_VERSION = "2.1.1";
 
     private PomGenerator() {}
 
     /**
      * pom.xmlを生成して出力ディレクトリに保存する。
      *
-     * @param eclipseProject      パース済みEclipseプロジェクト情報
-     * @param dependencies        解決済み依存関係リスト
-     * @param groupId             生成するpom.xmlのgroupId
-     * @param artifactId          生成するpom.xmlのartifactId
-     * @param version             生成するpom.xmlのversion
-     * @param javaTargetOverride  maven.compiler.targetに使用するJavaバージョン。
-     *                            nullまたはUNKNOWN_VERSIONの場合はeclipseProject.javaTargetVersion()を使用する
-     * @param outputDir           出力ディレクトリ
+     * @param eclipseProject        パース済みEclipseプロジェクト情報
+     * @param dependencies          解決済み依存関係リスト
+     * @param groupId               生成するpom.xmlのgroupId
+     * @param artifactId            生成するpom.xmlのartifactId
+     * @param version               生成するpom.xmlのversion
+     * @param effectiveTargetVersion maven.compiler.targetに使用するJavaバージョン。
+     * @param convertToUtf8      --convert-to-utf8 オプションが指定されているか
+     * @param outputDir          出力ディレクトリ
      * @throws Exception XML生成またはファイル書き込みに失敗した場合
      */
     public static void generate(
@@ -59,7 +60,8 @@ public class PomGenerator {
             String groupId,
             String artifactId,
             String version,
-            JavaVersion javaTargetOverride,
+            JavaVersion effectiveTargetVersion,
+            boolean convertToUtf8,
             Path outputDir) throws Exception {
 
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -85,10 +87,7 @@ public class PomGenerator {
 
         // <properties>
         JavaVersion javaSourceVersion = eclipseProject.javaSourceVersion();
-        JavaVersion javaTargetVersion = eclipseProject.javaTargetVersion();
-        if (javaTargetOverride != null && !javaTargetOverride.isUnknown()) {
-            javaTargetVersion = javaTargetOverride;
-        }
+        JavaVersion javaTargetVersion = effectiveTargetVersion;
         Element properties = doc.createElement("properties");
         addTextElement(doc, properties, "project.build.sourceEncoding", "UTF-8");
         addTextElement(doc, properties, "maven.compiler.source", javaSourceVersion.toString());
@@ -154,6 +153,30 @@ public class PomGenerator {
             addTextElement(doc, configuration, "failOnMissingWebXml", "false");
             warPlugin.appendChild(configuration);
             plugins.appendChild(warPlugin);
+        }
+        // --convert-to-utf8 かつ javaTargetVersion <= 8 の場合は native2ascii-maven-plugin を追加
+        // javaTargetVersion は 93-96 行で確定済み（javaTargetOverride 優先）
+        if (convertToUtf8 && !javaTargetVersion.isUnknown()
+                && javaTargetVersion.compareTo(JavaVersion.Java8) <= 0) {
+            Element n2aPlugin = doc.createElement("plugin");
+            addTextElement(doc, n2aPlugin, "groupId", "org.codehaus.mojo");
+            addTextElement(doc, n2aPlugin, "artifactId", "native2ascii-maven-plugin");
+            addTextElement(doc, n2aPlugin, "version", NATIVE2ASCII_PLUGIN_VERSION);
+            Element executions = doc.createElement("executions");
+            Element execution = doc.createElement("execution");
+            addTextElement(doc, execution, "id", "native2ascii-utf8-resources");
+            addTextElement(doc, execution, "phase", "process-resources");
+            Element goals = doc.createElement("goals");
+            addTextElement(doc, goals, "goal", "resources");
+            execution.appendChild(goals);
+            Element configuration = doc.createElement("configuration");
+            addTextElement(doc, configuration, "encoding", "UTF-8");
+            addTextElement(doc, configuration, "srcDir", "${project.basedir}/src/main/resources-utf8");
+            addTextElement(doc, configuration, "outputDir", "${project.build.outputDirectory}");
+            execution.appendChild(configuration);
+            executions.appendChild(execution);
+            n2aPlugin.appendChild(executions);
+            plugins.appendChild(n2aPlugin);
         }
         build.appendChild(plugins);
         project.appendChild(build);
