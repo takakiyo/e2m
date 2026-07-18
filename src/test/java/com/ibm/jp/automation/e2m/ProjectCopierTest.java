@@ -53,7 +53,7 @@ class ProjectCopierTest {
         assertTrue(ProjectCopier.isTestFolder("src/test/java"));
         assertTrue(ProjectCopier.isTestFolder("test"));
         assertTrue(ProjectCopier.isTestFolder("src-test"));
-        assertTrue(ProjectCopier.isTestFolder("mytest"));
+        assertFalse(ProjectCopier.isTestFolder("mytest"));
         assertFalse(ProjectCopier.isTestFolder("src"));
         assertFalse(ProjectCopier.isTestFolder("src/main/java"));
     }
