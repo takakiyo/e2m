@@ -43,12 +43,14 @@ public class PomGenerator {
     /**
      * pom.xmlを生成して出力ディレクトリに保存する。
      *
-     * @param eclipseProject パース済みEclipseプロジェクト情報
-     * @param dependencies   解決済み依存関係リスト
-     * @param groupId        生成するpom.xmlのgroupId
-     * @param artifactId     生成するpom.xmlのartifactId
-     * @param version        生成するpom.xmlのversion
-     * @param outputDir      出力ディレクトリ
+     * @param eclipseProject      パース済みEclipseプロジェクト情報
+     * @param dependencies        解決済み依存関係リスト
+     * @param groupId             生成するpom.xmlのgroupId
+     * @param artifactId          生成するpom.xmlのartifactId
+     * @param version             生成するpom.xmlのversion
+     * @param javaTargetOverride  maven.compiler.targetに使用するJavaバージョン。
+     *                            nullまたはUNKNOWN_VERSIONの場合はeclipseProject.javaTargetVersion()を使用する
+     * @param outputDir           出力ディレクトリ
      * @throws Exception XML生成またはファイル書き込みに失敗した場合
      */
     public static void generate(
@@ -57,6 +59,7 @@ public class PomGenerator {
             String groupId,
             String artifactId,
             String version,
+            JavaVersion javaTargetOverride,
             Path outputDir) throws Exception {
 
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -81,12 +84,15 @@ public class PomGenerator {
         }
 
         // <properties>
-        String javaSourceVersion = eclipseProject.javaSourceVersion();
-        String javaTargetVersion = eclipseProject.javaTargetVersion();
+        JavaVersion javaSourceVersion = eclipseProject.javaSourceVersion();
+        JavaVersion javaTargetVersion = eclipseProject.javaTargetVersion();
+        if (javaTargetOverride != null && !javaTargetOverride.isUnknown()) {
+            javaTargetVersion = javaTargetOverride;
+        }
         Element properties = doc.createElement("properties");
         addTextElement(doc, properties, "project.build.sourceEncoding", "UTF-8");
-        addTextElement(doc, properties, "maven.compiler.source", javaSourceVersion);
-        addTextElement(doc, properties, "maven.compiler.target", javaTargetVersion);
+        addTextElement(doc, properties, "maven.compiler.source", javaSourceVersion.toString());
+        addTextElement(doc, properties, "maven.compiler.target", javaTargetVersion.toString());
         project.appendChild(properties);
 
         // <dependencies>

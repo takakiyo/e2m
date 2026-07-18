@@ -80,14 +80,14 @@ class EclipseProjectParserTest {
     void javaProject_javaSourceVersion() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-java-project"));
         // sample-java-project/.settings/org.eclipse.jdt.core.prefs: source=17
-        assertEquals("17", project.javaSourceVersion());
+        assertEquals(JavaVersion.of("17"), project.javaSourceVersion());
     }
 
     @Test
     void javaProject_javaTargetVersion() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-java-project"));
         // sample-java-project/.settings/org.eclipse.jdt.core.prefs: targetPlatform=17
-        assertEquals("17", project.javaTargetVersion());
+        assertEquals(JavaVersion.of("17"), project.javaTargetVersion());
     }
 
     @Test
@@ -139,14 +139,14 @@ class EclipseProjectParserTest {
     void webProject_javaSourceVersion() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-web-project"));
         // sample-web-project/.settings/org.eclipse.jdt.core.prefs: source=11
-        assertEquals("11", project.javaSourceVersion());
+        assertEquals(JavaVersion.of("11"), project.javaSourceVersion());
     }
 
     @Test
     void webProject_javaTargetVersion() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-web-project"));
         // sample-web-project/.settings/org.eclipse.jdt.core.prefs: targetPlatform=1.8
-        assertEquals("1.8", project.javaTargetVersion());
+        assertEquals(JavaVersion.of("1.8"), project.javaTargetVersion());
     }
 
     @Test

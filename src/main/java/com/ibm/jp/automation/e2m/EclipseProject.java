@@ -28,7 +28,7 @@ public record EclipseProject(
         String outputFolder,
         List<String> jarPaths,
         String webContentRoot,
-        String javaSourceVersion,
-        String javaTargetVersion,
+        JavaVersion javaSourceVersion,
+        JavaVersion javaTargetVersion,
         String webVersion
 ) {}

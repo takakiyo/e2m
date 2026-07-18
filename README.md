@@ -43,7 +43,7 @@ mvn -Pnative package
 ## 使い方
 
 ```
-e2m [-g <groupId>] [-a <artifactId>] [-v <version>] <inputDir> <outputDir>
+e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>] <inputDir> <outputDir>
 ```
 
 オプションを省略した場合は、プロジェクト解析後に対話的に入力を求めます。
@@ -58,6 +58,7 @@ e2m [-g <groupId>] [-a <artifactId>] [-v <version>] <inputDir> <outputDir>
 | `-g`, `--groupId` | 生成するpom.xmlのgroupId（省略時は対話入力） |
 | `-a`, `--artifactId` | 生成するpom.xmlのartifactId（省略時はプロジェクト名がデフォルト） |
 | `-v`, `--artifactVersion` | 生成するpom.xmlのversion（省略時は `1.0-SNAPSHOT`） |
+| `--javaTargetVersion` | 生成するpom.xmlの `maven.compiler.target` を上書きする（省略時はEclipseプロジェクトの設定値を使用。ソースバージョンより低い値は指定不可） |
 | `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |
 | `-h`, `--help` | ヘルプを表示 |
 | `-V`, `--version` | バージョンを表示 |

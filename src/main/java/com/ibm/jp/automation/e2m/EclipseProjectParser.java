@@ -99,8 +99,8 @@ public class EclipseProjectParser {
         // ── .settings/org.eclipse.jdt.core.prefs ─────────────────
         // source/target を prefs から取得し、見つからない場合は .classpath の con エントリの値を使う
         String[] versions = parseJdtCorePrefs(inputDir);
-        String javaSourceVersion = versions[0];
-        String javaTargetVersion = versions[1];
+        JavaVersion javaSourceVersion = JavaVersion.of(versions[0]);
+        JavaVersion javaTargetVersion = JavaVersion.of(versions[1]);
 
         // ── WTP: .settings/org.eclipse.wst.common.component ──────
         String webContentRoot = null;

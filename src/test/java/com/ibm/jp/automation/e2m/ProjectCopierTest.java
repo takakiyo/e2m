@@ -57,7 +57,7 @@ class ProjectCopierTest {
         createFile(inputDir, "src/com/example/Foo.java", "public class Foo {}");
 
         EclipseProject project = new EclipseProject("Foo", false, List.of("src"), "bin",
-                List.of(), null, "17", "17", null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
 
         ProjectCopier.copy(project, List.of(), inputDir, outputDir);
 
@@ -70,7 +70,7 @@ class ProjectCopierTest {
         createFile(inputDir, "src/config.properties", "key=value");
 
         EclipseProject project = new EclipseProject("App", false, List.of("src"), "bin",
-                List.of(), null, "11", "11", null);
+                List.of(), null, JavaVersion.of("11"), JavaVersion.of("11"), null);
 
         ProjectCopier.copy(project, List.of(), inputDir, outputDir);
 
@@ -83,7 +83,7 @@ class ProjectCopierTest {
         createFile(inputDir, "test/com/example/FooTest.java", "public class FooTest {}");
 
         EclipseProject project = new EclipseProject("Foo", false, List.of("test"), "bin",
-                List.of(), null, "17", "17", null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
 
         ProjectCopier.copy(project, List.of(), inputDir, outputDir);
 
@@ -97,7 +97,7 @@ class ProjectCopierTest {
         createFile(inputDir, "WebContent/WEB-INF/web.xml", "<web-app/>");
 
         EclipseProject project = new EclipseProject("WebApp", true, List.of("src"), "build/classes",
-                List.of(), "WebContent", "11", "11", "3.0");
+                List.of(), "WebContent", JavaVersion.of("11"), JavaVersion.of("11"), "3.0");
 
         ProjectCopier.copy(project, List.of(), inputDir, outputDir);
 
@@ -110,7 +110,7 @@ class ProjectCopierTest {
     @Test
     void copy_missingSourceFolder_doesNotThrow() throws Exception {
         EclipseProject project = new EclipseProject("App", false, List.of("nonexistent"), "bin",
-                List.of(), null, "17", "17", null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
         // 存在しないフォルダは警告を出してスキップ（例外は投げない）
         assertDoesNotThrow(() -> ProjectCopier.copy(project, List.of(), inputDir, outputDir));
     }
@@ -120,7 +120,7 @@ class ProjectCopierTest {
         createFile(inputDir, "WebContent/index.jsp", "<%@ page %>");
 
         EclipseProject project = new EclipseProject("WebApp", true, List.of("src"), "bin",
-                List.of(), "/WebContent", "11", "11", "3.0");  // 先頭スラッシュあり
+                List.of(), "/WebContent", JavaVersion.of("11"), JavaVersion.of("11"), "3.0");  // 先頭スラッシュあり
 
         ProjectCopier.copy(project, List.of(), inputDir, outputDir);
 
@@ -137,7 +137,7 @@ class ProjectCopierTest {
                 "mylib", "mylib", "0.0.0", "system", jarFile.toAbsolutePath().toString());
 
         EclipseProject project = new EclipseProject("App", false, List.of(), "bin",
-                List.of(), null, "17", "17", null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
 
         ProjectCopier.copy(project, List.of(systemDep), inputDir, outputDir);
 
@@ -151,7 +151,7 @@ class ProjectCopierTest {
                 "mylib", "mylib", "0.0.0", "system", "/nonexistent/path/mylib.jar");
 
         EclipseProject project = new EclipseProject("App", false, List.of(), "bin",
-                List.of(), null, "17", "17", null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
 
         // ファイルが存在しない場合はスキップ（例外は投げない）
         assertDoesNotThrow(() -> ProjectCopier.copy(project, List.of(systemDep), inputDir, outputDir));

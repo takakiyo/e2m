@@ -18,6 +18,7 @@ package com.ibm.jp.automation.e2m;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
@@ -42,6 +43,10 @@ public class Main implements Callable<Integer> {
     private String artifactVersion;
     private static final String DEFAULT_ARTIFACT_VERSION = "1.0-SNAPSHOT";
 
+    @Option(names = {"--javaTargetVersion"}, required = false, converter = JavaVersionConverter.class,
+            description = "Override maven.compiler.target in the generated pom.xml (default: taken from the Eclipse project settings)")
+    private JavaVersion javaTargetVersion;
+
     @Option(names = {"--debug"}, description = "Output debug information as e2m_debug_<datetime>.zip in the output directory")
     private boolean debug;
 
@@ -55,7 +60,7 @@ public class Main implements Callable<Integer> {
     public Integer call() {
         Path inputPath = inputDir.toPath();
 
-        // 1. 入力ディレクトリの存在確認
+        // 1. 引数の確認
         if (!inputDir.isDirectory()) {
             System.err.println("[ERROR] 入力ディレクトリが見つかりません: " + inputDir);
             return 1;
@@ -66,6 +71,10 @@ public class Main implements Callable<Integer> {
         }
         if (outputDir.exists() && !outputDir.isDirectory()) {
             System.err.println("[ERROR] 出力パスはディレクトリである必要があります: " + outputDir);
+            return 1;
+        }
+        if (javaTargetVersion != null && javaTargetVersion.isUnknown()) {
+            System.err.println("[ERROR] --javaTargetVersionが不正です: " + javaTargetVersion);
             return 1;
         }
 
@@ -85,6 +94,12 @@ public class Main implements Callable<Integer> {
                 System.out.println("  Webコンテンツフォルダ: " + eclipseProject.webContentRoot());
             }
             System.out.println("  JARファイル数: " + eclipseProject.jarPaths().size());
+
+            if (eclipseProject.javaSourceVersion().isUnknown()) {
+                System.err.println("[ERROR] Javaソースバージョンを認識できませんでした: "
+                        + eclipseProject.javaSourceVersion());
+                return 1;
+            }
 
             System.out.println("\n[2/5] 移行先のMavenプロジェクトを決定中...");
             String defaultArtifactId = convertToArtifactId(eclipseProject.projectName());
@@ -129,7 +144,18 @@ public class Main implements Callable<Integer> {
 
             // 4. pom.xml を生成
             System.out.println("\n[4/5] pom.xml を生成中...");
-            PomGenerator.generate(eclipseProject, dependencies, groupId, artifactId, artifactVersion, outputPath);
+            // --javaTargetVersion が指定された場合はソースバージョンと比較してバリデーション
+            JavaVersion sourceVer = eclipseProject.javaSourceVersion();
+            if (javaTargetVersion != null) {
+                if (!sourceVer.isUnknown() && javaTargetVersion.compareTo(sourceVer) < 0) {
+                    System.err.println("[ERROR] --javaTargetVersion (" + javaTargetVersion
+                            + ") はJavaソースバージョン (" + eclipseProject.javaSourceVersion()
+                            + ") より低いバージョンを指定することはできません。");
+                    return 1;
+                }
+            }
+            PomGenerator.generate(eclipseProject, dependencies, groupId, artifactId, artifactVersion,
+                    javaTargetVersion, outputPath);
 
             // 5. ソース・Webコンテンツをコピー
             System.out.println("\n[5/5] ソースファイルをコピー中...");
@@ -232,5 +258,16 @@ public class Main implements Callable<Integer> {
 
     public static void main(String[] args) {
         System.exit(new CommandLine(new Main()).execute(args));
+    }
+
+    /**
+     * picocli 用の {@link JavaVersion} 型変換クラス。
+     * 変換に失敗した場合は {@link JavaVersion#UNKNOWN_VERSION} を返す。
+     */
+    static class JavaVersionConverter implements ITypeConverter<JavaVersion> {
+        @Override
+        public JavaVersion convert(String value) {
+            return JavaVersion.of(value);
+        }
     }
 }

@@ -35,12 +35,12 @@ class PomGeneratorTest {
 
     private EclipseProject javaProject() {
         return new EclipseProject("MyApp", false, List.of("src"), "bin",
-                List.of(), null, "17", "17", null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
     }
 
     private EclipseProject webProject() {
         return new EclipseProject("MyWebApp", true, List.of("src"), "build/classes",
-                List.of(), "WebContent", "11", "1.8", "3.0");
+                List.of(), "WebContent", JavaVersion.of("11"), JavaVersion.of("1.8"), "3.0");
     }
 
     private Document parsePom() throws Exception {
@@ -51,7 +51,7 @@ class PomGeneratorTest {
 
     @Test
     void javaProject_noPackagingElement() throws Exception {
-        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", tempDir);
+        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", null, tempDir);
         Document doc = parsePom();
         NodeList packaging = doc.getElementsByTagName("packaging");
         assertEquals(0, packaging.getLength(), "<packaging> 要素はJavaプロジェクトでは省略される");
@@ -59,7 +59,7 @@ class PomGeneratorTest {
 
     @Test
     void javaProject_coordinates() throws Exception {
-        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "2.0", tempDir);
+        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "2.0", null, tempDir);
         Document doc = parsePom();
         assertEquals("com.example", doc.getElementsByTagName("groupId").item(0).getTextContent());
         assertEquals("myapp", doc.getElementsByTagName("artifactId").item(0).getTextContent());
@@ -68,7 +68,7 @@ class PomGeneratorTest {
 
     @Test
     void webProject_hasWarPackaging() throws Exception {
-        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", tempDir);
+        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", null, tempDir);
         Document doc = parsePom();
         NodeList packaging = doc.getElementsByTagName("packaging");
         assertEquals(1, packaging.getLength());
@@ -77,7 +77,7 @@ class PomGeneratorTest {
 
     @Test
     void javaSourceVersion_reflectedInProperties() throws Exception {
-        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", tempDir);
+        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", null, tempDir);
         Document doc = parsePom();
         NodeList props = doc.getElementsByTagName("maven.compiler.source");
         assertEquals(1, props.getLength());
@@ -86,7 +86,7 @@ class PomGeneratorTest {
 
     @Test
     void javaTargetVersion_reflectedInProperties() throws Exception {
-        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", tempDir);
+        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", null, tempDir);
         Document doc = parsePom();
         NodeList props = doc.getElementsByTagName("maven.compiler.target");
         assertEquals(1, props.getLength());
@@ -95,7 +95,7 @@ class PomGeneratorTest {
 
     @Test
     void sourceAndTargetCanDiffer() throws Exception {
-        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", tempDir);
+        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", null, tempDir);
         Document doc = parsePom();
         assertEquals("11", doc.getElementsByTagName("maven.compiler.source").item(0).getTextContent());
         assertEquals("1.8", doc.getElementsByTagName("maven.compiler.target").item(0).getTextContent());
@@ -104,7 +104,7 @@ class PomGeneratorTest {
     @Test
     void dependency_centralFound_noScope() throws Exception {
         MavenDependency dep = new MavenDependency("org.apache.commons", "commons-lang3", "3.12.0", null, null);
-        PomGenerator.generate(javaProject(), List.of(dep), "com.example", "myapp", "1.0", tempDir);
+        PomGenerator.generate(javaProject(), List.of(dep), "com.example", "myapp", "1.0", null, tempDir);
         Document doc = parsePom();
 
         NodeList groupIds = doc.getElementsByTagName("groupId");
@@ -124,7 +124,7 @@ class PomGeneratorTest {
     @Test
     void dependency_systemScope_hasScopeAndSystemPath() throws Exception {
         MavenDependency dep = new MavenDependency("mylib", "mylib", "0.0.0", "system", "/opt/libs/mylib.jar");
-        PomGenerator.generate(javaProject(), List.of(dep), "com.example", "myapp", "1.0", tempDir);
+        PomGenerator.generate(javaProject(), List.of(dep), "com.example", "myapp", "1.0", null, tempDir);
         Document doc = parsePom();
 
         NodeList scopes = doc.getElementsByTagName("scope");
@@ -139,12 +139,12 @@ class PomGeneratorTest {
 
     @Test
     void compilerPlugin_sourceAndTargetCanDiffer() throws Exception {
-        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", tempDir);
+        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", null, tempDir);
     }
 
     @Test
     void webProject_hasJavaEEDependencyWithProvidedScope() throws Exception {
-        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", tempDir);
+        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", null, tempDir);
         Document doc = parsePom();
 
         // javaee-api の artifactId が出力されること
@@ -170,7 +170,7 @@ class PomGeneratorTest {
 
     @Test
     void webProject_javaEEDependencyVersion_matchesServletVersion() throws Exception {
-        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", tempDir);
+        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", null, tempDir);
         Document doc = parsePom();
 
         // groupId=javax, artifactId=javaee-api, version=6.0 (Servlet 3.0 → Java EE 6)
@@ -186,7 +186,7 @@ class PomGeneratorTest {
 
     @Test
     void webProject_hasMavenWarPlugin() throws Exception {
-        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", tempDir);
+        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0", null, tempDir);
         Document doc = parsePom();
 
         NodeList artifactIds = doc.getElementsByTagName("artifactId");
@@ -201,7 +201,7 @@ class PomGeneratorTest {
 
     @Test
     void javaProject_noMavenWarPlugin() throws Exception {
-        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", tempDir);
+        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", null, tempDir);
         Document doc = parsePom();
 
         NodeList artifactIds = doc.getElementsByTagName("artifactId");
@@ -210,4 +210,15 @@ class PomGeneratorTest {
                     "Java プロジェクトには maven-war-plugin は出力されない");
         }
     }
+
+    @Test
+    void javaTargetOverride_appliedToProperty() throws Exception {
+        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0", JavaVersion.of("21"), tempDir);
+        Document doc = parsePom();
+        // source は Eclipse プロジェクトの値 (17) のまま
+        assertEquals("17", doc.getElementsByTagName("maven.compiler.source").item(0).getTextContent());
+        // target はオーバーライドした値 (21)
+        assertEquals("21", doc.getElementsByTagName("maven.compiler.target").item(0).getTextContent());
+    }
+
 }
