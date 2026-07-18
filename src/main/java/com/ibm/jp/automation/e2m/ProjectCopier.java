@@ -189,6 +189,7 @@ public class ProjectCopier {
     /**
      * Webコンテンツディレクトリを再帰的にコピーする。
      * WEB-INF/lib 直下の .jar ファイルはスキップする。
+     * WEB-INF/classes ディレクトリ以下のファイルはすべてスキップする。
      * {@code convertToUtf8=true} の場合、.jsp ファイルはエンコーディング変換を行う。
      *
      * @param srcDir         コピー元ディレクトリ
@@ -201,9 +202,11 @@ public class ProjectCopier {
                                         boolean convertToUtf8, Charset sourceEncoding)
             throws IOException {
         Path excludeJarDir = srcDir.resolve("WEB-INF/lib");
+        Path excludeClassesDir = srcDir.resolve("WEB-INF/classes");
         Files.walk(srcDir)
-                .filter(srcPath -> !srcPath.startsWith(excludeJarDir)
+                .filter(srcPath -> (!srcPath.startsWith(excludeJarDir)
                         || !srcPath.getFileName().toString().endsWith(".jar"))
+                        && !srcPath.startsWith(excludeClassesDir))
                 .forEach(srcPath -> {
                     try {
                         Path relative = srcDir.relativize(srcPath);
