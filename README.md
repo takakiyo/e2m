@@ -43,17 +43,21 @@ mvn -Pnative package
 ## 使い方
 
 ```
-e2m --groupId <groupId> --artifactId <artifactId> --artifactVersion <version>
-    <inputDir> <outputDir>
+e2m [-g <groupId>] [-a <artifactId>] [-v <version>] <inputDir> <outputDir>
 ```
+
+オプションを省略した場合は、プロジェクト解析後に対話的に入力を求めます。
+`artifactId` のデフォルトは Eclipse のプロジェクト名、`artifactVersion` のデフォルトは `1.0-SNAPSHOT` です。
+
+出力先は `<outputDir>/<artifactId>/` ディレクトリに生成されます。
 
 ### オプション
 
 | オプション | 必須 | 説明 |
 |---|---|---|
-| `--groupId` | ✓ | 生成するpom.xmlのgroupId |
-| `--artifactId` | ✓ | 生成するpom.xmlのartifactId |
-| `--artifactVersion` | ✓ | 生成するpom.xmlのversion |
+| `-g`, `--groupId` | | 生成するpom.xmlのgroupId（省略時は対話入力） |
+| `-a`, `--artifactId` | | 生成するpom.xmlのartifactId（省略時はプロジェクト名がデフォルト） |
+| `-v`, `--artifactVersion` | | 生成するpom.xmlのversion（省略時は `1.0-SNAPSHOT`） |
 | `-h`, `--help` | | ヘルプを表示 |
 | `-V`, `--version` | | バージョンを表示 |
 
@@ -62,22 +66,23 @@ e2m --groupId <groupId> --artifactId <artifactId> --artifactVersion <version>
 | 引数 | 説明 |
 |---|---|
 | `<inputDir>` | 変換元のEclipseプロジェクトディレクトリ |
-| `<outputDir>` | 変換先のMavenプロジェクトを生成するディレクトリ |
+| `<outputDir>` | 変換先のMavenプロジェクトを生成するベースディレクトリ |
 
 ### 実行例
 
-Fat JARで実行する場合:
+オプションをすべて指定する場合（Fat JAR）:
 
 ```bash
 java -jar target/e2m-1.0.jar \
-  --groupId com.example \
-  --artifactId myapp \
-  --artifactVersion 1.0 \
+  -g com.example \
+  -a myapp \
+  -v 1.0 \
   /path/to/eclipse-project \
   /path/to/output
+# → /path/to/output/myapp/ に生成される
 ```
 
-ネイティブ実行ファイルの場合:
+オプションをすべて指定する場合（ネイティブ実行ファイル）:
 
 ```bash
 ./e2m \
@@ -86,6 +91,17 @@ java -jar target/e2m-1.0.jar \
   --artifactVersion 1.0 \
   /path/to/eclipse-project \
   /path/to/output
+```
+
+オプションを省略して対話入力する場合:
+
+```bash
+./e2m /path/to/eclipse-project /path/to/output
+
+groupId: com.example
+artifactId [MyEclipseProject]: myapp
+artifactVersion [1.0-SNAPSHOT]:
+# → /path/to/output/myapp/ に生成される
 ```
 
 ## 変換結果のディレクトリ構造

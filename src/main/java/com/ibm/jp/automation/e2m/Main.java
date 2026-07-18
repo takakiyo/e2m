@@ -32,13 +32,13 @@ import java.util.regex.Pattern;
 @Command(name = "e2m", description = "Eclipse project to Maven project converter", version = "1.0", mixinStandardHelpOptions = true)
 public class Main implements Callable<Integer> {
 
-    @Option(names = "--groupId", required = false, description = "Maven groupId of the output project")
+    @Option(names = {"-g", "--groupId"}, required = false, description = "Maven groupId of the output project")
     private String groupId;
 
-    @Option(names = "--artifactId", required = false, description = "Maven artifactId of the output project")
+    @Option(names = {"-a", "--artifactId"}, required = false, description = "Maven artifactId of the output project")
     private String artifactId;
 
-    @Option(names = "--artifactVersion", required = false, description = "Maven version of the output project (default: 1.0-SNAPSHOT)")
+    @Option(names = {"-v", "--artifactVersion"}, required = false, description = "Maven version of the output project (default: 1.0-SNAPSHOT)")
     private String artifactVersion;
     private static final String DEFAULT_ARTIFACT_VERSION = "1.0-SNAPSHOT";
 
