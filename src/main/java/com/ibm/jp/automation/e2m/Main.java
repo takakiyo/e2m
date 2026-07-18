@@ -33,6 +33,9 @@ import java.util.regex.Pattern;
 @Command(name = "e2m", description = "Eclipse project to Maven project converter", version = "1.0", mixinStandardHelpOptions = true)
 public class Main implements Callable<Integer> {
 
+    /** コマンドライン引数のコピー（デバッグ ZIP 用）。 */
+    private String[] rawArgs;
+
     @Option(names = {"-g", "--groupId"}, required = false, description = "Maven groupId of the output project")
     private String groupId;
 
@@ -55,6 +58,12 @@ public class Main implements Callable<Integer> {
 
     @Parameters(index = "1", paramLabel = "<outputDir>", description = "Output directory for the Maven project")
     private File outputDir;
+
+    public static void main(String[] args) {
+        Main main = new Main();
+        main.rawArgs = args.clone();
+        System.exit(new CommandLine(main).execute(args));
+    }
 
     @Override
     public Integer call() {
@@ -166,7 +175,7 @@ public class Main implements Callable<Integer> {
 
             // --debug オプション: デバッグ ZIP を生成
             if (debug) {
-                DebugArchiver.archive(inputPath, outputDir.toPath(), outputPath);
+                DebugArchiver.archive(inputPath, outputDir.toPath(), outputPath, rawArgs);
             }
 
             return 0;
@@ -254,10 +263,6 @@ public class Main implements Callable<Integer> {
 
         // すべての文字が削られて空になった場合のフォールバック
         return sanitized.isBlank() ? "converted-artifact" : sanitized;
-    }
-
-    public static void main(String[] args) {
-        System.exit(new CommandLine(new Main()).execute(args));
     }
 
     /**

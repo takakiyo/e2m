@@ -28,6 +28,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -36,6 +38,8 @@ import java.util.zip.ZipOutputStream;
  *
  * <p>出力内容:</p>
  * <ul>
+ *   <li>コマンドライン引数一覧（{@code commandline_args.txt}）</li>
+ *   <li>実行環境のシステムプロパティ一覧（{@code system_properties.txt}）</li>
  *   <li>Eclipseプロジェクトの {@code .project}，{@code .classpath}，{@code .factorypath}，
  *       {@code .settings/} 以下の全ファイル</li>
  *   <li>Eclipseプロジェクト内の全ファイル一覧（名前・サイズ・日付。JARの場合はSHA1も）</li>
@@ -58,9 +62,10 @@ public class DebugArchiver {
      * @param inputDir  Eclipseプロジェクトのルートディレクトリ
      * @param outputDir outputDir（artifactId を含まないトップレベルのディレクトリ）
      * @param mavenDir  生成したMavenプロジェクトのルートディレクトリ
+     * @param args      コマンドライン引数のコピー
      * @throws IOException ZIP生成またはファイル書き込みに失敗した場合
      */
-    public static void archive(Path inputDir, Path outputDir, Path mavenDir) throws IOException {
+    public static void archive(Path inputDir, Path outputDir, Path mavenDir, String[] args) throws IOException {
 
         String timestamp = LocalDateTime.now().format(TIMESTAMP_FMT);
         Path zipPath = outputDir.resolve("e2m_debug_" + timestamp + ".zip");
@@ -70,6 +75,12 @@ public class DebugArchiver {
 
         try (OutputStream fos = Files.newOutputStream(zipPath);
              ZipOutputStream zos = new ZipOutputStream(fos, StandardCharsets.UTF_8)) {
+
+            // ── 0. コマンドライン引数一覧 ─────────────────────────────────────
+            addText(zos, "commandline_args.txt", buildArgsText(args));
+
+            // ── 0b. システムプロパティ一覧 ────────────────────────────────────
+            addText(zos, "system_properties.txt", buildSystemPropertiesText());
 
             // ── 1. Eclipseプロジェクトのメタファイル ──────────────────────────
             addEclipseMetaFiles(zos, inputDir);
@@ -90,6 +101,41 @@ public class DebugArchiver {
         }
 
         System.out.println("[DEBUG] 出力完了: " + zipPath.toAbsolutePath());
+    }
+
+    /**
+     * コマンドライン引数の一覧をテキスト形式で構築する。
+     * 各引数はインデックス付きで1行ずつ出力される。
+     *
+     * @param args コマンドライン引数のコピー（null または空配列も許容）
+     * @return テキスト表現
+     */
+    private static String buildArgsText(String[] args) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# e2m command-line arguments\n");
+        if (args == null || args.length == 0) {
+            sb.append("(no arguments)\n");
+        } else {
+            for (int i = 0; i < args.length; i++) {
+                sb.append("args[").append(i).append("] = ").append(args[i]).append("\n");
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 実行環境の {@link System#getProperties()} を取得し、キーのアルファベット順に
+     * テキスト形式で構築する。
+     *
+     * @return テキスト表現
+     */
+    private static String buildSystemPropertiesText() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# Java System Properties\n");
+        Properties props = System.getProperties();
+        new TreeMap<>(props).forEach((k, v) ->
+                sb.append(k).append(" = ").append(v).append("\n"));
+        return sb.toString();
     }
 
     // ── プライベートヘルパー ──────────────────────────────────────────────────
