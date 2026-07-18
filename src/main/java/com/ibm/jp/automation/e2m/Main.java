@@ -75,7 +75,10 @@ public class Main implements Callable<Integer> {
         AppLogger.init();
         Main main = new Main();
         main.rawArgs = args.clone();
-        System.exit(new CommandLine(main).execute(args));
+        CommandLine command = new CommandLine(main);
+        String[] versionInfo = command.getCommandSpec().version();
+        log.debug("e2mが開始しました。バージョン={}", versionInfo[0]);
+        System.exit(command.execute(args));
     }
 
     @Override
