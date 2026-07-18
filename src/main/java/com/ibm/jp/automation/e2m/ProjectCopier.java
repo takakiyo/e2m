@@ -147,42 +147,46 @@ public class ProjectCopier {
                                          Path resourceDest, Path resourceDestNormal,
                                          boolean convertToUtf8, Charset sourceEncoding)
             throws IOException {
-        Files.walk(currentDir)
-                .filter(Files::isRegularFile)
-                .forEach(srcFile -> {
-                    try {
-                        Path relative = baseDir.relativize(srcFile);
-                        String fileName = srcFile.getFileName().toString();
-                        boolean isJava = fileName.endsWith(".java");
-                        boolean isProperties = fileName.endsWith(".properties");
+        log.debug("  javaDestBase = {}", javaDestBase);
+        log.debug("  resourceDest = {}", resourceDest);
+        log.debug("  resourceDestNormal = {}", resourceDestNormal);
 
-                        if (isJava) {
-                            Path destFile = javaDestBase.resolve(relative);
-                            Files.createDirectories(destFile.getParent());
-                            if (convertToUtf8) {
-                                copyWithEncodingConversion(srcFile, destFile, sourceEncoding);
-                                log.debug("  [Java:UTF-8変換] {}", relative);
-                            } else {
-                                Files.copy(srcFile, destFile, StandardCopyOption.REPLACE_EXISTING);
-                                log.debug("  [バイナリコピー] {}", relative);
-                            }
-                        } else if (isProperties && convertToUtf8) {
-                            // .properties: Unicode エスケープ展開 + UTF-8 で resourceDest へ
-                            Path destFile = resourceDest.resolve(relative);
-                            Files.createDirectories(destFile.getParent());
-                            copyPropertiesWithConversion(srcFile, destFile, sourceEncoding);
-                            log.debug("  [Properties:UTF-8変換] {}", relative);
+        Files.walk(currentDir)
+            .filter(Files::isRegularFile)
+            .forEach(srcFile -> {
+                try {
+                    Path relative = baseDir.relativize(srcFile);
+                    String fileName = srcFile.getFileName().toString();
+                    boolean isJava = fileName.endsWith(".java");
+                    boolean isProperties = fileName.endsWith(".properties");
+
+                    if (isJava) {
+                        Path destFile = javaDestBase.resolve(relative);
+                        Files.createDirectories(destFile.getParent());
+                        if (convertToUtf8) {
+                            copyWithEncodingConversion(srcFile, destFile, sourceEncoding);
+                            log.debug("  [Java:UTF-8変換] {}", relative);
                         } else {
-                            // その他のリソース（バイナリコピー）
-                            Path destFile = resourceDestNormal.resolve(relative);
-                            Files.createDirectories(destFile.getParent());
                             Files.copy(srcFile, destFile, StandardCopyOption.REPLACE_EXISTING);
-                            log.debug("  [バイナリコピー] {}", relative);
+                            log.debug("  [Java:バイナリコピー] {}", relative);
                         }
-                    } catch (IOException e) {
-                        throw new RuntimeException("ファイルコピーに失敗しました: " + srcFile, e);
+                    } else if (isProperties && convertToUtf8) {
+                        // .properties: Unicode エスケープ展開 + UTF-8 で resourceDest へ
+                        Path destFile = resourceDest.resolve(relative);
+                        Files.createDirectories(destFile.getParent());
+                        copyPropertiesWithConversion(srcFile, destFile, sourceEncoding);
+                        log.debug("  [Properties:UTF-8変換] {}", relative);
+                    } else {
+                        // その他のリソース（バイナリコピー）
+                        Path destFile = resourceDestNormal.resolve(relative);
+                        Files.createDirectories(destFile.getParent());
+                        Files.copy(srcFile, destFile, StandardCopyOption.REPLACE_EXISTING);
+                        log.debug("  [Resource:バイナリコピー] {}", relative);
                     }
-                });
+                } catch (IOException e) {
+                    throw new RuntimeException("ファイルコピーに失敗しました: " + srcFile, e);
+                }
+            });
         log.info("  Copied source folder: {} → {}", currentDir, javaDestBase);
     }
 
@@ -225,11 +229,11 @@ public class ProjectCopier {
                                 } else {
                                     // pageEncoding が既に UTF-8 → バイナリコピー
                                     Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
-                                    log.debug("  [バイナリコピー] {}", relative);
+                                    log.debug("  [JSP:バイナリコピー] {}", relative);
                                 }
                             } else {
                                 Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
-                                log.debug("  [バイナリコピー] {}", relative);
+                                log.debug("  [Web:バイナリコピー] {}", relative);
                             }
                         }
                     } catch (IOException e) {
