@@ -93,7 +93,7 @@ java -jar target/e2m-1.0.jar \
 ### Javaプロジェクト
 
 ```
-output/
+output/<artifactId>
 ├── pom.xml
 └── src/
     ├── main/
@@ -107,7 +107,7 @@ output/
 ### WTP Webプロジェクト
 
 ```
-output/
+output/<artifactId>
 ├── pom.xml              ← <packaging>war</packaging> を含む
 └── src/
     └── main/
