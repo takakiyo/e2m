@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 public class Main implements Callable<Integer> {
 
     private static final Logger log = AppLogger.get(Main.class);
+    private static String e2mVersion;
 
     /** コマンドライン引数のコピー（デバッグ ZIP 用）。 */
     private String[] rawArgs;
@@ -76,8 +77,7 @@ public class Main implements Callable<Integer> {
         Main main = new Main();
         main.rawArgs = args.clone();
         CommandLine command = new CommandLine(main);
-        String[] versionInfo = command.getCommandSpec().version();
-        log.debug("e2mが開始しました。バージョン={}", versionInfo[0]);
+        e2mVersion = command.getCommandSpec().version()[0];
         System.exit(command.execute(args));
     }
 
@@ -89,6 +89,7 @@ public class Main implements Callable<Integer> {
             Path logFilePath = outputDir.toPath().resolve("e2m_debug_" + timestamp + ".log");
             AppLogger.enableDebug(logFilePath);
             log.debug("デバッグモード有効: ログファイル={}", logFilePath);
+            log.debug("e2mバージョン={}", e2mVersion);
         }
 
         Path inputPath = inputDir.toPath();
