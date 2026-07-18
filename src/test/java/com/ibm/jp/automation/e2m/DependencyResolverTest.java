@@ -56,7 +56,7 @@ class DependencyResolverTest {
         URL url = getClass().getClassLoader().getResource("sha1test/hello.txt");
         assertNotNull(url, "テストリソースが見つかりません: sha1test/hello.txt");
         Path file = Paths.get(url.toURI());
-        String sha1 = DependencyResolver.computeSha1(file);
+        String sha1 = FileUtils.computeSha1(file);
         assertEquals("60fde9c2310b0d4cad4dab8d126b04387efba289", sha1);
     }
 
@@ -65,7 +65,7 @@ class DependencyResolverTest {
     void computeSha1_isLowerCaseHex(@TempDir Path tempDir) throws Exception {
         Path file = tempDir.resolve("test.bin");
         Files.write(file, new byte[]{0x00, (byte) 0xFF, 0x7F});
-        String sha1 = DependencyResolver.computeSha1(file);
+        String sha1 = FileUtils.computeSha1(file);
         // 小文字16進数 & 40文字
         assertEquals(40, sha1.length());
         assertTrue(sha1.matches("[0-9a-f]+"), "SHA1は小文字16進数であるべき: " + sha1);

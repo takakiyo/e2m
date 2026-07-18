@@ -42,6 +42,9 @@ public class Main implements Callable<Integer> {
     private String artifactVersion;
     private static final String DEFAULT_ARTIFACT_VERSION = "1.0-SNAPSHOT";
 
+    @Option(names = {"--debug"}, description = "Output debug information as e2m_debug_<datetime>.zip in the output directory")
+    private boolean debug;
+
     @Parameters(index = "0", paramLabel = "<inputDir>", description = "Eclipse project directory to convert")
     private File inputDir;
 
@@ -134,6 +137,12 @@ public class Main implements Callable<Integer> {
 
             System.out.println("\n=== 変換完了 ===");
             System.out.println("出力先: " + outputPath.toAbsolutePath());
+
+            // --debug オプション: デバッグ ZIP を生成
+            if (debug) {
+                DebugArchiver.archive(inputPath, outputDir.toPath(), outputPath);
+            }
+
             return 0;
 
         } catch (Exception e) {

@@ -53,13 +53,14 @@ e2m [-g <groupId>] [-a <artifactId>] [-v <version>] <inputDir> <outputDir>
 
 ### オプション
 
-| オプション | 必須 | 説明 |
-|---|---|---|
-| `-g`, `--groupId` | | 生成するpom.xmlのgroupId（省略時は対話入力） |
-| `-a`, `--artifactId` | | 生成するpom.xmlのartifactId（省略時はプロジェクト名がデフォルト） |
-| `-v`, `--artifactVersion` | | 生成するpom.xmlのversion（省略時は `1.0-SNAPSHOT`） |
-| `-h`, `--help` | | ヘルプを表示 |
-| `-V`, `--version` | | バージョンを表示 |
+| オプション | 説明 |
+|---|---|
+| `-g`, `--groupId` | 生成するpom.xmlのgroupId（省略時は対話入力） |
+| `-a`, `--artifactId` | 生成するpom.xmlのartifactId（省略時はプロジェクト名がデフォルト） |
+| `-v`, `--artifactVersion` | 生成するpom.xmlのversion（省略時は `1.0-SNAPSHOT`） |
+| `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |
+| `-h`, `--help` | ヘルプを表示 |
+| `-V`, `--version` | バージョンを表示 |
 
 ### 引数
 
@@ -103,6 +104,34 @@ artifactId [MyEclipseProject]: myapp
 artifactVersion [1.0-SNAPSHOT]:
 # → /path/to/output/myapp/ に生成される
 ```
+
+## 変換がうまくいかない場合
+
+変換結果が期待どおりにならない場合は、`--debug` オプションを付けて再実行してください。
+変換完了後に `<outputDir>/e2m_debug_<日付時刻>.zip` が生成されます。
+
+```bash
+./e2m --debug \
+  -g com.example \
+  -a myapp \
+  /path/to/eclipse-project \
+  /path/to/output
+# → /path/to/output/e2m_debug_20250101_120000.zip が生成される
+```
+
+ZIPファイルには以下のデバッグ情報が含まれます。
+
+| ファイル | 内容 |
+|---|---|
+| `eclipse/.project` | Eclipseプロジェクト定義ファイル |
+| `eclipse/.classpath` | Eclipseクラスパス定義ファイル |
+| `eclipse/.factorypath` | Eclipseファクトリパス定義ファイル |
+| `eclipse/.settings/…` | `.settings/` ディレクトリ以下の全ファイル |
+| `eclipse_files.json` | Eclipseプロジェクト内の全ディレクトリ・ファイルの一覧（名前・サイズ・日付。JARファイルにはSHA1ハッシュも含む） |
+| `pom.xml` | 生成したMavenプロジェクトの `pom.xml` |
+| `maven_files.json` | 生成したMavenプロジェクトの全ディレクトリ・ファイルの一覧（名前・サイズ・日付） |
+
+問題が解決しない場合は、生成された ZIP ファイルを添付して [Issues](../../issues) にご報告ください。
 
 ## 変換結果のディレクトリ構造
 

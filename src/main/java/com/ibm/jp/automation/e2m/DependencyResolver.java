@@ -23,7 +23,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,7 +101,7 @@ public class DependencyResolver {
 
         String sha1;
         try {
-            sha1 = computeSha1(path);
+            sha1 = FileUtils.computeSha1(path);
         } catch (Exception e) {
             System.err.println("  [ERROR] SHA1計算に失敗しました: " + path + " → " + e.getMessage());
             System.out.println("  → SHA1 error (system scope): " + jarFileName);
@@ -118,20 +117,6 @@ public class DependencyResolver {
             System.out.println("  → API error (system scope): " + jarFileName);
             return new MavenDependency(baseName, baseName, "0.0.0", "system", path.toAbsolutePath().toString());
         }
-    }
-
-    /**
-     * JARファイルのSHA1ハッシュを小文字16進数文字列として計算する。
-     */
-    static String computeSha1(Path file) throws Exception {
-        MessageDigest digest = MessageDigest.getInstance("SHA-1");
-        byte[] bytes = Files.readAllBytes(file);
-        byte[] hash = digest.digest(bytes);
-        StringBuilder sb = new StringBuilder(hash.length * 2);
-        for (byte b : hash) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
     }
 
     /**
