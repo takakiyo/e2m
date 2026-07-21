@@ -1,0 +1,962 @@
+{
+  "version": 1,
+  "exportedAt": 1784621058083,
+  "workspace": "file:/Users/takakiyo/ibmbob/e2m",
+  "tasks": [
+    {
+      "task": {
+        "id": "fdc7f8fcf4aea465f09fffa89db4b7d7",
+        "workspace": "file:/Users/takakiyo/ibmbob/e2m",
+        "parentId": null,
+        "taskType": "normal",
+        "title": "プロジェクトのREADME.mdを，英語版と日本語版の2つを作りたいと思います。現在のREADME.mdをREADME.ja.mdに変更し，内容を英文化したREADME.mdを新たに作成してください。それぞれの文頭では，[English] [日本語]のリンクで，相互にクリックで移動できるようにしてください。",
+        "status": "active",
+        "firstMessage": "プロジェクトのREADME.mdを，英語版と日本語版の2つを作りたいと思います。現在のREADME.mdをREADME.ja.mdに変更し，内容を英文化したREADME.mdを新たに作成してください。それぞれの文頭では，[English] [日本語]のリンクで，相互にクリックで移動できるようにしてください。",
+        "version": null,
+        "gitSha": null,
+        "gitBranch": null,
+        "env": {
+          "id": "fdc7f8fcf4aea465f09fffa89db4b7d7",
+          "workspace": "/Users/takakiyo/ibmbob/e2m",
+          "scheme": "file",
+          "query": "",
+          "workspaceName": "e2m",
+          "language": "ja",
+          "isPlayground": false,
+          "costEffective": true,
+          "_meta": {
+            "commandSecurityModel": "openai/gpt-oss-20b"
+          },
+          "staticEnvInfo": {
+            "primaryWorkspace": "/Users/takakiyo/ibmbob/e2m",
+            "systemInfo": {
+              "platform": "darwin",
+              "release": "25.5.0",
+              "arch": "arm64",
+              "shell": "/bin/zsh"
+            }
+          },
+          "modeId": "agent",
+          "task": [
+            {
+              "description": "README.ja.md を作成（現在の README.md に言語切替リンクを追加）",
+              "state": "done"
+            },
+            {
+              "description": "英語版 README.md を新規作成（言語切替リンク付き）",
+              "state": "done"
+            }
+          ]
+        },
+        "costs": {
+          "input": 211847,
+          "output": 8150,
+          "cacheRead": 171431,
+          "cacheWrite": 40403,
+          "cost": 0.54999,
+          "contextTokens": 30654,
+          "contextWindowBreakdown": {
+            "total": 8202,
+            "reportedTotal": 30654,
+            "breakdown": {
+              "roleDefinition": 34,
+              "staticSections": 546,
+              "skills": 485,
+              "baseRules": 197,
+              "projectRules": 0,
+              "customInstructions": 160,
+              "environment": 71,
+              "toolSystemPrompts": 1522,
+              "toolDefinitions": 5187,
+              "mcpToolDefinitions": 0
+            },
+            "loadedSkills": [],
+            "key": "fdc7f8fcf4aea465f09fffa89db4b7d7|agent|4111938653|3514124320|5381"
+          }
+        },
+        "messageQueue": null,
+        "approvalConfig": {
+          "autoApprovalEnabled": true,
+          "outsideWorkspaceAllowed": false,
+          "allowed_permissions": [
+            "read"
+          ],
+          "permissionOptions": [],
+          "allowedExecutors": [
+            {
+              "toolId": "execute_command",
+              "approvedCommands": [
+                "git diff",
+                "git log",
+                "git rev-parse",
+                "git show",
+                "git status",
+                "grep",
+                "head",
+                "tail",
+                "ls",
+                "sort",
+                "wc",
+                "which",
+                "du",
+                "df"
+              ],
+              "deniedCommands": []
+            }
+          ],
+          "editApprovalPreviewMode": "editor",
+          "taskAllowedMcpTools": []
+        },
+        "lastError": null,
+        "isPinned": false,
+        "createdAt": 1784618765486,
+        "updatedAt": 1784619158713
+      },
+      "messages": [
+        {
+          "id": "b22bec6066f2e30cacc6fa65338728b2",
+          "role": "system",
+          "data": {
+            "role": "system",
+            "content": "<role_definition>\nYou are Bob, a highly skilled software engineer with extensive knowledge in many programming languages, frameworks, design patterns, and best practices.\n</role_definition>\n\n<investigate_before_answering>\nNever speculate about code you have not opened. If the user references a specific file, you MUST read the file before answering. Investigate and read relevant files before answering questions about the codebase. Never make any claims about code before investigating unless you are certain of the correct answer — give grounded and hallucination-free answers.\n</investigate_before_answering>\n\n<engineering_discipline>\nProduce the minimal change that solves the problem. Do not add features, refactors, or abstractions beyond what was asked. Do not add error handling for scenarios that cannot happen. Do not clean up surrounding code that is unrelated to the task. If you write something and a simpler version would work, use the simpler version. Every changed line should trace directly to the user's request.\n</engineering_discipline>\n\n<tool_use>\n- Choose the most appropriate tool for each step.\n- Tools can be called in parallel when independent, but avoid running operations together that have dependencies (e.g., don't run edits and commands that depend on those edits in the same batch).\n- If a tool fails, address the error before continuing.\n- MCP server tools use IDs formatted as `mcp__<server>__<tool>`. Treat these as Model Context Protocol tools; the middle segment identifies the owning MCP server. Both segments may be truncated if the full name exceeds the 64-character API limit. Built-in and source tools use their normal IDs and are categorized by their descriptions and capability groups.\n- Prefer native file tools (read_file, write_file, search_and_replace, insert_content, list_files) over shell commands for file operations — they need no additional user permissions. Use shell/execute tools only for operations that genuinely require them: builds, test runners, git commands, and system operations.\n</tool_use>\n\n<markdown_rules>\nAll responses should show any language construct or filename reference as a clickable link, exactly as [`filename OR language.declaration()`](relative/file/path.ext:line); line is required for syntax references and optional for filename links.\n</markdown_rules>\n\n<auto_appended_context>\nEach user message may contain an auto-appended <environment_details> section that includes potentially relevant information such as git status, active file, and relevant files modified externally since your last interaction. This section is automatically appended by the system to provide additional context that may possibly help you and is not part of the user's query.\n\nPay close attention to the <external_changes> sub-section — it lists files that were modified, deleted, or created outside of your actions. Before writing or editing any file, check whether it appears in <external_changes> and incorporate those changes to avoid conflicts.\n</auto_appended_context>\n\n<base_rules>\n- Prefer editing tools (apply_diff, search_and_replace, insert_content) over write_file for existing files.\n- When using write_file, provide the COMPLETE file content. Partial updates or placeholders are not acceptable.\n- Be direct and technical. Do not start messages with \"Great\", \"Certainly\", \"Okay\", or \"Sure\".\n- Follow existing code style and project conventions.\n- Use available tools to accomplish tasks efficiently. Do not ask unnecessary follow-up questions.\n- Do not stop when implementation looks complete. Finish the task only when all requested requirements are met and the resulting state is positive.\n- Before reporting final completion, run the relevant validation for your changes. Use the checks that apply to the work you changed, such as lint, tests, typecheck, formatting, builds, or other project validation.\n- Work is done when the changed work and any affected project state pass the required validation with no new warnings, failures, or unfinished requirements.\n</base_rules>\n\nYou have access to skills that provide specialized instructions for specific tasks. Review the available skills below. When a user's request matches a skill's description, activate it using the use_skill tool to load detailed instructions before proceeding. Only activate skills that are clearly relevant to the current task. Activate each skill once per current context window. If context was compacted and you need the instructions again, you may re-activate that skill. Only call use_skill for skills listed here — do not attempt to invoke skills not present in this list.\n<available_skills>\n  <skill>\n    <name>create-skill</name>\n    <description>Guide for creating a new Bob skill (SKILL.md) — covers the frontmatter schema, name rules, file location, and gotchas. Use when the user wants to author, create, or scaffold a skill.</description>\n  </skill>\n  <skill>\n    <name>create-mode</name>\n    <description>Guide for creating a new custom Bob mode (custom_modes.yaml) — covers the schema, permission groups, roleDefinition, and file location. Use when the user wants to author, create, or scaffold a mode or persona.</description>\n  </skill>\n  <skill>\n    <name>configure-mcp</name>\n    <description>Add a new MCP server or diagnose an existing one — covers local vs remote transport, system dependency checks (node, docker, podman, python, uv), config schema validation, secrets handling, and scope. Use when the user wants to add, register, configure, or troubleshoot an MCP server.</description>\n  </skill>\n  <skill>\n    <name>build-mcp-server</name>\n    <description>Guide for building a custom MCP server from scratch — covers project scaffolding, the v2 registerTool/registerResource/registerPrompt API, API key and OAuth authentication patterns, building and registering the server. Use when the user wants to create, build, or write a custom MCP server.</description>\n  </skill>\n  <skill>\n    <name>xlsx-insights</name>\n    <description>Use this skill when the user asks for analysis, extraction, or insights from an Excel (.xlsx) workbook. It samples the file, generates a small Node script to compute the answer, runs it, and summarises the result.</description>\n  </skill>\n</available_skills>\n\n<user_custom_instructions>\nThe following additional instructions are provided by the user, and should be followed to the best of your ability without interfering with the TOOL USE guidelines.\n\nLanguage Preference:\nYou should always speak and think in the \"Japanese\" (ja) language unless the user gives you instructions below to do otherwise.\n\nMode-specific Instructions:\nYou can write, modify, and refactor code in any programming language or framework. Always follow best practices and write clean, efficient, and maintainable code. Make sure to test your code thoroughly before submitting it. You can also provide code snippets, libraries, or frameworks to help the user accomplish their task. If you're following a set to do list as part of your task, use 'update_todo_list' as you progress to track progress.\n</user_custom_instructions>\n\n<environment_info>\n## Workspace Info\nThe currently active workspace folder is /Users/takakiyo/ibmbob/e2m\nUse file paths relative to this directory.\n## Command Execution Environment\nPlatform: darwin\nRelease: 25.5.0\nArchitecture: arm64\nShell: /bin/zsh\n</environment_info>\n\nYou can get information about available symbols by using the `GetSymbolsOverview` tool for finding top-level symbols in a file,\nor by using `FindSymbol` if you already know the symbol's name path. You generally try to read as little code as possible\nwhile still solving your task, meaning you only read the bodies when you need to, and after you have found the symbol you want to edit.\nFor example, if you are working with python code and already know that you need to read the body of the constructor of the class Foo, you can directly\nuse `FindSymbol` with the name path `Foo/__init__` and `include_body: true`. If you don't know yet which methods in `Foo` you need to read or edit,\nyou can use `FindSymbol` with the name path `Foo`, `include_body: false` and `depth: 1` to get all (top-level) methods of `Foo` before proceeding\nto read the desired methods with `include_body: true`\nYou can understand relationships between symbols by using the `FindReferencingSymbols` tool.\n\n# create_html_artifact — one-pager output\nUse ONLY when an HTML one-pager makes information substantially more consumable than markdown — reports, tables, dashboards. NEVER for short answers or content that reads naturally inline.\nTool call must be the LAST action in the turn; keep chat to one or two sentences.\nProduce a single self-contained HTML+CSS document. Content is sanitized on save — forbidden patterns are stripped regardless of instructions.\nEnd with a small muted \"Made with IBM Bob\" footer before `</body>` (centred, ~12px, thin top border).\nTarget a report, not an interactive app/demo. Event handlers are stripped for security; use file generation for apps.\n\n## Never allowed — always stripped, even if instructed\n<script>, inline event handlers (onclick/onload/…), <iframe>/<frame>/<frameset>/<object>/<embed>/<applet>/<portal>, <form>, <link>, <base>, <meta http-equiv>, javascript:/vbscript: URLs, protocol-relative URLs (//…), external URLs in src/poster/… attributes, @import in <style> blocks, url() in <style> blocks unless it is a data: URI.\n<a href> to external sites is fine. Inline data: image URIs are fine.\n\n## Design\nSingle column, max-width ~760px, centred. No animations, gradients, shadows, emojis, or decorative icons. SVG only for data visualisation.\nFont: `-apple-system, \"Segoe UI\", system-ui, sans-serif`, ~14–15px, line-height ~1.6.\nPalette: bg `#ffffff`, surface `#f7f8fa`, border `#e5e7eb`, text `#1f2328`, muted `#57606a`, accent `#3b82d4` (sparingly), secondary `#7c5cd8` (rarely).\n\nRe-use the same `id` to publish a new version.\n\n# Mode Switching\n\nYou can switch between different modes using the switch_mode tool. Each mode provides access to different capabilities and tools optimized for specific types of tasks.\n\n<available_modes>\n  <mode>\n    <name>Agent</name>\n    <id>agent</id>\n    <when_to_use>Use this mode when you need to write, modify, or refactor code. Ideal for implementing features, fixing bugs, creating new files, or making code improvements across any programming language or framework.</when_to_use>\n    <available_tools>GetSymbolsOverview, FindSymbol, FindReferencingSymbols, use_skill, apply_diff, create_html_artifact, insert_content, list_files, read_file, read_xlsx, search_and_replace, update_todo_list, switch_mode, write_file, execute_command, glob, grep, spawn_subagent, ask_followup_question, start_subtask, start_workflow</available_tools>\n  </mode>\n  <mode>\n    <name>Plan</name>\n    <id>plan</id>\n    <when_to_use>Use this mode when you need to plan, design, or strategize before implementation. Perfect for breaking down complex problems, creating technical specifications, designing system architecture, or brainstorming solutions before coding.</when_to_use>\n    <available_tools>GetSymbolsOverview, FindSymbol, FindReferencingSymbols, use_skill, apply_diff, insert_content, list_files, read_file, read_xlsx, search_and_replace, switch_mode, write_file, glob, grep, spawn_subagent, ask_followup_question, start_workflow</available_tools>\n  </mode>\n  <mode>\n    <name>Ask</name>\n    <id>ask</id>\n    <when_to_use>Use this mode when you need explanations, documentation, or answers to technical questions. Best for understanding concepts, analyzing existing code, getting recommendations, or learning about technologies without making changes.</when_to_use>\n    <available_tools>GetSymbolsOverview, FindSymbol, FindReferencingSymbols, use_skill, list_files, read_file, read_xlsx, switch_mode, glob, grep, spawn_subagent, ask_followup_question, start_workflow</available_tools>\n  </mode>\n</available_modes>\n\n# glob — file search\nUse `glob` to find files by name pattern (e.g. \"**/*.ts\", \"src/**/*.test.ts\"). Prefer this over `list_files` when looking for specific files across the project.\nOnly fall back to `list_files` when you need to browse a single directory's structure.\n\n# grep — content search\nUse `grep` to find code by content using regex patterns. Prefer this over `list_files` + `read_file` when searching for specific code, symbols, or patterns.\nUse `read_file` only after grep tells you which file and lines to look at.\n\n# Subagents\nYou have access to `spawn_subagent` which creates an independent agent with its own context.\n\n**Default: do the work yourself.** Most tasks are faster and cheaper without a subagent.\nOnly consider a subagent when ALL of these apply:\n- The task is clearly self-contained and only needs a summary back\n- It would add significant irrelevant content to your context\n- You cannot accomplish it with 1-2 direct tool calls\n\nAvailable types:\n- \"explore\": Explore codebase (read tools, explorer model)\n- \"general\": Full tools, default model\n\n**fork_context**: Set to true when the subagent needs to understand prior conversation — e.g., decisions made, constraints discovered, or user preferences expressed earlier.\nLeave false (default) when the description alone is sufficient context.\n\nDo NOT use subagents for:\n- Simple file reads, searches, or single-tool operations\n- Tasks where you already have relevant context\n- Quick lookups that would take fewer turns done directly\n\nYou have access to workflows that provide specialized multi-step processes for specific tasks. Review the available workflows below. When a user's request matches a workflow's purpose, use the start_workflow tool. Run the workflow only if you are sure the workflow description will provide appropriate assistance. When suggesting workflows to users, provide the title and description, never the internal ID.\nAvailable workflows:\n* create_pr_workflow: Create Pull Request - Generates description from git diff using PR templates, allows review and editing, then creates the pull request on GitHub.",
+            "_meta": {
+              "mode": {
+                "id": "agent",
+                "name": "Agent",
+                "description": "Take your idea, or plan, and bring it to life",
+                "groups": [
+                  "read",
+                  "edit",
+                  "execute",
+                  "mcp",
+                  "skill",
+                  "todo",
+                  "artifact",
+                  "subtask",
+                  "subagent",
+                  "mode"
+                ],
+                "roleDefinition": "You are Bob, a highly skilled software engineer with extensive knowledge in many programming languages, frameworks, design patterns, and best practices.",
+                "customInstructions": "You can write, modify, and refactor code in any programming language or framework. Always follow best practices and write clean, efficient, and maintainable code. Make sure to test your code thoroughly before submitting it. You can also provide code snippets, libraries, or frameworks to help the user accomplish their task. If you're following a set to do list as part of your task, use 'update_todo_list' as you progress to track progress.",
+                "whenToUse": "Use this mode when you need to write, modify, or refactor code. Ideal for implementing features, fixing bugs, creating new files, or making code improvements across any programming language or framework.",
+                "scope": "builtin",
+                "sourceId": "bob",
+                "sourceName": "Bob"
+              },
+              "timestamp": 1784618938898
+            },
+            "id": "b22bec6066f2e30cacc6fa65338728b2"
+          },
+          "createdAt": 1784619086825
+        },
+        {
+          "id": "cda5325dbb9004d7f63f0ac74ad74209",
+          "role": "user",
+          "data": {
+            "role": "user",
+            "content": "<environment_details>\n<active_file>\nActive file: /Users/takakiyo/ibmbob/e2m/src/main/java/com/ibm/jp/automation/e2m/JavaVersion.java\n</active_file>\n<git_status_snapshot>\n## Git Status at start of this conversation. This is a point-in-time snapshot and does not reflect subsequent changes.\nBranch: master\n```\nNo uncommitted changes\n```\n</git_status_snapshot>\n</environment_details>\n\n\n<user_query>\nプロジェクトのREADME.mdを，英語版と日本語版の2つを作りたいと思います。現在のREADME.mdをREADME.ja.mdに変更し，内容を英文化したREADME.mdを新たに作成してください。それぞれの文頭では，[English] [日本語]のリンクで，相互にクリックで移動できるようにしてください。\n</user_query>",
+            "availableTools": [
+              "GetSymbolsOverview",
+              "FindSymbol",
+              "FindReferencingSymbols",
+              "use_skill",
+              "apply_diff",
+              "create_html_artifact",
+              "insert_content",
+              "list_files",
+              "read_file",
+              "read_xlsx",
+              "search_and_replace",
+              "update_todo_list",
+              "switch_mode",
+              "write_file",
+              "execute_command",
+              "glob",
+              "grep",
+              "spawn_subagent",
+              "ask_followup_question",
+              "start_subtask",
+              "start_workflow"
+            ],
+            "_meta": {
+              "mentionEditorState": {
+                "root": {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "detail": 0,
+                          "format": 0,
+                          "mode": "normal",
+                          "style": "",
+                          "text": "プロジェクトのREADME.mdを，英語版と日本語版の2つを作りたいと思います。現在のREADME.mdをREADME.ja.mdに変更し，内容を英文化したREADME.mdを新たに作成してください。それぞれの文頭では，[English] [日本語]のリンクで，相互にクリックで移動できるようにしてください。",
+                          "type": "text",
+                          "version": 1
+                        }
+                      ],
+                      "direction": null,
+                      "format": "",
+                      "indent": 0,
+                      "type": "paragraph",
+                      "version": 1,
+                      "textFormat": 0,
+                      "textStyle": ""
+                    }
+                  ],
+                  "direction": null,
+                  "format": "",
+                  "indent": 0,
+                  "type": "root",
+                  "version": 1
+                }
+              },
+              "mask": "プロジェクトのREADME.mdを，英語版と日本語版の2つを作りたいと思います。現在のREADME.mdをREADME.ja.mdに変更し，内容を英文化したREADME.mdを新たに作成してください。それぞれの文頭では，[English] [日本語]のリンクで，相互にクリックで移動できるようにしてください。",
+              "mode": {
+                "id": "agent",
+                "name": "Agent",
+                "description": "Take your idea, or plan, and bring it to life",
+                "groups": [
+                  "read",
+                  "edit",
+                  "execute",
+                  "mcp",
+                  "skill",
+                  "todo",
+                  "artifact",
+                  "subtask",
+                  "subagent",
+                  "mode"
+                ],
+                "roleDefinition": "You are Bob, a highly skilled software engineer with extensive knowledge in many programming languages, frameworks, design patterns, and best practices.",
+                "customInstructions": "You can write, modify, and refactor code in any programming language or framework. Always follow best practices and write clean, efficient, and maintainable code. Make sure to test your code thoroughly before submitting it. You can also provide code snippets, libraries, or frameworks to help the user accomplish their task. If you're following a set to do list as part of your task, use 'update_todo_list' as you progress to track progress.",
+                "whenToUse": "Use this mode when you need to write, modify, or refactor code. Ideal for implementing features, fixing bugs, creating new files, or making code improvements across any programming language or framework.",
+                "scope": "builtin",
+                "sourceId": "bob",
+                "sourceName": "Bob"
+              },
+              "timestamp": 1784618938898
+            },
+            "id": "cda5325dbb9004d7f63f0ac74ad74209"
+          },
+          "createdAt": 1784619086826
+        },
+        {
+          "id": "dadb5692a23b4ff00f987c7c1793f9cd",
+          "role": "assistant",
+          "data": {
+            "role": "assistant",
+            "content": "まずプロジェクトの構造と現在の README.md を確認します。",
+            "id": "dadb5692a23b4ff00f987c7c1793f9cd",
+            "_meta": {
+              "timestamp": 1784618941322,
+              "spend": {
+                "input": 10533,
+                "output": 114,
+                "cacheRead": 0,
+                "cacheWrite": 10530,
+                "cost": 0.026617,
+                "contextTokens": 10647,
+                "reasoningTokens": 0
+              }
+            },
+            "toolCalls": [
+              {
+                "id": "tooluse_cSSRvTwFM5h1jsuvW3U1lM",
+                "name": "list_files",
+                "arguments": {
+                  "path": "."
+                },
+                "isError": false
+              },
+              {
+                "id": "tooluse_rKQDivlDOdMFgW2LLjEe8f",
+                "name": "read_file",
+                "arguments": {
+                  "path": "README.md"
+                },
+                "isError": false
+              }
+            ]
+          },
+          "createdAt": 1784619086826
+        },
+        {
+          "id": "2e6d0344be54249a708a041dc7b804f5",
+          "role": "tool",
+          "data": {
+            "role": "tool",
+            "content": "Directory listing for .:\n\n.git/\n.gitignore\n.vscode/\nLICENSE\nREADME.md\nchatlog/\nconvert-to-utf8-plan.md\neclipse-to-maven-plan.md\npom.xml\nsrc/\ntarget/",
+            "toolUsage": {
+              "signature": {
+                "id": "tooluse_cSSRvTwFM5h1jsuvW3U1lM",
+                "name": "list_files",
+                "arguments": {
+                  "path": "."
+                },
+                "isError": false
+              },
+              "labels": {
+                "displayName": "{path}内のファイルを一覧表示",
+                "error": "{path}内のファイルの一覧表示に失敗しました",
+                "running": "{path}内のファイルを一覧表示中",
+                "success": "{path}内のファイルを一覧表示しました"
+              },
+              "permission": "read",
+              "isOutsideWorkspace": false
+            },
+            "_meta": {
+              "durationMs": 3,
+              "timestamp": 1784618941576
+            },
+            "id": "2e6d0344be54249a708a041dc7b804f5"
+          },
+          "createdAt": 1784619086827
+        },
+        {
+          "id": "9d332210941bf9a47f360ef610423e64",
+          "role": "tool",
+          "data": {
+            "role": "tool",
+            "content": "Contents of file README.md:\n\n1 | # e2m — Eclipse to Maven Converter\n2 | \n3 | EclipseのJavaプロジェクトをMavenの標準ディレクトリ構造に変換するコマンドラインツールです。\n4 | \n5 | ## 機能\n6 | \n7 | - **Eclipse Javaプロジェクト**（`.project` / `.classpath`）の変換に対応\n8 | - **Eclipse WTP Webプロジェクト**（`.settings/org.eclipse.wst.common.component`）の変換に対応\n9 | - `.classpath` に記載されたJARファイルのSHA-1ハッシュを計算し、**Maven Central**を自動検索して `<dependency>` を生成\n10 |   - 見つからないJARはsystemスコープの依存として `pom.xml` に出力\n11 | - Javaソースを `src/main/java`（テストは `src/test/java`）にコピー\n12 | - リソースファイルを `src/main/resources`（テストは `src/test/resources`）にコピー\n13 | - WebコンテンツをMaven標準の `src/main/webapp` にコピー\n14 | - `<packaging>war</packaging>` をWTPプロジェクトに自動付与\n15 | - **文字エンコード変換**（`--convertToUtf8`）：Shift_JIS などのレガシーエンコードで書かれたソースを UTF-8 に変換してコピー\n16 | \n17 | ## 動作要件\n18 | \n19 | - Java 17以上\n20 | - Maven 3.8以上（ビルド時のみ）\n21 | - GraalVM 21以上（ネイティブイメージビルド時のみ）\n22 | - インターネット接続（Maven Central検索時）\n23 | \n24 | ## ビルド\n25 | \n26 | ### Fat JAR\n27 | \n28 | ```bash\n29 | mvn package\n30 | ```\n31 | \n32 | `target/e2m.jar` が生成されます。\n33 | \n34 | ### ネイティブ実行ファイル（GraalVM Native Image）\n35 | \n36 | GraalVM JDKが `JAVA_HOME` に設定されている環境で実行してください。\n37 | \n38 | ```bash\n39 | mvn -Pnative package\n40 | ```\n41 | \n42 | `target/e2m`（macOS/Linux）または `target/e2m.exe`（Windows）が生成されます。\n43 | \n44 | ## 使い方\n45 | \n46 | ```\n47 | e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]\n48 |     [--convertToUtf8 [-e <encoding>]]\n49 |     <inputDir> <outputDir>\n50 | ```\n51 | \n52 | オプションを省略した場合は、プロジェクト解析後に対話的に入力を求めます。\n53 | `artifactId` のデフォルトは Eclipse のプロジェクト名、`artifactVersion` のデフォルトは `1.0-SNAPSHOT` です。\n54 | \n55 | 出力先は `<outputDir>/<artifactId>/` ディレクトリに生成されます。\n56 | \n57 | ### オプション\n58 | \n59 | | オプション | 説明 |\n60 | |---|---|\n61 | | `-g`, `--groupId` | 生成するpom.xmlのgroupId（省略時は対話入力） |\n62 | | `-a`, `--artifactId` | 生成するpom.xmlのartifactId（省略時はプロジェクト名がデフォルト） |\n63 | | `-v`, `--artifactVersion` | 生成するpom.xmlのversion（省略時は `1.0-SNAPSHOT`） |\n64 | | `--javaTargetVersion` | 生成するpom.xmlの `maven.compiler.target` を上書きする（省略時はEclipseプロジェクトの設定値を使用。ソースバージョンより低い値は指定不可） |\n65 | | `--convertToUtf8` | ソースファイルをUTF-8に変換してコピーする（詳細は後述） |\n66 | | `-e`, `--sourceEncoding` | 変換元エンコーディング（例: `Shift_JIS`）。`--convertToUtf8` 指定時のみ有効。省略時は対話入力 |\n67 | | `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |\n68 | | `-h`, `--help` | ヘルプを表示 |\n69 | | `-V`, `--version` | バージョンを表示 |\n70 | \n71 | ### 引数\n72 | \n73 | | 引数 | 説明 |\n74 | |---|---|\n75 | | `<inputDir>` | 変換元のEclipseプロジェクトディレクトリ |\n76 | | `<outputDir>` | 変換先のMavenプロジェクトを生成するベースディレクトリ |\n77 | \n78 | ### 実行例\n79 | \n80 | オプションをすべて指定する場合（Fat JAR）:\n81 | \n82 | ```bash\n83 | java -jar target/e2m-1.0.jar \\\n84 |   -g com.example \\\n85 |   -a myapp \\\n86 |   -v 1.0 \\\n87 |   /path/to/eclipse-project \\\n88 |   /path/to/output\n89 | # → /path/to/output/myapp/ に生成される\n90 | ```\n91 | \n92 | オプションをすべて指定する場合（ネイティブ実行ファイル）:\n93 | \n94 | ```bash\n95 | ./e2m \\\n96 |   --groupId com.example \\\n97 |   --artifactId myapp \\\n98 |   --artifactVersion 1.0 \\\n99 |   /path/to/eclipse-project \\\n100 |   /path/to/output\n101 | ```\n102 | \n103 | オプションを省略して対話入力する場合:\n104 | \n105 | ```bash\n106 | ./e2m /path/to/eclipse-project /path/to/output\n107 | \n108 | groupId: com.example\n109 | artifactId [MyEclipseProject]: myapp\n110 | artifactVersion [1.0-SNAPSHOT]:\n111 | # → /path/to/output/myapp/ に生成される\n112 | ```\n113 | \n114 | ## 文字エンコード変換（--convertToUtf8）\n115 | \n116 | Eclipseプロジェクトがレガシーエンコード（Shift_JIS など）で書かれている場合、`--convertToUtf8` オプションを指定することで、コピーと同時に UTF-8 へ変換できます。\n117 | \n118 | ### 基本的な使い方\n119 | \n120 | ```bash\n121 | ./e2m --convertToUtf8 -e Shift_JIS \\\n122 |   /path/to/eclipse-project \\\n123 |   /path/to/output\n124 | ```\n125 | \n126 | `-e` / `--sourceEncoding` を省略した場合は、プロジェクト解析後に対話入力を求めます。\n127 | \n128 | ```bash\n129 | ./e2m --convertToUtf8 /path/to/eclipse-project /path/to/output\n130 | \n131 | groupId: com.example\n132 | artifactId [MyApp]:\n133 | artifactVersion [1.0-SNAPSHOT]:\n134 | sourceEncoding: Shift_JIS\n135 | ```\n136 | \n137 | ### ファイル種別ごとの変換仕様\n138 | \n139 | #### `.java` ファイル\n140 | \n141 | `--sourceEncoding` で指定されたエンコードで読み込み、UTF-8 で書き出します。\n142 | \n143 | #### `.properties` ファイル\n144 | \n145 | `--sourceEncoding` で読み込み、`\\uXXXX` 形式の Unicode エスケープシーケンスを Unicode 文字に展開したうえで UTF-8 で書き出します。\n146 | \n147 | 出力先は **Javaターゲットバージョン** によって変わります。\n148 | \n149 | | javaTargetVersion | 出力先 | 理由 |\n150 | |---|---|---|\n151 | | 9 以上 | `src/main/resources/` | Java 9 以降は `.properties` を UTF-8 で直接読み込めるため |\n152 | | 8 以下 | `src/main/resources-utf8/` | Java 8 以下は UTF-8 の `.properties` を直接読み込めないため（後述） |\n153 | \n154 | **Java 8 以下の場合：** `src/main/resources-utf8/` に配置した UTF-8 の `.properties` を、ビルド時に `native2ascii-maven-plugin` が `\\uXXXX` 形式に変換して `src/main/resources/` 相当の出力ディレクトリに配置します。このため `pom.xml` に以下のプラグイン設定が自動追加されます。\n155 | \n156 | ```xml\n157 | <plugin>\n158 |   <groupId>org.codehaus.mojo</groupId>\n159 |   <artifactId>native2ascii-maven-plugin</artifactId>\n160 |   <version>2.1.1</version>\n161 |   <executions>\n162 |     <execution>\n163 |       <id>native2ascii-utf8-resources</id>\n164 |       <phase>process-resources</phase>\n165 |       <goals><goal>resources</goal></goals>\n166 |       <configuration>\n167 |         <encoding>UTF-8</encoding>\n168 |         <srcDir>${project.basedir}/src/main/resources-utf8</srcDir>\n169 |         <outputDir>${project.build.outputDirectory}</outputDir>\n170 |       </configuration>\n171 |     </execution>\n172 |   </executions>\n173 | </plugin>\n174 | ```\n175 | \n176 | #### `.jsp` ファイル\n177 | \n178 | ファイル先頭の最大 4KB を ISO-8859-1 で読み込み、`<%@ page pageEncoding=\"...\" %>` ディレクティブを検出します。\n179 | \n180 | | 状況 | 動作 |\n181 | |---|---|\n182 | | `pageEncoding` が検出でき、かつ UTF-8 以外 | 検出されたエンコードでファイルを読み込み、`pageEncoding` 属性値を `UTF-8` に書き換えて出力 |\n183 | | `pageEncoding` が検出できない | `--sourceEncoding` の値でファイルを読み込み、UTF-8 で出力 |\n184 | | `pageEncoding` が既に `UTF-8` | 変換せずバイナリコピー |\n185 | \n186 | #### その他のファイル\n187 | \n188 | 以下のファイルはアプリケーションの動作に直接影響するため、変換せずにバイナリコピーします。\n189 | \n190 | - `.html` / `.htm` — `<meta charset>` の書き換えはアプリ動作に影響するため\n191 | - `.css` / `.js` — アプリ動作に影響するため\n192 | - `.xml` / `.tag` / `.tld` — 従来より UTF-8 の使用が慣習であり変換不要のため\n193 | - `.jar` / 画像 / バイナリファイル\n194 | \n195 | ### 変換後のディレクトリ構造（Java 8 以下の場合）\n196 | \n197 | ```\n198 | output/<artifactId>\n199 | ├── pom.xml              ← native2ascii-maven-plugin が追加済み\n200 | └── src/\n201 |     └── main/\n202 |         ├── java/\n203 |         ├── resources-utf8/  ← UTF-8 に変換した .properties（ビルド時に変換される）\n204 |         └── webapp/\n205 | ```\n206 | \n207 | ## 変換がうまくいかない場合\n208 | \n209 | 変換結果が期待どおりにならない場合は、`--debug` オプションを付けて再実行してください。\n210 | 変換完了後に `<outputDir>/e2m_debug_<日付時刻>.zip` が生成されます。\n211 | \n212 | ```bash\n213 | ./e2m --debug \\\n214 |   -g com.example \\\n215 |   -a myapp \\\n216 |   /path/to/eclipse-project \\\n217 |   /path/to/output\n218 | # → /path/to/output/e2m_debug_20250101_120000.zip が生成される\n219 | ```\n220 | \n221 | ZIPファイルには以下のデバッグ情報が含まれます。\n222 | \n223 | | ファイル | 内容 |\n224 | |---|---|\n225 | | `eclipse/.project` | Eclipseプロジェクト定義ファイル |\n226 | | `eclipse/.classpath` | Eclipseクラスパス定義ファイル |\n227 | | `eclipse/.factorypath` | Eclipseファクトリパス定義ファイル |\n228 | | `eclipse/.settings/…` | `.settings/` ディレクトリ以下の全ファイル |\n229 | | `eclipse_files.json` | Eclipseプロジェクト内の全ディレクトリ・ファイルの一覧（名前・サイズ・日付。JARファイルにはSHA1ハッシュも含む） |\n230 | | `pom.xml` | 生成したMavenプロジェクトの `pom.xml` |\n231 | | `maven_files.json` | 生成したMavenプロジェクトの全ディレクトリ・ファイルの一覧（名前・サイズ・日付） |\n232 | \n233 | 問題が解決しない場合は、生成された ZIP ファイルを添付して [Issues](../../issues) にご報告ください。\n234 | \n235 | ## 変換結果のディレクトリ構造\n236 | \n237 | ### Javaプロジェクト\n238 | \n239 | ```\n240 | output/<artifactId>\n241 | ├── pom.xml\n242 | └── src/\n243 |     ├── main/\n244 |     │   ├── java/        ← Eclipseのsrcフォルダ以下の.javaファイル\n245 |     │   └── resources/   ← Eclipseのsrcフォルダ以下の非.javaファイル\n246 |     └── test/\n247 |         ├── java/        ← 名前に\"test\"を含むsrcフォルダ以下の.javaファイル\n248 |         └── resources/   ← 名前に\"test\"を含むsrcフォルダ以下の非.javaファイル\n249 | ```\n250 | \n251 | ### WTP Webプロジェクト\n252 | \n253 | ```\n254 | output/<artifactId>\n255 | ├── pom.xml              ← <packaging>war</packaging> を含む\n256 | └── src/\n257 |     └── main/\n258 |         ├── java/        ← Javaソース\n259 |         ├── resources/   ← リソースファイル\n260 |         └── webapp/      ← Webコンテンツ (JSP, HTML, WEB-INF/web.xml など)\n261 | ```\n262 | \n263 | ## Webコンテンツルートの解決\n264 | \n265 | Webコンテンツのルートディレクトリは `WebContent` 等に固定せず、`.settings/org.eclipse.wst.common.component` の `tag=\"defaultRootSource\"` エントリから動的に解決します。\n266 | \n267 | ```xml\n268 | <!-- .settings/org.eclipse.wst.common.component の例 -->\n269 | <wb-module deploy-name=\"MyApp\">\n270 |   <wb-resource deploy-path=\"/\" source-path=\"/WebContent\" tag=\"defaultRootSource\"/>\n271 | </wb-module>\n272 | ```\n273 | \n274 | ## テスト\n275 | \n276 | ```bash\n277 | mvn test\n278 | ```\n279 | \n280 | ## ライセンス\n281 | \n282 | Apache License, Version 2.0 — [LICENSE](LICENSE) を参照してください。\n283 | \n284 | ## 作者\n285 | \n286 | Takakiyo Tanaka (IBM Japan)\n287 | ",
+            "toolUsage": {
+              "signature": {
+                "id": "tooluse_rKQDivlDOdMFgW2LLjEe8f",
+                "name": "read_file",
+                "arguments": {
+                  "path": "README.md"
+                },
+                "isError": false
+              },
+              "labels": {
+                "displayName": "ファイル{path}を読み取り",
+                "error": "ファイル{path}の読み取りに失敗しました",
+                "running": "ファイル{path}を読み取り中",
+                "success": "ファイル{path}を読み取りました"
+              },
+              "permission": "read",
+              "isOutsideWorkspace": false
+            },
+            "_meta": {
+              "fileMtimes": {
+                "file:///Users/takakiyo/ibmbob/e2m/README.md": 1784379530157
+              },
+              "durationMs": 6,
+              "timestamp": 1784618941579
+            },
+            "id": "9d332210941bf9a47f360ef610423e64"
+          },
+          "createdAt": 1784619086827
+        },
+        {
+          "id": "6e9f1949807fe008f3cd35aa73df72aa",
+          "role": "assistant",
+          "data": {
+            "role": "assistant",
+            "content": "内容を把握しました。現在の [`README.md`](README.md) を [`README.ja.md`](README.ja.md) としてコピーし、日本語版の先頭に言語切替リンクを追加した上で、英語版の [`README.md`](README.md) を新規作成します。",
+            "id": "6e9f1949807fe008f3cd35aa73df72aa",
+            "_meta": {
+              "timestamp": 1784618944143,
+              "spend": {
+                "input": 15905,
+                "output": 3960,
+                "cacheRead": 15644,
+                "cacheWrite": 260,
+                "cost": 0.049662,
+                "contextTokens": 19865,
+                "reasoningTokens": 0
+              }
+            },
+            "toolCalls": [
+              {
+                "id": "tooluse_giMiOAwzoENLQKMIW6f4Q3",
+                "name": "update_todo_list",
+                "arguments": {
+                  "todos": "\n[-] README.ja.md を作成（現在の README.md に言語切替リンクを追加）\n[ ] 英語版 README.md を新規作成（言語切替リンク付き）\n"
+                },
+                "isError": false
+              },
+              {
+                "id": "tooluse_NAqoEZ889MUhnvLbDkYVHC",
+                "name": "write_file",
+                "arguments": {
+                  "path": "README.ja.md",
+                  "line_count": 292,
+                  "content": "# e2m — Eclipse to Maven Converter\n\n[English](README.md) | **[日本語](README.ja.md)**\n\nEclipseのJavaプロジェクトをMavenの標準ディレクトリ構造に変換するコマンドラインツールです。\n\n## 機能\n\n- **Eclipse Javaプロジェクト**（`.project` / `.classpath`）の変換に対応\n- **Eclipse WTP Webプロジェクト**（`.settings/org.eclipse.wst.common.component`）の変換に対応\n- `.classpath` に記載されたJARファイルのSHA-1ハッシュを計算し、**Maven Central**を自動検索して `<dependency>` を生成\n  - 見つからないJARはsystemスコープの依存として `pom.xml` に出力\n- Javaソースを `src/main/java`（テストは `src/test/java`）にコピー\n- リソースファイルを `src/main/resources`（テストは `src/test/resources`）にコピー\n- WebコンテンツをMaven標準の `src/main/webapp` にコピー\n- `<packaging>war</packaging>` をWTPプロジェクトに自動付与\n- **文字エンコード変換**（`--convertToUtf8`）：Shift_JIS などのレガシーエンコードで書かれたソースを UTF-8 に変換してコピー\n\n## 動作要件\n\n- Java 17以上\n- Maven 3.8以上（ビルド時のみ）\n- GraalVM 21以上（ネイティブイメージビルド時のみ）\n- インターネット接続（Maven Central検索時）\n\n## ビルド\n\n### Fat JAR\n\n```bash\nmvn package\n```\n\n`target/e2m.jar` が生成されます。\n\n### ネイティブ実行ファイル（GraalVM Native Image）\n\nGraalVM JDKが `JAVA_HOME` に設定されている環境で実行してください。\n\n```bash\nmvn -Pnative package\n```\n\n`target/e2m`（macOS/Linux）または `target/e2m.exe`（Windows）が生成されます。\n\n## 使い方\n\n```\ne2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]\n    [--convertToUtf8 [-e <encoding>]]\n    <inputDir> <outputDir>\n```\n\nオプションを省略した場合は、プロジェクト解析後に対話的に入力を求めます。\n`artifactId` のデフォルトは Eclipse のプロジェクト名、`artifactVersion` のデフォルトは `1.0-SNAPSHOT` です。\n\n出力先は `<outputDir>/<artifactId>/` ディレクトリに生成されます。\n\n### オプション\n\n| オプション | 説明 |\n|---|---|\n| `-g`, `--groupId` | 生成するpom.xmlのgroupId（省略時は対話入力） |\n| `-a`, `--artifactId` | 生成するpom.xmlのartifactId（省略時はプロジェクト名がデフォルト） |\n| `-v`, `--artifactVersion` | 生成するpom.xmlのversion（省略時は `1.0-SNAPSHOT`） |\n| `--javaTargetVersion` | 生成するpom.xmlの `maven.compiler.target` を上書きする（省略時はEclipseプロジェクトの設定値を使用。ソースバージョンより低い値は指定不可） |\n| `--convertToUtf8` | ソースファイルをUTF-8に変換してコピーする（詳細は後述） |\n| `-e`, `--sourceEncoding` | 変換元エンコーディング（例: `Shift_JIS`）。`--convertToUtf8` 指定時のみ有効。省略時は対話入力 |\n| `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |\n| `-h`, `--help` | ヘルプを表示 |\n| `-V`, `--version` | バージョンを表示 |\n\n### 引数\n\n| 引数 | 説明 |\n|---|---|\n| `<inputDir>` | 変換元のEclipseプロジェクトディレクトリ |\n| `<outputDir>` | 変換先のMavenプロジェクトを生成するベースディレクトリ |\n\n### 実行例\n\nオプションをすべて指定する場合（Fat JAR）:\n\n```bash\njava -jar target/e2m-1.0.jar \\\n  -g com.example \\\n  -a myapp \\\n  -v 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → /path/to/output/myapp/ に生成される\n```\n\nオプションをすべて指定する場合（ネイティブ実行ファイル）:\n\n```bash\n./e2m \\\n  --groupId com.example \\\n  --artifactId myapp \\\n  --artifactVersion 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\nオプションを省略して対話入力する場合:\n\n```bash\n./e2m /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyEclipseProject]: myapp\nartifactVersion [1.0-SNAPSHOT]:\n# → /path/to/output/myapp/ に生成される\n```\n\n## 文字エンコード変換（--convertToUtf8）\n\nEclipseプロジェクトがレガシーエンコード（Shift_JIS など）で書かれている場合、`--convertToUtf8` オプションを指定することで、コピーと同時に UTF-8 へ変換できます。\n\n### 基本的な使い方\n\n```bash\n./e2m --convertToUtf8 -e Shift_JIS \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\n`-e` / `--sourceEncoding` を省略した場合は、プロジェクト解析後に対話入力を求めます。\n\n```bash\n./e2m --convertToUtf8 /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyApp]:\nartifactVersion [1.0-SNAPSHOT]:\nsourceEncoding: Shift_JIS\n```\n\n### ファイル種別ごとの変換仕様\n\n#### `.java` ファイル\n\n`--sourceEncoding` で指定されたエンコードで読み込み、UTF-8 で書き出します。\n\n#### `.properties` ファイル\n\n`--sourceEncoding` で読み込み、`\\uXXXX` 形式の Unicode エスケープシーケンスを Unicode 文字に展開したうえで UTF-8 で書き出します。\n\n出力先は **Javaターゲットバージョン** によって変わります。\n\n| javaTargetVersion | 出力先 | 理由 |\n|---|---|---|\n| 9 以上 | `src/main/resources/` | Java 9 以降は `.properties` を UTF-8 で直接読み込めるため |\n| 8 以下 | `src/main/resources-utf8/` | Java 8 以下は UTF-8 の `.properties` を直接読み込めないため（後述） |\n\n**Java 8 以下の場合：** `src/main/resources-utf8/` に配置した UTF-8 の `.properties` を、ビルド時に `native2ascii-maven-plugin` が `\\uXXXX` 形式に変換して `src/main/resources/` 相当の出力ディレクトリに配置します。このため `pom.xml` に以下のプラグイン設定が自動追加されます。\n\n```xml\n<plugin>\n  <groupId>org.codehaus.mojo</groupId>\n  <artifactId>native2ascii-maven-plugin</artifactId>\n  <version>2.1.1</version>\n  <executions>\n    <execution>\n      <id>native2ascii-utf8-resources</id>\n      <phase>process-resources</phase>\n      <goals><goal>resources</goal></goals>\n      <configuration>\n        <encoding>UTF-8</encoding>\n        <srcDir>${project.basedir}/src/main/resources-utf8</srcDir>\n        <outputDir>${project.build.outputDirectory}</outputDir>\n      </configuration>\n    </execution>\n  </executions>\n</plugin>\n```\n\n#### `.jsp` ファイル\n\nファイル先頭の最大 4KB を ISO-8859-1 で読み込み、`<%@ page pageEncoding=\"...\" %>` ディレクティブを検出します。\n\n| 状況 | 動作 |\n|---|---|\n| `pageEncoding` が検出でき、かつ UTF-8 以外 | 検出されたエンコードでファイルを読み込み、`pageEncoding` 属性値を `UTF-8` に書き換えて出力 |\n| `pageEncoding` が検出できない | `--sourceEncoding` の値でファイルを読み込み、UTF-8 で出力 |\n| `pageEncoding` が既に `UTF-8` | 変換せずバイナリコピー |\n\n#### その他のファイル\n\n以下のファイルはアプリケーションの動作に直接影響するため、変換せずにバイナリコピーします。\n\n- `.html` / `.htm` — `<meta charset>` の書き換えはアプリ動作に影響するため\n- `.css` / `.js` — アプリ動作に影響するため\n- `.xml` / `.tag` / `.tld` — 従来より UTF-8 の使用が慣習であり変換不要のため\n- `.jar` / 画像 / バイナリファイル\n\n### 変換後のディレクトリ構造（Java 8 以下の場合）\n\n```\noutput/<artifactId>\n├── pom.xml              ← native2ascii-maven-plugin が追加済み\n└── src/\n    └── main/\n        ├── java/\n        ├── resources-utf8/  ← UTF-8 に変換した .properties（ビルド時に変換される）\n        └── webapp/\n```\n\n## 変換がうまくいかない場合\n\n変換結果が期待どおりにならない場合は、`--debug` オプションを付けて再実行してください。\n変換完了後に `<outputDir>/e2m_debug_<日付時刻>.zip` が生成されます。\n\n```bash\n./e2m --debug \\\n  -g com.example \\\n  -a myapp \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → /path/to/output/e2m_debug_20250101_120000.zip が生成される\n```\n\nZIPファイルには以下のデバッグ情報が含まれます。\n\n| ファイル | 内容 |\n|---|---|\n| `eclipse/.project` | Eclipseプロジェクト定義ファイル |\n| `eclipse/.classpath` | Eclipseクラスパス定義ファイル |\n| `eclipse/.factorypath` | Eclipseファクトリパス定義ファイル |\n| `eclipse/.settings/…` | `.settings/` ディレクトリ以下の全ファイル |\n| `eclipse_files.json` | Eclipseプロジェクト内の全ディレクトリ・ファイルの一覧（名前・サイズ・日付。JARファイルにはSHA1ハッシュも含む） |\n| `pom.xml` | 生成したMavenプロジェクトの `pom.xml` |\n| `maven_files.json` | 生成したMavenプロジェクトの全ディレクトリ・ファイルの一覧（名前・サイズ・日付） |\n\n問題が解決しない場合は、生成された ZIP ファイルを添付して [Issues](../../issues) にご報告ください。\n\n## 変換結果のディレクトリ構造\n\n### Javaプロジェクト\n\n```\noutput/<artifactId>\n├── pom.xml\n└── src/\n    ├── main/\n    │   ├── java/        ← Eclipseのsrcフォルダ以下の.javaファイル\n    │   └── resources/   ← Eclipseのsrcフォルダ以下の非.javaファイル\n    └── test/\n        ├── java/        ← 名前に\"test\"を含むsrcフォルダ以下の.javaファイル\n        └── resources/   ← 名前に\"test\"を含むsrcフォルダ以下の非.javaファイル\n```\n\n### WTP Webプロジェクト\n\n```\noutput/<artifactId>\n├── pom.xml              ← <packaging>war</packaging> を含む\n└── src/\n    └── main/\n        ├── java/        ← Javaソース\n        ├── resources/   ← リソースファイル\n        └── webapp/      ← Webコンテンツ (JSP, HTML, WEB-INF/web.xml など)\n```\n\n## Webコンテンツルートの解決\n\nWebコンテンツのルートディレクトリは `WebContent` 等に固定せず、`.settings/org.eclipse.wst.common.component` の `tag=\"defaultRootSource\"` エントリから動的に解決します。\n\n```xml\n<!-- .settings/org.eclipse.wst.common.component の例 -->\n<wb-module deploy-name=\"MyApp\">\n  <wb-resource deploy-path=\"/\" source-path=\"/WebContent\" tag=\"defaultRootSource\"/>\n</wb-module>\n```\n\n## テスト\n\n```bash\nmvn test\n```\n\n## ライセンス\n\nApache License, Version 2.0 — [LICENSE](LICENSE) を参照してください。\n\n## 作者\n\nTakakiyo Tanaka (IBM Japan)\n"
+                },
+                "isError": false
+              }
+            ]
+          },
+          "createdAt": 1784619086827
+        },
+        {
+          "id": "296e53be6919a69e2ea197f3c535ce43",
+          "role": "tool",
+          "data": {
+            "role": "tool",
+            "content": "To do list updated: 2 items total.\n\nNext to do item inprogress: README.ja.md を作成（現在の README.md に言語切替リンクを追加）",
+            "toolUsage": {
+              "signature": {
+                "id": "tooluse_giMiOAwzoENLQKMIW6f4Q3",
+                "name": "update_todo_list",
+                "arguments": {
+                  "todos": "\n[-] README.ja.md を作成（現在の README.md に言語切替リンクを追加）\n[ ] 英語版 README.md を新規作成（言語切替リンク付き）\n"
+                },
+                "isError": false
+              },
+              "labels": {
+                "displayName": "Todoリストを更新",
+                "error": "Todoリストの更新に失敗しました",
+                "running": "Todoリストを更新中",
+                "success": "Todoリストを更新しました"
+              },
+              "permission": "todo",
+              "isOutsideWorkspace": false
+            },
+            "_meta": {
+              "todos": [
+                {
+                  "description": "README.ja.md を作成（現在の README.md に言語切替リンクを追加）",
+                  "state": "inprogress"
+                },
+                {
+                  "description": "英語版 README.md を新規作成（言語切替リンク付き）",
+                  "state": "pending"
+                }
+              ],
+              "durationMs": 19111,
+              "timestamp": 1784618965319
+            },
+            "id": "296e53be6919a69e2ea197f3c535ce43"
+          },
+          "createdAt": 1784619086828
+        },
+        {
+          "id": "cd872591468b80916f388b0fca4dbc41",
+          "role": "tool",
+          "data": {
+            "role": "tool",
+            "content": "Created file: README.ja.md\n\n<result>\n# e2m — Eclipse to Maven Converter\n\n[English](README.md) | **[日本語](README.ja.md)**\n\nEclipseのJavaプロジェクトをMavenの標準ディレクトリ構造に変換するコマンドラインツールです。\n\n...284 lines truncated. You do not need to re-read the file. The complete file was written successfully. Use read_file if you need to see the full contents.\n</result>",
+            "toolUsage": {
+              "signature": {
+                "id": "tooluse_NAqoEZ889MUhnvLbDkYVHC",
+                "name": "write_file",
+                "arguments": {
+                  "path": "README.ja.md",
+                  "line_count": 292,
+                  "content": "# e2m — Eclipse to Maven Converter\n\n[English](README.md) | **[日本語](README.ja.md)**\n\nEclipseのJavaプロジェクトをMavenの標準ディレクトリ構造に変換するコマンドラインツールです。\n\n## 機能\n\n- **Eclipse Javaプロジェクト**（`.project` / `.classpath`）の変換に対応\n- **Eclipse WTP Webプロジェクト**（`.settings/org.eclipse.wst.common.component`）の変換に対応\n- `.classpath` に記載されたJARファイルのSHA-1ハッシュを計算し、**Maven Central**を自動検索して `<dependency>` を生成\n  - 見つからないJARはsystemスコープの依存として `pom.xml` に出力\n- Javaソースを `src/main/java`（テストは `src/test/java`）にコピー\n- リソースファイルを `src/main/resources`（テストは `src/test/resources`）にコピー\n- WebコンテンツをMaven標準の `src/main/webapp` にコピー\n- `<packaging>war</packaging>` をWTPプロジェクトに自動付与\n- **文字エンコード変換**（`--convertToUtf8`）：Shift_JIS などのレガシーエンコードで書かれたソースを UTF-8 に変換してコピー\n\n## 動作要件\n\n- Java 17以上\n- Maven 3.8以上（ビルド時のみ）\n- GraalVM 21以上（ネイティブイメージビルド時のみ）\n- インターネット接続（Maven Central検索時）\n\n## ビルド\n\n### Fat JAR\n\n```bash\nmvn package\n```\n\n`target/e2m.jar` が生成されます。\n\n### ネイティブ実行ファイル（GraalVM Native Image）\n\nGraalVM JDKが `JAVA_HOME` に設定されている環境で実行してください。\n\n```bash\nmvn -Pnative package\n```\n\n`target/e2m`（macOS/Linux）または `target/e2m.exe`（Windows）が生成されます。\n\n## 使い方\n\n```\ne2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]\n    [--convertToUtf8 [-e <encoding>]]\n    <inputDir> <outputDir>\n```\n\nオプションを省略した場合は、プロジェクト解析後に対話的に入力を求めます。\n`artifactId` のデフォルトは Eclipse のプロジェクト名、`artifactVersion` のデフォルトは `1.0-SNAPSHOT` です。\n\n出力先は `<outputDir>/<artifactId>/` ディレクトリに生成されます。\n\n### オプション\n\n| オプション | 説明 |\n|---|---|\n| `-g`, `--groupId` | 生成するpom.xmlのgroupId（省略時は対話入力） |\n| `-a`, `--artifactId` | 生成するpom.xmlのartifactId（省略時はプロジェクト名がデフォルト） |\n| `-v`, `--artifactVersion` | 生成するpom.xmlのversion（省略時は `1.0-SNAPSHOT`） |\n| `--javaTargetVersion` | 生成するpom.xmlの `maven.compiler.target` を上書きする（省略時はEclipseプロジェクトの設定値を使用。ソースバージョンより低い値は指定不可） |\n| `--convertToUtf8` | ソースファイルをUTF-8に変換してコピーする（詳細は後述） |\n| `-e`, `--sourceEncoding` | 変換元エンコーディング（例: `Shift_JIS`）。`--convertToUtf8` 指定時のみ有効。省略時は対話入力 |\n| `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |\n| `-h`, `--help` | ヘルプを表示 |\n| `-V`, `--version` | バージョンを表示 |\n\n### 引数\n\n| 引数 | 説明 |\n|---|---|\n| `<inputDir>` | 変換元のEclipseプロジェクトディレクトリ |\n| `<outputDir>` | 変換先のMavenプロジェクトを生成するベースディレクトリ |\n\n### 実行例\n\nオプションをすべて指定する場合（Fat JAR）:\n\n```bash\njava -jar target/e2m-1.0.jar \\\n  -g com.example \\\n  -a myapp \\\n  -v 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → /path/to/output/myapp/ に生成される\n```\n\nオプションをすべて指定する場合（ネイティブ実行ファイル）:\n\n```bash\n./e2m \\\n  --groupId com.example \\\n  --artifactId myapp \\\n  --artifactVersion 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\nオプションを省略して対話入力する場合:\n\n```bash\n./e2m /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyEclipseProject]: myapp\nartifactVersion [1.0-SNAPSHOT]:\n# → /path/to/output/myapp/ に生成される\n```\n\n## 文字エンコード変換（--convertToUtf8）\n\nEclipseプロジェクトがレガシーエンコード（Shift_JIS など）で書かれている場合、`--convertToUtf8` オプションを指定することで、コピーと同時に UTF-8 へ変換できます。\n\n### 基本的な使い方\n\n```bash\n./e2m --convertToUtf8 -e Shift_JIS \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\n`-e` / `--sourceEncoding` を省略した場合は、プロジェクト解析後に対話入力を求めます。\n\n```bash\n./e2m --convertToUtf8 /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyApp]:\nartifactVersion [1.0-SNAPSHOT]:\nsourceEncoding: Shift_JIS\n```\n\n### ファイル種別ごとの変換仕様\n\n#### `.java` ファイル\n\n`--sourceEncoding` で指定されたエンコードで読み込み、UTF-8 で書き出します。\n\n#### `.properties` ファイル\n\n`--sourceEncoding` で読み込み、`\\uXXXX` 形式の Unicode エスケープシーケンスを Unicode 文字に展開したうえで UTF-8 で書き出します。\n\n出力先は **Javaターゲットバージョン** によって変わります。\n\n| javaTargetVersion | 出力先 | 理由 |\n|---|---|---|\n| 9 以上 | `src/main/resources/` | Java 9 以降は `.properties` を UTF-8 で直接読み込めるため |\n| 8 以下 | `src/main/resources-utf8/` | Java 8 以下は UTF-8 の `.properties` を直接読み込めないため（後述） |\n\n**Java 8 以下の場合：** `src/main/resources-utf8/` に配置した UTF-8 の `.properties` を、ビルド時に `native2ascii-maven-plugin` が `\\uXXXX` 形式に変換して `src/main/resources/` 相当の出力ディレクトリに配置します。このため `pom.xml` に以下のプラグイン設定が自動追加されます。\n\n```xml\n<plugin>\n  <groupId>org.codehaus.mojo</groupId>\n  <artifactId>native2ascii-maven-plugin</artifactId>\n  <version>2.1.1</version>\n  <executions>\n    <execution>\n      <id>native2ascii-utf8-resources</id>\n      <phase>process-resources</phase>\n      <goals><goal>resources</goal></goals>\n      <configuration>\n        <encoding>UTF-8</encoding>\n        <srcDir>${project.basedir}/src/main/resources-utf8</srcDir>\n        <outputDir>${project.build.outputDirectory}</outputDir>\n      </configuration>\n    </execution>\n  </executions>\n</plugin>\n```\n\n#### `.jsp` ファイル\n\nファイル先頭の最大 4KB を ISO-8859-1 で読み込み、`<%@ page pageEncoding=\"...\" %>` ディレクティブを検出します。\n\n| 状況 | 動作 |\n|---|---|\n| `pageEncoding` が検出でき、かつ UTF-8 以外 | 検出されたエンコードでファイルを読み込み、`pageEncoding` 属性値を `UTF-8` に書き換えて出力 |\n| `pageEncoding` が検出できない | `--sourceEncoding` の値でファイルを読み込み、UTF-8 で出力 |\n| `pageEncoding` が既に `UTF-8` | 変換せずバイナリコピー |\n\n#### その他のファイル\n\n以下のファイルはアプリケーションの動作に直接影響するため、変換せずにバイナリコピーします。\n\n- `.html` / `.htm` — `<meta charset>` の書き換えはアプリ動作に影響するため\n- `.css` / `.js` — アプリ動作に影響するため\n- `.xml` / `.tag` / `.tld` — 従来より UTF-8 の使用が慣習であり変換不要のため\n- `.jar` / 画像 / バイナリファイル\n\n### 変換後のディレクトリ構造（Java 8 以下の場合）\n\n```\noutput/<artifactId>\n├── pom.xml              ← native2ascii-maven-plugin が追加済み\n└── src/\n    └── main/\n        ├── java/\n        ├── resources-utf8/  ← UTF-8 に変換した .properties（ビルド時に変換される）\n        └── webapp/\n```\n\n## 変換がうまくいかない場合\n\n変換結果が期待どおりにならない場合は、`--debug` オプションを付けて再実行してください。\n変換完了後に `<outputDir>/e2m_debug_<日付時刻>.zip` が生成されます。\n\n```bash\n./e2m --debug \\\n  -g com.example \\\n  -a myapp \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → /path/to/output/e2m_debug_20250101_120000.zip が生成される\n```\n\nZIPファイルには以下のデバッグ情報が含まれます。\n\n| ファイル | 内容 |\n|---|---|\n| `eclipse/.project` | Eclipseプロジェクト定義ファイル |\n| `eclipse/.classpath` | Eclipseクラスパス定義ファイル |\n| `eclipse/.factorypath` | Eclipseファクトリパス定義ファイル |\n| `eclipse/.settings/…` | `.settings/` ディレクトリ以下の全ファイル |\n| `eclipse_files.json` | Eclipseプロジェクト内の全ディレクトリ・ファイルの一覧（名前・サイズ・日付。JARファイルにはSHA1ハッシュも含む） |\n| `pom.xml` | 生成したMavenプロジェクトの `pom.xml` |\n| `maven_files.json` | 生成したMavenプロジェクトの全ディレクトリ・ファイルの一覧（名前・サイズ・日付） |\n\n問題が解決しない場合は、生成された ZIP ファイルを添付して [Issues](../../issues) にご報告ください。\n\n## 変換結果のディレクトリ構造\n\n### Javaプロジェクト\n\n```\noutput/<artifactId>\n├── pom.xml\n└── src/\n    ├── main/\n    │   ├── java/        ← Eclipseのsrcフォルダ以下の.javaファイル\n    │   └── resources/   ← Eclipseのsrcフォルダ以下の非.javaファイル\n    └── test/\n        ├── java/        ← 名前に\"test\"を含むsrcフォルダ以下の.javaファイル\n        └── resources/   ← 名前に\"test\"を含むsrcフォルダ以下の非.javaファイル\n```\n\n### WTP Webプロジェクト\n\n```\noutput/<artifactId>\n├── pom.xml              ← <packaging>war</packaging> を含む\n└── src/\n    └── main/\n        ├── java/        ← Javaソース\n        ├── resources/   ← リソースファイル\n        └── webapp/      ← Webコンテンツ (JSP, HTML, WEB-INF/web.xml など)\n```\n\n## Webコンテンツルートの解決\n\nWebコンテンツのルートディレクトリは `WebContent` 等に固定せず、`.settings/org.eclipse.wst.common.component` の `tag=\"defaultRootSource\"` エントリから動的に解決します。\n\n```xml\n<!-- .settings/org.eclipse.wst.common.component の例 -->\n<wb-module deploy-name=\"MyApp\">\n  <wb-resource deploy-path=\"/\" source-path=\"/WebContent\" tag=\"defaultRootSource\"/>\n</wb-module>\n```\n\n## テスト\n\n```bash\nmvn test\n```\n\n## ライセンス\n\nApache License, Version 2.0 — [LICENSE](LICENSE) を参照してください。\n\n## 作者\n\nTakakiyo Tanaka (IBM Japan)\n"
+                },
+                "isError": false
+              },
+              "labels": {
+                "displayName": "ファイル{path}を書き込み",
+                "error": "ファイル{path}の書き込みに失敗しました",
+                "running": "ファイル{path}を書き込み中",
+                "success": "ファイル{path}を書き込みました",
+                "runningLong": [
+                  "まだ書いています...",
+                  "執筆には時間がかかります...",
+                  "もうすぐ完了...",
+                  "たくさんの内容を書く...",
+                  "すべての文字をコミット中...",
+                  "命がけで執筆中…"
+                ]
+              },
+              "permission": "edit",
+              "isOutsideWorkspace": false
+            },
+            "_meta": {
+              "changes": {
+                "file:///Users/takakiyo/ibmbob/e2m/README.ja.md": {
+                  "before": "",
+                  "after": "# e2m — Eclipse to Maven Converter\n\n[English](README.md) | **[日本語](README.ja.md)**\n\nEclipseのJavaプロジェクトをMavenの標準ディレクトリ構造に変換するコマンドラインツールです。\n\n## 機能\n\n- **Eclipse Javaプロジェクト**（`.project` / `.classpath`）の変換に対応\n- **Eclipse WTP Webプロジェクト**（`.settings/org.eclipse.wst.common.component`）の変換に対応\n- `.classpath` に記載されたJARファイルのSHA-1ハッシュを計算し、**Maven Central**を自動検索して `<dependency>` を生成\n  - 見つからないJARはsystemスコープの依存として `pom.xml` に出力\n- Javaソースを `src/main/java`（テストは `src/test/java`）にコピー\n- リソースファイルを `src/main/resources`（テストは `src/test/resources`）にコピー\n- WebコンテンツをMaven標準の `src/main/webapp` にコピー\n- `<packaging>war</packaging>` をWTPプロジェクトに自動付与\n- **文字エンコード変換**（`--convertToUtf8`）：Shift_JIS などのレガシーエンコードで書かれたソースを UTF-8 に変換してコピー\n\n## 動作要件\n\n- Java 17以上\n- Maven 3.8以上（ビルド時のみ）\n- GraalVM 21以上（ネイティブイメージビルド時のみ）\n- インターネット接続（Maven Central検索時）\n\n## ビルド\n\n### Fat JAR\n\n```bash\nmvn package\n```\n\n`target/e2m.jar` が生成されます。\n\n### ネイティブ実行ファイル（GraalVM Native Image）\n\nGraalVM JDKが `JAVA_HOME` に設定されている環境で実行してください。\n\n```bash\nmvn -Pnative package\n```\n\n`target/e2m`（macOS/Linux）または `target/e2m.exe`（Windows）が生成されます。\n\n## 使い方\n\n```\ne2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]\n    [--convertToUtf8 [-e <encoding>]]\n    <inputDir> <outputDir>\n```\n\nオプションを省略した場合は、プロジェクト解析後に対話的に入力を求めます。\n`artifactId` のデフォルトは Eclipse のプロジェクト名、`artifactVersion` のデフォルトは `1.0-SNAPSHOT` です。\n\n出力先は `<outputDir>/<artifactId>/` ディレクトリに生成されます。\n\n### オプション\n\n| オプション | 説明 |\n|---|---|\n| `-g`, `--groupId` | 生成するpom.xmlのgroupId（省略時は対話入力） |\n| `-a`, `--artifactId` | 生成するpom.xmlのartifactId（省略時はプロジェクト名がデフォルト） |\n| `-v`, `--artifactVersion` | 生成するpom.xmlのversion（省略時は `1.0-SNAPSHOT`） |\n| `--javaTargetVersion` | 生成するpom.xmlの `maven.compiler.target` を上書きする（省略時はEclipseプロジェクトの設定値を使用。ソースバージョンより低い値は指定不可） |\n| `--convertToUtf8` | ソースファイルをUTF-8に変換してコピーする（詳細は後述） |\n| `-e`, `--sourceEncoding` | 変換元エンコーディング（例: `Shift_JIS`）。`--convertToUtf8` 指定時のみ有効。省略時は対話入力 |\n| `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |\n| `-h`, `--help` | ヘルプを表示 |\n| `-V`, `--version` | バージョンを表示 |\n\n### 引数\n\n| 引数 | 説明 |\n|---|---|\n| `<inputDir>` | 変換元のEclipseプロジェクトディレクトリ |\n| `<outputDir>` | 変換先のMavenプロジェクトを生成するベースディレクトリ |\n\n### 実行例\n\nオプションをすべて指定する場合（Fat JAR）:\n\n```bash\njava -jar target/e2m-1.0.jar \\\n  -g com.example \\\n  -a myapp \\\n  -v 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → /path/to/output/myapp/ に生成される\n```\n\nオプションをすべて指定する場合（ネイティブ実行ファイル）:\n\n```bash\n./e2m \\\n  --groupId com.example \\\n  --artifactId myapp \\\n  --artifactVersion 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\nオプションを省略して対話入力する場合:\n\n```bash\n./e2m /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyEclipseProject]: myapp\nartifactVersion [1.0-SNAPSHOT]:\n# → /path/to/output/myapp/ に生成される\n```\n\n## 文字エンコード変換（--convertToUtf8）\n\nEclipseプロジェクトがレガシーエンコード（Shift_JIS など）で書かれている場合、`--convertToUtf8` オプションを指定することで、コピーと同時に UTF-8 へ変換できます。\n\n### 基本的な使い方\n\n```bash\n./e2m --convertToUtf8 -e Shift_JIS \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\n`-e` / `--sourceEncoding` を省略した場合は、プロジェクト解析後に対話入力を求めます。\n\n```bash\n./e2m --convertToUtf8 /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyApp]:\nartifactVersion [1.0-SNAPSHOT]:\nsourceEncoding: Shift_JIS\n```\n\n### ファイル種別ごとの変換仕様\n\n#### `.java` ファイル\n\n`--sourceEncoding` で指定されたエンコードで読み込み、UTF-8 で書き出します。\n\n#### `.properties` ファイル\n\n`--sourceEncoding` で読み込み、`\\uXXXX` 形式の Unicode エスケープシーケンスを Unicode 文字に展開したうえで UTF-8 で書き出します。\n\n出力先は **Javaターゲットバージョン** によって変わります。\n\n| javaTargetVersion | 出力先 | 理由 |\n|---|---|---|\n| 9 以上 | `src/main/resources/` | Java 9 以降は `.properties` を UTF-8 で直接読み込めるため |\n| 8 以下 | `src/main/resources-utf8/` | Java 8 以下は UTF-8 の `.properties` を直接読み込めないため（後述） |\n\n**Java 8 以下の場合：** `src/main/resources-utf8/` に配置した UTF-8 の `.properties` を、ビルド時に `native2ascii-maven-plugin` が `\\uXXXX` 形式に変換して `src/main/resources/` 相当の出力ディレクトリに配置します。このため `pom.xml` に以下のプラグイン設定が自動追加されます。\n\n```xml\n<plugin>\n  <groupId>org.codehaus.mojo</groupId>\n  <artifactId>native2ascii-maven-plugin</artifactId>\n  <version>2.1.1</version>\n  <executions>\n    <execution>\n      <id>native2ascii-utf8-resources</id>\n      <phase>process-resources</phase>\n      <goals><goal>resources</goal></goals>\n      <configuration>\n        <encoding>UTF-8</encoding>\n        <srcDir>${project.basedir}/src/main/resources-utf8</srcDir>\n        <outputDir>${project.build.outputDirectory}</outputDir>\n      </configuration>\n    </execution>\n  </executions>\n</plugin>\n```\n\n#### `.jsp` ファイル\n\nファイル先頭の最大 4KB を ISO-8859-1 で読み込み、`<%@ page pageEncoding=\"...\" %>` ディレクティブを検出します。\n\n| 状況 | 動作 |\n|---|---|\n| `pageEncoding` が検出でき、かつ UTF-8 以外 | 検出されたエンコードでファイルを読み込み、`pageEncoding` 属性値を `UTF-8` に書き換えて出力 |\n| `pageEncoding` が検出できない | `--sourceEncoding` の値でファイルを読み込み、UTF-8 で出力 |\n| `pageEncoding` が既に `UTF-8` | 変換せずバイナリコピー |\n\n#### その他のファイル\n\n以下のファイルはアプリケーションの動作に直接影響するため、変換せずにバイナリコピーします。\n\n- `.html` / `.htm` — `<meta charset>` の書き換えはアプリ動作に影響するため\n- `.css` / `.js` — アプリ動作に影響するため\n- `.xml` / `.tag` / `.tld` — 従来より UTF-8 の使用が慣習であり変換不要のため\n- `.jar` / 画像 / バイナリファイル\n\n### 変換後のディレクトリ構造（Java 8 以下の場合）\n\n```\noutput/<artifactId>\n├── pom.xml              ← native2ascii-maven-plugin が追加済み\n└── src/\n    └── main/\n        ├── java/\n        ├── resources-utf8/  ← UTF-8 に変換した .properties（ビルド時に変換される）\n        └── webapp/\n```\n\n## 変換がうまくいかない場合\n\n変換結果が期待どおりにならない場合は、`--debug` オプションを付けて再実行してください。\n変換完了後に `<outputDir>/e2m_debug_<日付時刻>.zip` が生成されます。\n\n```bash\n./e2m --debug \\\n  -g com.example \\\n  -a myapp \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → /path/to/output/e2m_debug_20250101_120000.zip が生成される\n```\n\nZIPファイルには以下のデバッグ情報が含まれます。\n\n| ファイル | 内容 |\n|---|---|\n| `eclipse/.project` | Eclipseプロジェクト定義ファイル |\n| `eclipse/.classpath` | Eclipseクラスパス定義ファイル |\n| `eclipse/.factorypath` | Eclipseファクトリパス定義ファイル |\n| `eclipse/.settings/…` | `.settings/` ディレクトリ以下の全ファイル |\n| `eclipse_files.json` | Eclipseプロジェクト内の全ディレクトリ・ファイルの一覧（名前・サイズ・日付。JARファイルにはSHA1ハッシュも含む） |\n| `pom.xml` | 生成したMavenプロジェクトの `pom.xml` |\n| `maven_files.json` | 生成したMavenプロジェクトの全ディレクトリ・ファイルの一覧（名前・サイズ・日付） |\n\n問題が解決しない場合は、生成された ZIP ファイルを添付して [Issues](../../issues) にご報告ください。\n\n## 変換結果のディレクトリ構造\n\n### Javaプロジェクト\n\n```\noutput/<artifactId>\n├── pom.xml\n└── src/\n    ├── main/\n    │   ├── java/        ← Eclipseのsrcフォルダ以下の.javaファイル\n    │   └── resources/   ← Eclipseのsrcフォルダ以下の非.javaファイル\n    └── test/\n        ├── java/        ← 名前に\"test\"を含むsrcフォルダ以下の.javaファイル\n        └── resources/   ← 名前に\"test\"を含むsrcフォルダ以下の非.javaファイル\n```\n\n### WTP Webプロジェクト\n\n```\noutput/<artifactId>\n├── pom.xml              ← <packaging>war</packaging> を含む\n└── src/\n    └── main/\n        ├── java/        ← Javaソース\n        ├── resources/   ← リソースファイル\n        └── webapp/      ← Webコンテンツ (JSP, HTML, WEB-INF/web.xml など)\n```\n\n## Webコンテンツルートの解決\n\nWebコンテンツのルートディレクトリは `WebContent` 等に固定せず、`.settings/org.eclipse.wst.common.component` の `tag=\"defaultRootSource\"` エントリから動的に解決します。\n\n```xml\n<!-- .settings/org.eclipse.wst.common.component の例 -->\n<wb-module deploy-name=\"MyApp\">\n  <wb-resource deploy-path=\"/\" source-path=\"/WebContent\" tag=\"defaultRootSource\"/>\n</wb-module>\n```\n\n## テスト\n\n```bash\nmvn test\n```\n\n## ライセンス\n\nApache License, Version 2.0 — [LICENSE](LICENSE) を参照してください。\n\n## 作者\n\nTakakiyo Tanaka (IBM Japan)\n",
+                  "patch": "Index: file:///Users/takakiyo/ibmbob/e2m/README.ja.md\n===================================================================\n--- file:///Users/takakiyo/ibmbob/e2m/README.ja.md\n+++ file:///Users/takakiyo/ibmbob/e2m/README.ja.md\n@@ -0,0 +1,288 @@\n+# e2m — Eclipse to Maven Converter\n+\n+[English](README.md) | **[日本語](README.ja.md)**\n+\n+EclipseのJavaプロジェクトをMavenの標準ディレクトリ構造に変換するコマンドラインツールです。\n+\n+## 機能\n+\n+- **Eclipse Javaプロジェクト**（`.project` / `.classpath`）の変換に対応\n+- **Eclipse WTP Webプロジェクト**（`.settings/org.eclipse.wst.common.component`）の変換に対応\n+- `.classpath` に記載されたJARファイルのSHA-1ハッシュを計算し、**Maven Central**を自動検索して `<dependency>` を生成\n+  - 見つからないJARはsystemスコープの依存として `pom.xml` に出力\n+- Javaソースを `src/main/java`（テストは `src/test/java`）にコピー\n+- リソースファイルを `src/main/resources`（テストは `src/test/resources`）にコピー\n+- WebコンテンツをMaven標準の `src/main/webapp` にコピー\n+- `<packaging>war</packaging>` をWTPプロジェクトに自動付与\n+- **文字エンコード変換**（`--convertToUtf8`）：Shift_JIS などのレガシーエンコードで書かれたソースを UTF-8 に変換してコピー\n+\n+## 動作要件\n+\n+- Java 17以上\n+- Maven 3.8以上（ビルド時のみ）\n+- GraalVM 21以上（ネイティブイメージビルド時のみ）\n+- インターネット接続（Maven Central検索時）\n+\n+## ビルド\n+\n+### Fat JAR\n+\n+```bash\n+mvn package\n+```\n+\n+`target/e2m.jar` が生成されます。\n+\n+### ネイティブ実行ファイル（GraalVM Native Image）\n+\n+GraalVM JDKが `JAVA_HOME` に設定されている環境で実行してください。\n+\n+```bash\n+mvn -Pnative package\n+```\n+\n+`target/e2m`（macOS/Linux）または `target/e2m.exe`（Windows）が生成されます。\n+\n+## 使い方\n+\n+```\n+e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]\n+    [--convertToUtf8 [-e <encoding>]]\n+    <inputDir> <outputDir>\n+```\n+\n+オプションを省略した場合は、プロジェクト解析後に対話的に入力を求めます。\n+`artifactId` のデフォルトは Eclipse のプロジェクト名、`artifactVersion` のデフォルトは `1.0-SNAPSHOT` です。\n+\n+出力先は `<outputDir>/<artifactId>/` ディレクトリに生成されます。\n+\n+### オプション\n+\n+| オプション | 説明 |\n+|---|---|\n+| `-g`, `--groupId` | 生成するpom.xmlのgroupId（省略時は対話入力） |\n+| `-a`, `--artifactId` | 生成するpom.xmlのartifactId（省略時はプロジェクト名がデフォルト） |\n+| `-v`, `--artifactVersion` | 生成するpom.xmlのversion（省略時は `1.0-SNAPSHOT`） |\n+| `--javaTargetVersion` | 生成するpom.xmlの `maven.compiler.target` を上書きする（省略時はEclipseプロジェクトの設定値を使用。ソースバージョンより低い値は指定不可） |\n+| `--convertToUtf8` | ソースファイルをUTF-8に変換してコピーする（詳細は後述） |\n+| `-e`, `--sourceEncoding` | 変換元エンコーディング（例: `Shift_JIS`）。`--convertToUtf8` 指定時のみ有効。省略時は対話入力 |\n+| `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |\n+| `-h`, `--help` | ヘルプを表示 |\n+| `-V`, `--version` | バージョンを表示 |\n+\n+### 引数\n+\n+| 引数 | 説明 |\n+|---|---|\n+| `<inputDir>` | 変換元のEclipseプロジェクトディレクトリ |\n+| `<outputDir>` | 変換先のMavenプロジェクトを生成するベースディレクトリ |\n+\n+### 実行例\n+\n+オプションをすべて指定する場合（Fat JAR）:\n+\n+```bash\n+java -jar target/e2m-1.0.jar \\\n+  -g com.example \\\n+  -a myapp \\\n+  -v 1.0 \\\n+  /path/to/eclipse-project \\\n+  /path/to/output\n+# → /path/to/output/myapp/ に生成される\n+```\n+\n+オプションをすべて指定する場合（ネイティブ実行ファイル）:\n+\n+```bash\n+./e2m \\\n+  --groupId com.example \\\n+  --artifactId myapp \\\n+  --artifactVersion 1.0 \\\n+  /path/to/eclipse-project \\\n+  /path/to/output\n+```\n+\n+オプションを省略して対話入力する場合:\n+\n+```bash\n+./e2m /path/to/eclipse-project /path/to/output\n+\n+groupId: com.example\n+artifactId [MyEclipseProject]: myapp\n+artifactVersion [1.0-SNAPSHOT]:\n+# → /path/to/output/myapp/ に生成される\n+```\n+\n+## 文字エンコード変換（--convertToUtf8）\n+\n+Eclipseプロジェクトがレガシーエンコード（Shift_JIS など）で書かれている場合、`--convertToUtf8` オプションを指定することで、コピーと同時に UTF-8 へ変換できます。\n+\n+### 基本的な使い方\n+\n+```bash\n+./e2m --convertToUtf8 -e Shift_JIS \\\n+  /path/to/eclipse-project \\\n+  /path/to/output\n+```\n+\n+`-e` / `--sourceEncoding` を省略した場合は、プロジェクト解析後に対話入力を求めます。\n+\n+```bash\n+./e2m --convertToUtf8 /path/to/eclipse-project /path/to/output\n+\n+groupId: com.example\n+artifactId [MyApp]:\n+artifactVersion [1.0-SNAPSHOT]:\n+sourceEncoding: Shift_JIS\n+```\n+\n+### ファイル種別ごとの変換仕様\n+\n+#### `.java` ファイル\n+\n+`--sourceEncoding` で指定されたエンコードで読み込み、UTF-8 で書き出します。\n+\n+#### `.properties` ファイル\n+\n+`--sourceEncoding` で読み込み、`\\uXXXX` 形式の Unicode エスケープシーケンスを Unicode 文字に展開したうえで UTF-8 で書き出します。\n+\n+出力先は **Javaターゲットバージョン** によって変わります。\n+\n+| javaTargetVersion | 出力先 | 理由 |\n+|---|---|---|\n+| 9 以上 | `src/main/resources/` | Java 9 以降は `.properties` を UTF-8 で直接読み込めるため |\n+| 8 以下 | `src/main/resources-utf8/` | Java 8 以下は UTF-8 の `.properties` を直接読み込めないため（後述） |\n+\n+**Java 8 以下の場合：** `src/main/resources-utf8/` に配置した UTF-8 の `.properties` を、ビルド時に `native2ascii-maven-plugin` が `\\uXXXX` 形式に変換して `src/main/resources/` 相当の出力ディレクトリに配置します。このため `pom.xml` に以下のプラグイン設定が自動追加されます。\n+\n+```xml\n+<plugin>\n+  <groupId>org.codehaus.mojo</groupId>\n+  <artifactId>native2ascii-maven-plugin</artifactId>\n+  <version>2.1.1</version>\n+  <executions>\n+    <execution>\n+      <id>native2ascii-utf8-resources</id>\n+      <phase>process-resources</phase>\n+      <goals><goal>resources</goal></goals>\n+      <configuration>\n+        <encoding>UTF-8</encoding>\n+        <srcDir>${project.basedir}/src/main/resources-utf8</srcDir>\n+        <outputDir>${project.build.outputDirectory}</outputDir>\n+      </configuration>\n+    </execution>\n+  </executions>\n+</plugin>\n+```\n+\n+#### `.jsp` ファイル\n+\n+ファイル先頭の最大 4KB を ISO-8859-1 で読み込み、`<%@ page pageEncoding=\"...\" %>` ディレクティブを検出します。\n+\n+| 状況 | 動作 |\n+|---|---|\n+| `pageEncoding` が検出でき、かつ UTF-8 以外 | 検出されたエンコードでファイルを読み込み、`pageEncoding` 属性値を `UTF-8` に書き換えて出力 |\n+| `pageEncoding` が検出できない | `--sourceEncoding` の値でファイルを読み込み、UTF-8 で出力 |\n+| `pageEncoding` が既に `UTF-8` | 変換せずバイナリコピー |\n+\n+#### その他のファイル\n+\n+以下のファイルはアプリケーションの動作に直接影響するため、変換せずにバイナリコピーします。\n+\n+- `.html` / `.htm` — `<meta charset>` の書き換えはアプリ動作に影響するため\n+- `.css` / `.js` — アプリ動作に影響するため\n+- `.xml` / `.tag` / `.tld` — 従来より UTF-8 の使用が慣習であり変換不要のため\n+- `.jar` / 画像 / バイナリファイル\n+\n+### 変換後のディレクトリ構造（Java 8 以下の場合）\n+\n+```\n+output/<artifactId>\n+├── pom.xml              ← native2ascii-maven-plugin が追加済み\n+└── src/\n+    └── main/\n+        ├── java/\n+        ├── resources-utf8/  ← UTF-8 に変換した .properties（ビルド時に変換される）\n+        └── webapp/\n+```\n+\n+## 変換がうまくいかない場合\n+\n+変換結果が期待どおりにならない場合は、`--debug` オプションを付けて再実行してください。\n+変換完了後に `<outputDir>/e2m_debug_<日付時刻>.zip` が生成されます。\n+\n+```bash\n+./e2m --debug \\\n+  -g com.example \\\n+  -a myapp \\\n+  /path/to/eclipse-project \\\n+  /path/to/output\n+# → /path/to/output/e2m_debug_20250101_120000.zip が生成される\n+```\n+\n+ZIPファイルには以下のデバッグ情報が含まれます。\n+\n+| ファイル | 内容 |\n+|---|---|\n+| `eclipse/.project` | Eclipseプロジェクト定義ファイル |\n+| `eclipse/.classpath` | Eclipseクラスパス定義ファイル |\n+| `eclipse/.factorypath` | Eclipseファクトリパス定義ファイル |\n+| `eclipse/.settings/…` | `.settings/` ディレクトリ以下の全ファイル |\n+| `eclipse_files.json` | Eclipseプロジェクト内の全ディレクトリ・ファイルの一覧（名前・サイズ・日付。JARファイルにはSHA1ハッシュも含む） |\n+| `pom.xml` | 生成したMavenプロジェクトの `pom.xml` |\n+| `maven_files.json` | 生成したMavenプロジェクトの全ディレクトリ・ファイルの一覧（名前・サイズ・日付） |\n+\n+問題が解決しない場合は、生成された ZIP ファイルを添付して [Issues](../../issues) にご報告ください。\n+\n+## 変換結果のディレクトリ構造\n+\n+### Javaプロジェクト\n+\n+```\n+output/<artifactId>\n+├── pom.xml\n+└── src/\n+    ├── main/\n+    │   ├── java/        ← Eclipseのsrcフォルダ以下の.javaファイル\n+    │   └── resources/   ← Eclipseのsrcフォルダ以下の非.javaファイル\n+    └── test/\n+        ├── java/        ← 名前に\"test\"を含むsrcフォルダ以下の.javaファイル\n+        └── resources/   ← 名前に\"test\"を含むsrcフォルダ以下の非.javaファイル\n+```\n+\n+### WTP Webプロジェクト\n+\n+```\n+output/<artifactId>\n+├── pom.xml              ← <packaging>war</packaging> を含む\n+└── src/\n+    └── main/\n+        ├── java/        ← Javaソース\n+        ├── resources/   ← リソースファイル\n+        └── webapp/      ← Webコンテンツ (JSP, HTML, WEB-INF/web.xml など)\n+```\n+\n+## Webコンテンツルートの解決\n+\n+Webコンテンツのルートディレクトリは `WebContent` 等に固定せず、`.settings/org.eclipse.wst.common.component` の `tag=\"defaultRootSource\"` エントリから動的に解決します。\n+\n+```xml\n+<!-- .settings/org.eclipse.wst.common.component の例 -->\n+<wb-module deploy-name=\"MyApp\">\n+  <wb-resource deploy-path=\"/\" source-path=\"/WebContent\" tag=\"defaultRootSource\"/>\n+</wb-module>\n+```\n+\n+## テスト\n+\n+```bash\n+mvn test\n+```\n+\n+## ライセンス\n+\n+Apache License, Version 2.0 — [LICENSE](LICENSE) を参照してください。\n+\n+## 作者\n+\n+Takakiyo Tanaka (IBM Japan)\n"
+                }
+              },
+              "fileMtimes": {
+                "file:///Users/takakiyo/ibmbob/e2m/README.ja.md": 1784619023365
+              },
+              "durationMs": 6925,
+              "timestamp": 1784619024406
+            },
+            "id": "cd872591468b80916f388b0fca4dbc41"
+          },
+          "createdAt": 1784619086828
+        },
+        {
+          "id": "78c78fbde29c9a7079226d25ca3a25e9",
+          "role": "assistant",
+          "data": {
+            "role": "assistant",
+            "content": "[`README.ja.md`](README.ja.md) の作成完了。次に英語版 [`README.md`](README.md) を作成します。",
+            "id": "78c78fbde29c9a7079226d25ca3a25e9",
+            "_meta": {
+              "timestamp": 1784619028057,
+              "spend": {
+                "input": 29480,
+                "output": 114,
+                "cacheRead": 20030,
+                "cacheWrite": 9449,
+                "cost": 0.073985,
+                "contextTokens": 29594,
+                "reasoningTokens": 0
+              }
+            },
+            "toolCalls": [
+              {
+                "id": "tooluse_NAzLVKb1gUH661XByUByXO",
+                "name": "update_todo_list",
+                "arguments": {
+                  "todos": "\n[x] README.ja.md を作成（現在の README.md に言語切替リンクを追加）\n[-] 英語版 README.md を新規作成（言語切替リンク付き）\n"
+                },
+                "isError": false
+              },
+              {
+                "id": "tooluse_GuP58TguPdBh8WHMK8dKqo",
+                "name": "write_file",
+                "arguments": {
+                  "path": "README.md",
+                  "content": "# e2m — Eclipse to Maven Converter\n\n**[English](README.md)** | [日本語](README.ja.md)\n\nA command-line tool that converts Eclipse Java projects to the standard Maven directory structure.\n\n## Features\n\n- Supports **Eclipse Java projects** (`.project` / `.classpath`)\n- Supports **Eclipse WTP Web projects** (`.settings/org.eclipse.wst.common.component`)\n- Computes SHA-1 hashes of JAR files listed in `.classpath`, searches **Maven Central** automatically, and generates `<dependency>` entries\n  - JARs not found in Maven Central are added as system-scoped dependencies in `pom.xml`\n- Copies Java sources to `src/main/java` (tests to `src/test/java`)\n- Copies resource files to `src/main/resources` (tests to `src/test/resources`)\n- Copies Web content to the Maven standard `src/main/webapp`\n- Automatically adds `<packaging>war</packaging>` for WTP projects\n- **Character encoding conversion** (`--convertToUtf8`): converts sources written in a legacy encoding such as Shift_JIS to UTF-8 during copy\n\n## Requirements\n\n- Java 17 or later\n- Maven 3.8 or later (build only)\n- GraalVM 21 or later (native image build only)\n- Internet access (for Maven Central lookup)\n\n## Build\n\n### Fat JAR\n\n```bash\nmvn package\n```\n\nProduces `target/e2m.jar`.\n\n### Native Executable (GraalVM Native Image)\n\nRun in an environment where a GraalVM JDK is set as `JAVA_HOME`.\n\n```bash\nmvn -Pnative package\n```\n\nProduces `target/e2m` (macOS/Linux) or `target/e2m.exe` (Windows).\n\n## Usage\n\n```\ne2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]\n    [--convertToUtf8 [-e <encoding>]]\n    <inputDir> <outputDir>\n```\n\nIf options are omitted, the tool prompts for input interactively after analysing the project.  \nThe default for `artifactId` is the Eclipse project name; the default for `artifactVersion` is `1.0-SNAPSHOT`.\n\nOutput is placed in `<outputDir>/<artifactId>/`.\n\n### Options\n\n| Option | Description |\n|---|---|\n| `-g`, `--groupId` | `groupId` in the generated `pom.xml` (prompted if omitted) |\n| `-a`, `--artifactId` | `artifactId` in the generated `pom.xml` (defaults to the project name) |\n| `-v`, `--artifactVersion` | `version` in the generated `pom.xml` (defaults to `1.0-SNAPSHOT`) |\n| `--javaTargetVersion` | Overrides `maven.compiler.target` in the generated `pom.xml` (defaults to the Eclipse project setting; cannot be lower than the source version) |\n| `--convertToUtf8` | Converts source files to UTF-8 during copy (see below) |\n| `-e`, `--sourceEncoding` | Source encoding (e.g. `Shift_JIS`). Only valid with `--convertToUtf8`; prompted if omitted |\n| `--debug` | Outputs debug information as a ZIP file (see below) |\n| `-h`, `--help` | Show help |\n| `-V`, `--version` | Show version |\n\n### Arguments\n\n| Argument | Description |\n|---|---|\n| `<inputDir>` | Source Eclipse project directory |\n| `<outputDir>` | Base directory where the Maven project will be generated |\n\n### Examples\n\nAll options specified (Fat JAR):\n\n```bash\njava -jar target/e2m-1.0.jar \\\n  -g com.example \\\n  -a myapp \\\n  -v 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → generated in /path/to/output/myapp/\n```\n\nAll options specified (native executable):\n\n```bash\n./e2m \\\n  --groupId com.example \\\n  --artifactId myapp \\\n  --artifactVersion 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\nInteractive input (options omitted):\n\n```bash\n./e2m /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyEclipseProject]: myapp\nartifactVersion [1.0-SNAPSHOT]:\n# → generated in /path/to/output/myapp/\n```\n\n## Character Encoding Conversion (--convertToUtf8)\n\nIf an Eclipse project is written in a legacy encoding such as Shift_JIS, the `--convertToUtf8` option converts source files to UTF-8 as they are copied.\n\n### Basic Usage\n\n```bash\n./e2m --convertToUtf8 -e Shift_JIS \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\nIf `-e` / `--sourceEncoding` is omitted, the tool prompts for it after analysing the project.\n\n```bash\n./e2m --convertToUtf8 /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyApp]:\nartifactVersion [1.0-SNAPSHOT]:\nsourceEncoding: Shift_JIS\n```\n\n### Conversion Rules by File Type\n\n#### `.java` files\n\nRead using the encoding specified by `--sourceEncoding` and written as UTF-8.\n\n#### `.properties` files\n\nRead using `--sourceEncoding`, Unicode escape sequences in `\\uXXXX` format are expanded to Unicode characters, then written as UTF-8.\n\nThe output directory depends on the **Java target version**:\n\n| javaTargetVersion | Output directory | Reason |\n|---|---|---|\n| 9 or later | `src/main/resources/` | Java 9+ can load `.properties` files directly as UTF-8 |\n| 8 or earlier | `src/main/resources-utf8/` | Java 8 and below cannot load UTF-8 `.properties` directly (see below) |\n\n**For Java 8 and below:** UTF-8 `.properties` files placed in `src/main/resources-utf8/` are converted back to `\\uXXXX` format by `native2ascii-maven-plugin` during the build and placed in the equivalent of `src/main/resources/`. The following plugin configuration is automatically added to `pom.xml`:\n\n```xml\n<plugin>\n  <groupId>org.codehaus.mojo</groupId>\n  <artifactId>native2ascii-maven-plugin</artifactId>\n  <version>2.1.1</version>\n  <executions>\n    <execution>\n      <id>native2ascii-utf8-resources</id>\n      <phase>process-resources</phase>\n      <goals><goal>resources</goal></goals>\n      <configuration>\n        <encoding>UTF-8</encoding>\n        <srcDir>${project.basedir}/src/main/resources-utf8</srcDir>\n        <outputDir>${project.build.outputDirectory}</outputDir>\n      </configuration>\n    </execution>\n  </executions>\n</plugin>\n```\n\n#### `.jsp` files\n\nThe first 4 KB of each file is read as ISO-8859-1 to detect the `<%@ page pageEncoding=\"...\" %>` directive.\n\n| Situation | Behaviour |\n|---|---|\n| `pageEncoding` detected and not UTF-8 | File is read using the detected encoding; `pageEncoding` attribute value is rewritten to `UTF-8` on output |\n| `pageEncoding` not detected | File is read using `--sourceEncoding` and written as UTF-8 |\n| `pageEncoding` is already `UTF-8` | Copied as binary without conversion |\n\n#### Other files\n\nThe following files are copied as binary without conversion because modifying them could affect application behaviour:\n\n- `.html` / `.htm` — rewriting `<meta charset>` would affect app behaviour\n- `.css` / `.js` — would affect app behaviour\n- `.xml` / `.tag` / `.tld` — UTF-8 is already the conventional encoding; no conversion needed\n- `.jar` / images / other binary files\n\n### Output Directory Structure After Conversion (Java 8 and below)\n\n```\noutput/<artifactId>\n├── pom.xml              ← native2ascii-maven-plugin already configured\n└── src/\n    └── main/\n        ├── java/\n        ├── resources-utf8/  ← UTF-8 converted .properties (converted during build)\n        └── webapp/\n```\n\n## Troubleshooting\n\nIf the conversion result is not as expected, re-run with the `--debug` option.  \nAfter conversion completes, `<outputDir>/e2m_debug_<datetime>.zip` is generated.\n\n```bash\n./e2m --debug \\\n  -g com.example \\\n  -a myapp \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → /path/to/output/e2m_debug_20250101_120000.zip is generated\n```\n\nThe ZIP file contains the following debug information:\n\n| File | Contents |\n|---|---|\n| `eclipse/.project` | Eclipse project definition file |\n| `eclipse/.classpath` | Eclipse classpath definition file |\n| `eclipse/.factorypath` | Eclipse factory path definition file |\n| `eclipse/.settings/…` | All files under the `.settings/` directory |\n| `eclipse_files.json` | List of all directories and files in the Eclipse project (name, size, date; JAR files include SHA-1 hash) |\n| `pom.xml` | The `pom.xml` of the generated Maven project |\n| `maven_files.json` | List of all directories and files in the generated Maven project (name, size, date) |\n\nIf the issue persists, please open an [Issue](../../issues) and attach the generated ZIP file.\n\n## Output Directory Structure\n\n### Java Project\n\n```\noutput/<artifactId>\n├── pom.xml\n└── src/\n    ├── main/\n    │   ├── java/        ← .java files from Eclipse src folders\n    │   └── resources/   ← non-.java files from Eclipse src folders\n    └── test/\n        ├── java/        ← .java files from src folders whose name contains \"test\"\n        └── resources/   ← non-.java files from src folders whose name contains \"test\"\n```\n\n### WTP Web Project\n\n```\noutput/<artifactId>\n├── pom.xml              ← includes <packaging>war</packaging>\n└── src/\n    └── main/\n        ├── java/        ← Java sources\n        ├── resources/   ← resource files\n        └── webapp/      ← Web content (JSP, HTML, WEB-INF/web.xml, etc.)\n```\n\n## Web Content Root Resolution\n\nThe Web content root directory is not hard-coded to `WebContent` or similar. It is resolved dynamically from the `tag=\"defaultRootSource\"` entry in `.settings/org.eclipse.wst.common.component`.\n\n```xml\n<!-- Example: .settings/org.eclipse.wst.common.component -->\n<wb-module deploy-name=\"MyApp\">\n  <wb-resource deploy-path=\"/\" source-path=\"/WebContent\" tag=\"defaultRootSource\"/>\n</wb-module>\n```\n\n## Testing\n\n```bash\nmvn test\n```\n\n## License\n\nApache License, Version 2.0 — see [LICENSE](LICENSE).\n\n## Author\n\nTakakiyo Tanaka (IBM Japan)\n",
+                  "line_count": 252
+                },
+                "isError": false
+              },
+              {
+                "id": "tooluse_34A6lOOcqVtoAnPILgDtMK",
+                "name": "update_todo_list",
+                "arguments": {
+                  "todos": "\n[x] README.ja.md を作成（現在の README.md に言語切替リンクを追加）\n[x] 英語版 README.md を新規作成（言語切替リンク付き）\n"
+                },
+                "isError": false
+              }
+            ]
+          },
+          "createdAt": 1784619086829
+        },
+        {
+          "id": "6163834fd8ce9d75ad29be253b20ba28",
+          "role": "tool",
+          "data": {
+            "role": "tool",
+            "content": "To do list updated: 2 items total.\n\nNext to do item inprogress: 英語版 README.md を新規作成（言語切替リンク付き）",
+            "toolUsage": {
+              "signature": {
+                "id": "tooluse_NAzLVKb1gUH661XByUByXO",
+                "name": "update_todo_list",
+                "arguments": {
+                  "todos": "\n[x] README.ja.md を作成（現在の README.md に言語切替リンクを追加）\n[-] 英語版 README.md を新規作成（言語切替リンク付き）\n"
+                },
+                "isError": false
+              },
+              "labels": {
+                "displayName": "Todoリストを更新",
+                "error": "Todoリストの更新に失敗しました",
+                "running": "Todoリストを更新中",
+                "success": "Todoリストを更新しました"
+              },
+              "permission": "todo",
+              "isOutsideWorkspace": false
+            },
+            "_meta": {
+              "todos": [
+                {
+                  "description": "README.ja.md を作成（現在の README.md に言語切替リンクを追加）",
+                  "state": "done"
+                },
+                {
+                  "description": "英語版 README.md を新規作成（言語切替リンク付き）",
+                  "state": "inprogress"
+                }
+              ],
+              "durationMs": 1697,
+              "timestamp": 1784619068802
+            },
+            "id": "6163834fd8ce9d75ad29be253b20ba28"
+          },
+          "createdAt": 1784619086829
+        },
+        {
+          "id": "fd5bfb885db885457aee71352767007d",
+          "role": "tool",
+          "data": {
+            "role": "tool",
+            "content": "Edited file: README.md\n\nYou do not need to re-read the file, as you have seen all changes.\nProceed with the task using these changes as the new baseline.\n\nIf the user's edits have addressed part of the task or changed the requirements, adjust your approach accordingly.\n\nPatch of edit:\n\n<patch>\n@@ -1,96 +1,98 @@\n # e2m — Eclipse to Maven Converter\n \n-EclipseのJavaプロジェクトをMavenの標準ディレクトリ構造に変換するコマンドラインツールです。\n+**[English](README.md)** | [日本語](README.ja.md)\n \n-## 機能\n+A command-line tool that converts Eclipse Java projects to the standard Maven directory structure.\n \n-- **Eclipse Javaプロジェクト**（`.project` / `.classpath`）の変換に対応\n-- **Eclipse WTP Webプロジェクト**（`.settings/org.eclipse.wst.common.component`）の変換に対応\n-- `.classpath` に記載されたJARファイルのSHA-1ハッシュを計算し、**Maven Central**を自動検索して `<dependency>` を生成\n-  - 見つからないJARはsystemスコープの依存として `pom.xml` に出力\n-- Javaソースを `src/main/java`（テストは `src/test/java`）にコピー\n-- リソースファイルを `src/main/resources`（テストは `src/test/resources`）にコピー\n-- WebコンテンツをMaven標準の `src/main/webapp` にコピー\n-- `<packaging>war</packaging>` をWTPプロジェクトに自動付与\n-- **文字エンコード変換**（`--convertToUtf8`）：Shift_JIS などのレガシーエンコードで書かれたソースを UTF-8 に変換してコピー\n+## Features\n \n-## 動作要件\n+- Supports **Eclipse Java projects** (`.project` / `.classpath`)\n+- Supports **Eclipse WTP Web projects** (`.settings/org.eclipse.wst.common.component`)\n+- Computes SHA-1 hashes of JAR files listed in `.classpath`, searches **Maven Central** automatically, and generates `<dependency>` entries\n+  - JARs not found in Maven Central are added as system-scoped dependencies in `pom.xml`\n+- Copies Java sources to `src/main/java` (tests to `src/test/java`)\n+- Copies resource files to `src/main/resources` (tests to `src/test/resources`)\n+- Copies Web content to the Maven standard `src/main/webapp`\n+- Automatically adds `<packaging>war</packaging>` for WTP projects\n+- **Character encoding conversion** (`--convertToUtf8`): converts sources written in a legacy encoding such as Shift_JIS to UTF-8 during copy\n \n-- Java 17以上\n-- Maven 3.8以上（ビルド時のみ）\n-- GraalVM 21以上（ネイティブイメージビルド時のみ）\n-- インターネット接続（Maven Central検索時）\n+## Requirements\n \n-## ビルド\n+- Java 17 or later\n+- Maven 3.8 or later (build only)\n+- GraalVM 21 or later (native image build only)\n+- Internet access (for Maven Central lookup)\n \n+## Build\n+\n ### Fat JAR\n \n ```bash\n mvn package\n ```\n \n-`target/e2m.jar` が生成されます。\n+Produces `target/e2m.jar`.\n \n-### ネイティブ実行ファイル（GraalVM Native Image）\n+### Native Executable (GraalVM Native Image)\n \n-GraalVM JDKが `JAVA_HOME` に設定されている環境で実行してください。\n+Run in an environment where a GraalVM JDK is set as `JAVA_HOME`.\n \n ```bash\n mvn -Pnative package\n ```\n \n-`target/e2m`（macOS/Linux）または `target/e2m.exe`（Windows）が生成されます。\n+Produces `target/e2m` (macOS/Linux) or `target/e2m.exe` (Windows).\n \n-## 使い方\n+## Usage\n \n ```\n e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]\n     [--convertToUtf8 [-e <encoding>]]\n     <inputDir> <outputDir>\n ```\n \n-オプションを省略した場合は、プロジェクト解析後に対話的に入力を求めます。\n-`artifactId` のデフォルトは Eclipse のプロジェクト名、`artifactVersion` のデフォルトは `1.0-SNAPSHOT` です。\n+If options are omitted, the tool prompts for input interactively after analysing the project.  \n+The default for `artifactId` is the Eclipse project name; the default for `artifactVersion` is `1.0-SNAPSHOT`.\n \n-出力先は `<outputDir>/<artifactId>/` ディレクトリに生成されます。\n+Output is placed in `<outputDir>/<artifactId>/`.\n \n-### オプション\n+### Options\n \n-| オプション | 説明 |\n+| Option | Description |\n |---|---|\n-| `-g`, `--groupId` | 生成するpom.xmlのgroupId（省略時は対話入力） |\n-| `-a`, `--artifactId` | 生成するpom.xmlのartifactId（省略時はプロジェクト名がデフォルト） |\n-| `-v`, `--artifactVersion` | 生成するpom.xmlのversion（省略時は `1.0-SNAPSHOT`） |\n-| `--javaTargetVersion` | 生成するpom.xmlの `maven.compiler.target` を上書きする（省略時はEclipseプロジェクトの設定値を使用。ソースバージョンより低い値は指定不可） |\n-| `--convertToUtf8` | ソースファイルをUTF-8に変換してコピーする（詳細は後述） |\n-| `-e`, `--sourceEncoding` | 変換元エンコーディング（例: `Shift_JIS`）。`--convertToUtf8` 指定時のみ有効。省略時は対話入力 |\n-| `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |\n-| `-h`, `--help` | ヘルプを表示 |\n-| `-V`, `--version` | バージョンを表示 |\n+| `-g`, `--groupId` | `groupId` in the generated `pom.xml` (prompted if omitted) |\n+| `-a`, `--artifactId` | `artifactId` in the generated `pom.xml` (defaults to the project name) |\n+| `-v`, `--artifactVersion` | `version` in the generated `pom.xml` (defaults to `1.0-SNAPSHOT`) |\n+| `--javaTargetVersion` | Overrides `maven.compiler.target` in the generated `pom.xml` (defaults to the Eclipse project setting; cannot be lower than the source version) |\n+| `--convertToUtf8` | Converts source files to UTF-8 during copy (see below) |\n+| `-e`, `--sourceEncoding` | Source encoding (e.g. `Shift_JIS`). Only valid with `--convertToUtf8`; prompted if omitted |\n+| `--debug` | Outputs debug information as a ZIP file (see below) |\n+| `-h`, `--help` | Show help |\n+| `-V`, `--version` | Show version |\n \n-### 引数\n+### Arguments\n \n-| 引数 | 説明 |\n+| Argument | Description |\n |---|---|\n-| `<inputDir>` | 変換元のEclipseプロジェクトディレクトリ |\n-| `<outputDir>` | 変換先のMavenプロジェクトを生成するベースディレクトリ |\n+| `<inputDir>` | Source Eclipse project directory |\n+| `<outputDir>` | Base directory where the Maven project will be generated |\n \n-### 実行例\n+### Examples\n \n-オプションをすべて指定する場合（Fat JAR）:\n+All options specified (Fat JAR):\n \n ```bash\n java -jar target/e2m-1.0.jar \\\n   -g com.example \\\n   -a myapp \\\n   -v 1.0 \\\n   /path/to/eclipse-project \\\n   /path/to/output\n-# → /path/to/output/myapp/ に生成される\n+# → generated in /path/to/output/myapp/\n ```\n \n-オプションをすべて指定する場合（ネイティブ実行ファイル）:\n+All options specified (native executable):\n \n ```bash\n ./e2m \\\n   --groupId com.example \\\n@@ -99,32 +101,32 @@\n   /path/to/eclipse-project \\\n   /path/to/output\n ```\n \n-オプションを省略して対話入力する場合:\n+Interactive input (options omitted):\n \n ```bash\n ./e2m /path/to/eclipse-project /path/to/output\n \n groupId: com.example\n artifactId [MyEclipseProject]: myapp\n artifactVersion [1.0-SNAPSHOT]:\n-# → /path/to/output/myapp/ に生成される\n+# → generated in /path/to/output/myapp/\n ```\n \n-## 文字エンコード変換（--convertToUtf8）\n+## Character Encoding Conversion (--convertToUtf8)\n \n-Eclipseプロジェクトがレガシーエンコード（Shift_JIS など）で書かれている場合、`--convertToUtf8` オプションを指定することで、コピーと同時に UTF-8 へ変換できます。\n+If an Eclipse project is written in a legacy encoding such as Shift_JIS, the `--convertToUtf8` option converts source files to UTF-8 as they are copied.\n \n-### 基本的な使い方\n+### Basic Usage\n \n ```bash\n ./e2m --convertToUtf8 -e Shift_JIS \\\n   /path/to/eclipse-project \\\n   /path/to/output\n ```\n \n-`-e` / `--sourceEncoding` を省略した場合は、プロジェクト解析後に対話入力を求めます。\n+If `-e` / `--sourceEncoding` is omitted, the tool prompts for it after analysing the project.\n \n ```bash\n ./e2m --convertToUtf8 /path/to/eclipse-project /path/to/output\n \n@@ -133,26 +135,26 @@\n artifactVersion [1.0-SNAPSHOT]:\n sourceEncoding: Shift_JIS\n ```\n \n-### ファイル種別ごとの変換仕様\n+### Conversion Rules by File Type\n \n-#### `.java` ファイル\n+#### `.java` files\n \n-`--sourceEncoding` で指定されたエンコードで読み込み、UTF-8 で書き出します。\n+Read using the encoding specified by `--sourceEncoding` and written as UTF-8.\n \n-#### `.properties` ファイル\n+#### `.properties` files\n \n-`--sourceEncoding` で読み込み、`\\uXXXX` 形式の Unicode エスケープシーケンスを Unicode 文字に展開したうえで UTF-8 で書き出します。\n+Read using `--sourceEncoding`, Unicode escape sequences in `\\uXXXX` format are expanded to Unicode characters, then written as UTF-8.\n \n-出力先は **Javaターゲットバージョン** によって変わります。\n+The output directory depends on the **Java target version**:\n \n-| javaTargetVersion | 出力先 | 理由 |\n+| javaTargetVersion | Output directory | Reason |\n |---|---|---|\n-| 9 以上 | `src/main/resources/` | Java 9 以降は `.properties` を UTF-8 で直接読み込めるため |\n-| 8 以下 | `src/main/resources-utf8/` | Java 8 以下は UTF-8 の `.properties` を直接読み込めないため（後述） |\n+| 9 or later | `src/main/resources/` | Java 9+ can load `.properties` files directly as UTF-8 |\n+| 8 or earlier | `src/main/resources-utf8/` | Java 8 and below cannot load UTF-8 `.properties` directly (see below) |\n \n-**Java 8 以下の場合：** `src/main/resources-utf8/` に配置した UTF-8 の `.properties` を、ビルド時に `native2ascii-maven-plugin` が `\\uXXXX` 形式に変換して `src/main/resources/` 相当の出力ディレクトリに配置します。このため `pom.xml` に以下のプラグイン設定が自動追加されます。\n+**For Java 8 and below:** UTF-8 `.properties` files placed in `src/main/resources-utf8/` are converted back to `\\uXXXX` format by `native2ascii-maven-plugin` during the build and placed in the equivalent of `src/main/resources/`. The following plugin configuration is automatically added to `pom.xml`:\n \n ```xml\n <plugin>\n   <groupId>org.codehaus.mojo</groupId>\n@@ -172,115 +174,115 @@\n   </executions>\n </plugin>\n ```\n \n-#### `.jsp` ファイル\n+#### `.jsp` files\n \n-ファイル先頭の最大 4KB を ISO-8859-1 で読み込み、`<%@ page pageEncoding=\"...\" %>` ディレクティブを検出します。\n+The first 4 KB of each file is read as ISO-8859-1 to detect the `<%@ page pageEncoding=\"...\" %>` directive.\n \n-| 状況 | 動作 |\n+| Situation | Behaviour |\n |---|---|\n-| `pageEncoding` が検出でき、かつ UTF-8 以外 | 検出されたエンコードでファイルを読み込み、`pageEncoding` 属性値を `UTF-8` に書き換えて出力 |\n-| `pageEncoding` が検出できない | `--sourceEncoding` の値でファイルを読み込み、UTF-8 で出力 |\n-| `pageEncoding` が既に `UTF-8` | 変換せずバイナリコピー |\n+| `pageEncoding` detected and not UTF-8 | File is read using the detected encoding; `pageEncoding` attribute value is rewritten to `UTF-8` on output |\n+| `pageEncoding` not detected | File is read using `--sourceEncoding` and written as UTF-8 |\n+| `pageEncoding` is already `UTF-8` | Copied as binary without conversion |\n \n-#### その他のファイル\n+#### Other files\n \n-以下のファイルはアプリケーションの動作に直接影響するため、変換せずにバイナリコピーします。\n+The following files are copied as binary without conversion because modifying them could affect application behaviour:\n \n-- `.html` / `.htm` — `<meta charset>` の書き換えはアプリ動作に影響するため\n-- `.css` / `.js` — アプリ動作に影響するため\n-- `.xml` / `.tag` / `.tld` — 従来より UTF-8 の使用が慣習であり変換不要のため\n-- `.jar` / 画像 / バイナリファイル\n+- `.html` / `.htm` — rewriting `<meta charset>` would affect app behaviour\n+- `.css` / `.js` — would affect app behaviour\n+- `.xml` / `.tag` / `.tld` — UTF-8 is already the conventional encoding; no conversion needed\n+- `.jar` / images / other binary files\n \n-### 変換後のディレクトリ構造（Java 8 以下の場合）\n+### Output Directory Structure After Conversion (Java 8 and below)\n \n ```\n output/<artifactId>\n-├── pom.xml              ← native2ascii-maven-plugin が追加済み\n+├── pom.xml              ← native2ascii-maven-plugin already configured\n └── src/\n     └── main/\n         ├── java/\n-        ├── resources-utf8/  ← UTF-8 に変換した .properties（ビルド時に変換される）\n+        ├── resources-utf8/  ← UTF-8 converted .properties (converted during build)\n         └── webapp/\n ```\n \n-## 変換がうまくいかない場合\n+## Troubleshooting\n \n-変換結果が期待どおりにならない場合は、`--debug` オプションを付けて再実行してください。\n-変換完了後に `<outputDir>/e2m_debug_<日付時刻>.zip` が生成されます。\n+If the conversion result is not as expected, re-run with the `--debug` option.  \n+After conversion completes, `<outputDir>/e2m_debug_<datetime>.zip` is generated.\n \n ```bash\n ./e2m --debug \\\n   -g com.example \\\n   -a myapp \\\n   /path/to/eclipse-project \\\n   /path/to/output\n-# → /path/to/output/e2m_debug_20250101_120000.zip が生成される\n+# → /path/to/output/e2m_debug_20250101_120000.zip is generated\n ```\n \n-ZIPファイルには以下のデバッグ情報が含まれます。\n+The ZIP file contains the following debug information:\n \n-| ファイル | 内容 |\n+| File | Contents |\n |---|---|\n-| `eclipse/.project` | Eclipseプロジェクト定義ファイル |\n-| `eclipse/.classpath` | Eclipseクラスパス定義ファイル |\n-| `eclipse/.factorypath` | Eclipseファクトリパス定義ファイル |\n-| `eclipse/.settings/…` | `.settings/` ディレクトリ以下の全ファイル |\n-| `eclipse_files.json` | Eclipseプロジェクト内の全ディレクトリ・ファイルの一覧（名前・サイズ・日付。JARファイルにはSHA1ハッシュも含む） |\n-| `pom.xml` | 生成したMavenプロジェクトの `pom.xml` |\n-| `maven_files.json` | 生成したMavenプロジェクトの全ディレクトリ・ファイルの一覧（名前・サイズ・日付） |\n+| `eclipse/.project` | Eclipse project definition file |\n+| `eclipse/.classpath` | Eclipse classpath definition file |\n+| `eclipse/.factorypath` | Eclipse factory path definition file |\n+| `eclipse/.settings/…` | All files under the `.settings/` directory |\n+| `eclipse_files.json` | List of all directories and files in the Eclipse project (name, size, date; JAR files include SHA-1 hash) |\n+| `pom.xml` | The `pom.xml` of the generated Maven project |\n+| `maven_files.json` | List of all directories and files in the generated Maven project (name, size, date) |\n \n-問題が解決しない場合は、生成された ZIP ファイルを添付して [Issues](../../issues) にご報告ください。\n+If the issue persists, please open an [Issue](../../issues) and attach the generated ZIP file.\n \n-## 変換結果のディレクトリ構造\n+## Output Directory Structure\n \n-### Javaプロジェクト\n+### Java Project\n \n ```\n output/<artifactId>\n ├── pom.xml\n └── src/\n     ├── main/\n-    │   ├── java/        ← Eclipseのsrcフォルダ以下の.javaファイル\n-    │   └── resources/   ← Eclipseのsrcフォルダ以下の非.javaファイル\n+    │   ├── java/        ← .java files from Eclipse src folders\n+    │   └── resources/   ← non-.java files from Eclipse src folders\n     └── test/\n-        ├── java/        ← 名前に\"test\"を含むsrcフォルダ以下の.javaファイル\n-        └── resources/   ← 名前に\"test\"を含むsrcフォルダ以下の非.javaファイル\n+        ├── java/        ← .java files from src folders whose name contains \"test\"\n+        └── resources/   ← non-.java files from src folders whose name contains \"test\"\n ```\n \n-### WTP Webプロジェクト\n+### WTP Web Project\n \n ```\n output/<artifactId>\n-├── pom.xml              ← <packaging>war</packaging> を含む\n+├── pom.xml              ← includes <packaging>war</packaging>\n └── src/\n     └── main/\n-        ├── java/        ← Javaソース\n-        ├── resources/   ← リソースファイル\n-        └── webapp/      ← Webコンテンツ (JSP, HTML, WEB-INF/web.xml など)\n+        ├── java/        ← Java sources\n+        ├── resources/   ← resource files\n+        └── webapp/      ← Web content (JSP, HTML, WEB-INF/web.xml, etc.)\n ```\n \n-## Webコンテンツルートの解決\n+## Web Content Root Resolution\n \n-Webコンテンツのルートディレクトリは `WebContent` 等に固定せず、`.settings/org.eclipse.wst.common.component` の `tag=\"defaultRootSource\"` エントリから動的に解決します。\n+The Web content root directory is not hard-coded to `WebContent` or similar. It is resolved dynamically from the `tag=\"defaultRootSource\"` entry in `.settings/org.eclipse.wst.common.component`.\n \n ```xml\n-<!-- .settings/org.eclipse.wst.common.component の例 -->\n+<!-- Example: .settings/org.eclipse.wst.common.component -->\n <wb-module deploy-name=\"MyApp\">\n   <wb-resource deploy-path=\"/\" source-path=\"/WebContent\" tag=\"defaultRootSource\"/>\n </wb-module>\n ```\n \n-## テスト\n+## Testing\n \n ```bash\n mvn test\n ```\n \n-## ライセンス\n+## License\n \n-Apache License, Version 2.0 — [LICENSE](LICENSE) を参照してください。\n+Apache License, Version 2.0 — see [LICENSE](LICENSE).\n \n-## 作者\n+## Author\n \n Takakiyo Tanaka (IBM Japan)\n\n</patch>",
+            "toolUsage": {
+              "signature": {
+                "id": "tooluse_GuP58TguPdBh8WHMK8dKqo",
+                "name": "write_file",
+                "arguments": {
+                  "path": "README.md",
+                  "content": "# e2m — Eclipse to Maven Converter\n\n**[English](README.md)** | [日本語](README.ja.md)\n\nA command-line tool that converts Eclipse Java projects to the standard Maven directory structure.\n\n## Features\n\n- Supports **Eclipse Java projects** (`.project` / `.classpath`)\n- Supports **Eclipse WTP Web projects** (`.settings/org.eclipse.wst.common.component`)\n- Computes SHA-1 hashes of JAR files listed in `.classpath`, searches **Maven Central** automatically, and generates `<dependency>` entries\n  - JARs not found in Maven Central are added as system-scoped dependencies in `pom.xml`\n- Copies Java sources to `src/main/java` (tests to `src/test/java`)\n- Copies resource files to `src/main/resources` (tests to `src/test/resources`)\n- Copies Web content to the Maven standard `src/main/webapp`\n- Automatically adds `<packaging>war</packaging>` for WTP projects\n- **Character encoding conversion** (`--convertToUtf8`): converts sources written in a legacy encoding such as Shift_JIS to UTF-8 during copy\n\n## Requirements\n\n- Java 17 or later\n- Maven 3.8 or later (build only)\n- GraalVM 21 or later (native image build only)\n- Internet access (for Maven Central lookup)\n\n## Build\n\n### Fat JAR\n\n```bash\nmvn package\n```\n\nProduces `target/e2m.jar`.\n\n### Native Executable (GraalVM Native Image)\n\nRun in an environment where a GraalVM JDK is set as `JAVA_HOME`.\n\n```bash\nmvn -Pnative package\n```\n\nProduces `target/e2m` (macOS/Linux) or `target/e2m.exe` (Windows).\n\n## Usage\n\n```\ne2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]\n    [--convertToUtf8 [-e <encoding>]]\n    <inputDir> <outputDir>\n```\n\nIf options are omitted, the tool prompts for input interactively after analysing the project.  \nThe default for `artifactId` is the Eclipse project name; the default for `artifactVersion` is `1.0-SNAPSHOT`.\n\nOutput is placed in `<outputDir>/<artifactId>/`.\n\n### Options\n\n| Option | Description |\n|---|---|\n| `-g`, `--groupId` | `groupId` in the generated `pom.xml` (prompted if omitted) |\n| `-a`, `--artifactId` | `artifactId` in the generated `pom.xml` (defaults to the project name) |\n| `-v`, `--artifactVersion` | `version` in the generated `pom.xml` (defaults to `1.0-SNAPSHOT`) |\n| `--javaTargetVersion` | Overrides `maven.compiler.target` in the generated `pom.xml` (defaults to the Eclipse project setting; cannot be lower than the source version) |\n| `--convertToUtf8` | Converts source files to UTF-8 during copy (see below) |\n| `-e`, `--sourceEncoding` | Source encoding (e.g. `Shift_JIS`). Only valid with `--convertToUtf8`; prompted if omitted |\n| `--debug` | Outputs debug information as a ZIP file (see below) |\n| `-h`, `--help` | Show help |\n| `-V`, `--version` | Show version |\n\n### Arguments\n\n| Argument | Description |\n|---|---|\n| `<inputDir>` | Source Eclipse project directory |\n| `<outputDir>` | Base directory where the Maven project will be generated |\n\n### Examples\n\nAll options specified (Fat JAR):\n\n```bash\njava -jar target/e2m-1.0.jar \\\n  -g com.example \\\n  -a myapp \\\n  -v 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → generated in /path/to/output/myapp/\n```\n\nAll options specified (native executable):\n\n```bash\n./e2m \\\n  --groupId com.example \\\n  --artifactId myapp \\\n  --artifactVersion 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\nInteractive input (options omitted):\n\n```bash\n./e2m /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyEclipseProject]: myapp\nartifactVersion [1.0-SNAPSHOT]:\n# → generated in /path/to/output/myapp/\n```\n\n## Character Encoding Conversion (--convertToUtf8)\n\nIf an Eclipse project is written in a legacy encoding such as Shift_JIS, the `--convertToUtf8` option converts source files to UTF-8 as they are copied.\n\n### Basic Usage\n\n```bash\n./e2m --convertToUtf8 -e Shift_JIS \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\nIf `-e` / `--sourceEncoding` is omitted, the tool prompts for it after analysing the project.\n\n```bash\n./e2m --convertToUtf8 /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyApp]:\nartifactVersion [1.0-SNAPSHOT]:\nsourceEncoding: Shift_JIS\n```\n\n### Conversion Rules by File Type\n\n#### `.java` files\n\nRead using the encoding specified by `--sourceEncoding` and written as UTF-8.\n\n#### `.properties` files\n\nRead using `--sourceEncoding`, Unicode escape sequences in `\\uXXXX` format are expanded to Unicode characters, then written as UTF-8.\n\nThe output directory depends on the **Java target version**:\n\n| javaTargetVersion | Output directory | Reason |\n|---|---|---|\n| 9 or later | `src/main/resources/` | Java 9+ can load `.properties` files directly as UTF-8 |\n| 8 or earlier | `src/main/resources-utf8/` | Java 8 and below cannot load UTF-8 `.properties` directly (see below) |\n\n**For Java 8 and below:** UTF-8 `.properties` files placed in `src/main/resources-utf8/` are converted back to `\\uXXXX` format by `native2ascii-maven-plugin` during the build and placed in the equivalent of `src/main/resources/`. The following plugin configuration is automatically added to `pom.xml`:\n\n```xml\n<plugin>\n  <groupId>org.codehaus.mojo</groupId>\n  <artifactId>native2ascii-maven-plugin</artifactId>\n  <version>2.1.1</version>\n  <executions>\n    <execution>\n      <id>native2ascii-utf8-resources</id>\n      <phase>process-resources</phase>\n      <goals><goal>resources</goal></goals>\n      <configuration>\n        <encoding>UTF-8</encoding>\n        <srcDir>${project.basedir}/src/main/resources-utf8</srcDir>\n        <outputDir>${project.build.outputDirectory}</outputDir>\n      </configuration>\n    </execution>\n  </executions>\n</plugin>\n```\n\n#### `.jsp` files\n\nThe first 4 KB of each file is read as ISO-8859-1 to detect the `<%@ page pageEncoding=\"...\" %>` directive.\n\n| Situation | Behaviour |\n|---|---|\n| `pageEncoding` detected and not UTF-8 | File is read using the detected encoding; `pageEncoding` attribute value is rewritten to `UTF-8` on output |\n| `pageEncoding` not detected | File is read using `--sourceEncoding` and written as UTF-8 |\n| `pageEncoding` is already `UTF-8` | Copied as binary without conversion |\n\n#### Other files\n\nThe following files are copied as binary without conversion because modifying them could affect application behaviour:\n\n- `.html` / `.htm` — rewriting `<meta charset>` would affect app behaviour\n- `.css` / `.js` — would affect app behaviour\n- `.xml` / `.tag` / `.tld` — UTF-8 is already the conventional encoding; no conversion needed\n- `.jar` / images / other binary files\n\n### Output Directory Structure After Conversion (Java 8 and below)\n\n```\noutput/<artifactId>\n├── pom.xml              ← native2ascii-maven-plugin already configured\n└── src/\n    └── main/\n        ├── java/\n        ├── resources-utf8/  ← UTF-8 converted .properties (converted during build)\n        └── webapp/\n```\n\n## Troubleshooting\n\nIf the conversion result is not as expected, re-run with the `--debug` option.  \nAfter conversion completes, `<outputDir>/e2m_debug_<datetime>.zip` is generated.\n\n```bash\n./e2m --debug \\\n  -g com.example \\\n  -a myapp \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → /path/to/output/e2m_debug_20250101_120000.zip is generated\n```\n\nThe ZIP file contains the following debug information:\n\n| File | Contents |\n|---|---|\n| `eclipse/.project` | Eclipse project definition file |\n| `eclipse/.classpath` | Eclipse classpath definition file |\n| `eclipse/.factorypath` | Eclipse factory path definition file |\n| `eclipse/.settings/…` | All files under the `.settings/` directory |\n| `eclipse_files.json` | List of all directories and files in the Eclipse project (name, size, date; JAR files include SHA-1 hash) |\n| `pom.xml` | The `pom.xml` of the generated Maven project |\n| `maven_files.json` | List of all directories and files in the generated Maven project (name, size, date) |\n\nIf the issue persists, please open an [Issue](../../issues) and attach the generated ZIP file.\n\n## Output Directory Structure\n\n### Java Project\n\n```\noutput/<artifactId>\n├── pom.xml\n└── src/\n    ├── main/\n    │   ├── java/        ← .java files from Eclipse src folders\n    │   └── resources/   ← non-.java files from Eclipse src folders\n    └── test/\n        ├── java/        ← .java files from src folders whose name contains \"test\"\n        └── resources/   ← non-.java files from src folders whose name contains \"test\"\n```\n\n### WTP Web Project\n\n```\noutput/<artifactId>\n├── pom.xml              ← includes <packaging>war</packaging>\n└── src/\n    └── main/\n        ├── java/        ← Java sources\n        ├── resources/   ← resource files\n        └── webapp/      ← Web content (JSP, HTML, WEB-INF/web.xml, etc.)\n```\n\n## Web Content Root Resolution\n\nThe Web content root directory is not hard-coded to `WebContent` or similar. It is resolved dynamically from the `tag=\"defaultRootSource\"` entry in `.settings/org.eclipse.wst.common.component`.\n\n```xml\n<!-- Example: .settings/org.eclipse.wst.common.component -->\n<wb-module deploy-name=\"MyApp\">\n  <wb-resource deploy-path=\"/\" source-path=\"/WebContent\" tag=\"defaultRootSource\"/>\n</wb-module>\n```\n\n## Testing\n\n```bash\nmvn test\n```\n\n## License\n\nApache License, Version 2.0 — see [LICENSE](LICENSE).\n\n## Author\n\nTakakiyo Tanaka (IBM Japan)\n",
+                  "line_count": 252
+                },
+                "isError": false
+              },
+              "labels": {
+                "displayName": "ファイル{path}を書き込み",
+                "error": "ファイル{path}の書き込みに失敗しました",
+                "running": "ファイル{path}を書き込み中",
+                "success": "ファイル{path}を書き込みました",
+                "runningLong": [
+                  "まだ書いています...",
+                  "執筆には時間がかかります...",
+                  "もうすぐ完了...",
+                  "たくさんの内容を書く...",
+                  "すべての文字をコミット中...",
+                  "命がけで執筆中…"
+                ]
+              },
+              "permission": "edit",
+              "isOutsideWorkspace": false
+            },
+            "_meta": {
+              "changes": {
+                "file:///Users/takakiyo/ibmbob/e2m/README.md": {
+                  "before": "# e2m — Eclipse to Maven Converter\n\nEclipseのJavaプロジェクトをMavenの標準ディレクトリ構造に変換するコマンドラインツールです。\n\n## 機能\n\n- **Eclipse Javaプロジェクト**（`.project` / `.classpath`）の変換に対応\n- **Eclipse WTP Webプロジェクト**（`.settings/org.eclipse.wst.common.component`）の変換に対応\n- `.classpath` に記載されたJARファイルのSHA-1ハッシュを計算し、**Maven Central**を自動検索して `<dependency>` を生成\n  - 見つからないJARはsystemスコープの依存として `pom.xml` に出力\n- Javaソースを `src/main/java`（テストは `src/test/java`）にコピー\n- リソースファイルを `src/main/resources`（テストは `src/test/resources`）にコピー\n- WebコンテンツをMaven標準の `src/main/webapp` にコピー\n- `<packaging>war</packaging>` をWTPプロジェクトに自動付与\n- **文字エンコード変換**（`--convertToUtf8`）：Shift_JIS などのレガシーエンコードで書かれたソースを UTF-8 に変換してコピー\n\n## 動作要件\n\n- Java 17以上\n- Maven 3.8以上（ビルド時のみ）\n- GraalVM 21以上（ネイティブイメージビルド時のみ）\n- インターネット接続（Maven Central検索時）\n\n## ビルド\n\n### Fat JAR\n\n```bash\nmvn package\n```\n\n`target/e2m.jar` が生成されます。\n\n### ネイティブ実行ファイル（GraalVM Native Image）\n\nGraalVM JDKが `JAVA_HOME` に設定されている環境で実行してください。\n\n```bash\nmvn -Pnative package\n```\n\n`target/e2m`（macOS/Linux）または `target/e2m.exe`（Windows）が生成されます。\n\n## 使い方\n\n```\ne2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]\n    [--convertToUtf8 [-e <encoding>]]\n    <inputDir> <outputDir>\n```\n\nオプションを省略した場合は、プロジェクト解析後に対話的に入力を求めます。\n`artifactId` のデフォルトは Eclipse のプロジェクト名、`artifactVersion` のデフォルトは `1.0-SNAPSHOT` です。\n\n出力先は `<outputDir>/<artifactId>/` ディレクトリに生成されます。\n\n### オプション\n\n| オプション | 説明 |\n|---|---|\n| `-g`, `--groupId` | 生成するpom.xmlのgroupId（省略時は対話入力） |\n| `-a`, `--artifactId` | 生成するpom.xmlのartifactId（省略時はプロジェクト名がデフォルト） |\n| `-v`, `--artifactVersion` | 生成するpom.xmlのversion（省略時は `1.0-SNAPSHOT`） |\n| `--javaTargetVersion` | 生成するpom.xmlの `maven.compiler.target` を上書きする（省略時はEclipseプロジェクトの設定値を使用。ソースバージョンより低い値は指定不可） |\n| `--convertToUtf8` | ソースファイルをUTF-8に変換してコピーする（詳細は後述） |\n| `-e`, `--sourceEncoding` | 変換元エンコーディング（例: `Shift_JIS`）。`--convertToUtf8` 指定時のみ有効。省略時は対話入力 |\n| `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |\n| `-h`, `--help` | ヘルプを表示 |\n| `-V`, `--version` | バージョンを表示 |\n\n### 引数\n\n| 引数 | 説明 |\n|---|---|\n| `<inputDir>` | 変換元のEclipseプロジェクトディレクトリ |\n| `<outputDir>` | 変換先のMavenプロジェクトを生成するベースディレクトリ |\n\n### 実行例\n\nオプションをすべて指定する場合（Fat JAR）:\n\n```bash\njava -jar target/e2m-1.0.jar \\\n  -g com.example \\\n  -a myapp \\\n  -v 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → /path/to/output/myapp/ に生成される\n```\n\nオプションをすべて指定する場合（ネイティブ実行ファイル）:\n\n```bash\n./e2m \\\n  --groupId com.example \\\n  --artifactId myapp \\\n  --artifactVersion 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\nオプションを省略して対話入力する場合:\n\n```bash\n./e2m /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyEclipseProject]: myapp\nartifactVersion [1.0-SNAPSHOT]:\n# → /path/to/output/myapp/ に生成される\n```\n\n## 文字エンコード変換（--convertToUtf8）\n\nEclipseプロジェクトがレガシーエンコード（Shift_JIS など）で書かれている場合、`--convertToUtf8` オプションを指定することで、コピーと同時に UTF-8 へ変換できます。\n\n### 基本的な使い方\n\n```bash\n./e2m --convertToUtf8 -e Shift_JIS \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\n`-e` / `--sourceEncoding` を省略した場合は、プロジェクト解析後に対話入力を求めます。\n\n```bash\n./e2m --convertToUtf8 /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyApp]:\nartifactVersion [1.0-SNAPSHOT]:\nsourceEncoding: Shift_JIS\n```\n\n### ファイル種別ごとの変換仕様\n\n#### `.java` ファイル\n\n`--sourceEncoding` で指定されたエンコードで読み込み、UTF-8 で書き出します。\n\n#### `.properties` ファイル\n\n`--sourceEncoding` で読み込み、`\\uXXXX` 形式の Unicode エスケープシーケンスを Unicode 文字に展開したうえで UTF-8 で書き出します。\n\n出力先は **Javaターゲットバージョン** によって変わります。\n\n| javaTargetVersion | 出力先 | 理由 |\n|---|---|---|\n| 9 以上 | `src/main/resources/` | Java 9 以降は `.properties` を UTF-8 で直接読み込めるため |\n| 8 以下 | `src/main/resources-utf8/` | Java 8 以下は UTF-8 の `.properties` を直接読み込めないため（後述） |\n\n**Java 8 以下の場合：** `src/main/resources-utf8/` に配置した UTF-8 の `.properties` を、ビルド時に `native2ascii-maven-plugin` が `\\uXXXX` 形式に変換して `src/main/resources/` 相当の出力ディレクトリに配置します。このため `pom.xml` に以下のプラグイン設定が自動追加されます。\n\n```xml\n<plugin>\n  <groupId>org.codehaus.mojo</groupId>\n  <artifactId>native2ascii-maven-plugin</artifactId>\n  <version>2.1.1</version>\n  <executions>\n    <execution>\n      <id>native2ascii-utf8-resources</id>\n      <phase>process-resources</phase>\n      <goals><goal>resources</goal></goals>\n      <configuration>\n        <encoding>UTF-8</encoding>\n        <srcDir>${project.basedir}/src/main/resources-utf8</srcDir>\n        <outputDir>${project.build.outputDirectory}</outputDir>\n      </configuration>\n    </execution>\n  </executions>\n</plugin>\n```\n\n#### `.jsp` ファイル\n\nファイル先頭の最大 4KB を ISO-8859-1 で読み込み、`<%@ page pageEncoding=\"...\" %>` ディレクティブを検出します。\n\n| 状況 | 動作 |\n|---|---|\n| `pageEncoding` が検出でき、かつ UTF-8 以外 | 検出されたエンコードでファイルを読み込み、`pageEncoding` 属性値を `UTF-8` に書き換えて出力 |\n| `pageEncoding` が検出できない | `--sourceEncoding` の値でファイルを読み込み、UTF-8 で出力 |\n| `pageEncoding` が既に `UTF-8` | 変換せずバイナリコピー |\n\n#### その他のファイル\n\n以下のファイルはアプリケーションの動作に直接影響するため、変換せずにバイナリコピーします。\n\n- `.html` / `.htm` — `<meta charset>` の書き換えはアプリ動作に影響するため\n- `.css` / `.js` — アプリ動作に影響するため\n- `.xml` / `.tag` / `.tld` — 従来より UTF-8 の使用が慣習であり変換不要のため\n- `.jar` / 画像 / バイナリファイル\n\n### 変換後のディレクトリ構造（Java 8 以下の場合）\n\n```\noutput/<artifactId>\n├── pom.xml              ← native2ascii-maven-plugin が追加済み\n└── src/\n    └── main/\n        ├── java/\n        ├── resources-utf8/  ← UTF-8 に変換した .properties（ビルド時に変換される）\n        └── webapp/\n```\n\n## 変換がうまくいかない場合\n\n変換結果が期待どおりにならない場合は、`--debug` オプションを付けて再実行してください。\n変換完了後に `<outputDir>/e2m_debug_<日付時刻>.zip` が生成されます。\n\n```bash\n./e2m --debug \\\n  -g com.example \\\n  -a myapp \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → /path/to/output/e2m_debug_20250101_120000.zip が生成される\n```\n\nZIPファイルには以下のデバッグ情報が含まれます。\n\n| ファイル | 内容 |\n|---|---|\n| `eclipse/.project` | Eclipseプロジェクト定義ファイル |\n| `eclipse/.classpath` | Eclipseクラスパス定義ファイル |\n| `eclipse/.factorypath` | Eclipseファクトリパス定義ファイル |\n| `eclipse/.settings/…` | `.settings/` ディレクトリ以下の全ファイル |\n| `eclipse_files.json` | Eclipseプロジェクト内の全ディレクトリ・ファイルの一覧（名前・サイズ・日付。JARファイルにはSHA1ハッシュも含む） |\n| `pom.xml` | 生成したMavenプロジェクトの `pom.xml` |\n| `maven_files.json` | 生成したMavenプロジェクトの全ディレクトリ・ファイルの一覧（名前・サイズ・日付） |\n\n問題が解決しない場合は、生成された ZIP ファイルを添付して [Issues](../../issues) にご報告ください。\n\n## 変換結果のディレクトリ構造\n\n### Javaプロジェクト\n\n```\noutput/<artifactId>\n├── pom.xml\n└── src/\n    ├── main/\n    │   ├── java/        ← Eclipseのsrcフォルダ以下の.javaファイル\n    │   └── resources/   ← Eclipseのsrcフォルダ以下の非.javaファイル\n    └── test/\n        ├── java/        ← 名前に\"test\"を含むsrcフォルダ以下の.javaファイル\n        └── resources/   ← 名前に\"test\"を含むsrcフォルダ以下の非.javaファイル\n```\n\n### WTP Webプロジェクト\n\n```\noutput/<artifactId>\n├── pom.xml              ← <packaging>war</packaging> を含む\n└── src/\n    └── main/\n        ├── java/        ← Javaソース\n        ├── resources/   ← リソースファイル\n        └── webapp/      ← Webコンテンツ (JSP, HTML, WEB-INF/web.xml など)\n```\n\n## Webコンテンツルートの解決\n\nWebコンテンツのルートディレクトリは `WebContent` 等に固定せず、`.settings/org.eclipse.wst.common.component` の `tag=\"defaultRootSource\"` エントリから動的に解決します。\n\n```xml\n<!-- .settings/org.eclipse.wst.common.component の例 -->\n<wb-module deploy-name=\"MyApp\">\n  <wb-resource deploy-path=\"/\" source-path=\"/WebContent\" tag=\"defaultRootSource\"/>\n</wb-module>\n```\n\n## テスト\n\n```bash\nmvn test\n```\n\n## ライセンス\n\nApache License, Version 2.0 — [LICENSE](LICENSE) を参照してください。\n\n## 作者\n\nTakakiyo Tanaka (IBM Japan)\n",
+                  "after": "# e2m — Eclipse to Maven Converter\n\n**[English](README.md)** | [日本語](README.ja.md)\n\nA command-line tool that converts Eclipse Java projects to the standard Maven directory structure.\n\n## Features\n\n- Supports **Eclipse Java projects** (`.project` / `.classpath`)\n- Supports **Eclipse WTP Web projects** (`.settings/org.eclipse.wst.common.component`)\n- Computes SHA-1 hashes of JAR files listed in `.classpath`, searches **Maven Central** automatically, and generates `<dependency>` entries\n  - JARs not found in Maven Central are added as system-scoped dependencies in `pom.xml`\n- Copies Java sources to `src/main/java` (tests to `src/test/java`)\n- Copies resource files to `src/main/resources` (tests to `src/test/resources`)\n- Copies Web content to the Maven standard `src/main/webapp`\n- Automatically adds `<packaging>war</packaging>` for WTP projects\n- **Character encoding conversion** (`--convertToUtf8`): converts sources written in a legacy encoding such as Shift_JIS to UTF-8 during copy\n\n## Requirements\n\n- Java 17 or later\n- Maven 3.8 or later (build only)\n- GraalVM 21 or later (native image build only)\n- Internet access (for Maven Central lookup)\n\n## Build\n\n### Fat JAR\n\n```bash\nmvn package\n```\n\nProduces `target/e2m.jar`.\n\n### Native Executable (GraalVM Native Image)\n\nRun in an environment where a GraalVM JDK is set as `JAVA_HOME`.\n\n```bash\nmvn -Pnative package\n```\n\nProduces `target/e2m` (macOS/Linux) or `target/e2m.exe` (Windows).\n\n## Usage\n\n```\ne2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]\n    [--convertToUtf8 [-e <encoding>]]\n    <inputDir> <outputDir>\n```\n\nIf options are omitted, the tool prompts for input interactively after analysing the project.  \nThe default for `artifactId` is the Eclipse project name; the default for `artifactVersion` is `1.0-SNAPSHOT`.\n\nOutput is placed in `<outputDir>/<artifactId>/`.\n\n### Options\n\n| Option | Description |\n|---|---|\n| `-g`, `--groupId` | `groupId` in the generated `pom.xml` (prompted if omitted) |\n| `-a`, `--artifactId` | `artifactId` in the generated `pom.xml` (defaults to the project name) |\n| `-v`, `--artifactVersion` | `version` in the generated `pom.xml` (defaults to `1.0-SNAPSHOT`) |\n| `--javaTargetVersion` | Overrides `maven.compiler.target` in the generated `pom.xml` (defaults to the Eclipse project setting; cannot be lower than the source version) |\n| `--convertToUtf8` | Converts source files to UTF-8 during copy (see below) |\n| `-e`, `--sourceEncoding` | Source encoding (e.g. `Shift_JIS`). Only valid with `--convertToUtf8`; prompted if omitted |\n| `--debug` | Outputs debug information as a ZIP file (see below) |\n| `-h`, `--help` | Show help |\n| `-V`, `--version` | Show version |\n\n### Arguments\n\n| Argument | Description |\n|---|---|\n| `<inputDir>` | Source Eclipse project directory |\n| `<outputDir>` | Base directory where the Maven project will be generated |\n\n### Examples\n\nAll options specified (Fat JAR):\n\n```bash\njava -jar target/e2m-1.0.jar \\\n  -g com.example \\\n  -a myapp \\\n  -v 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → generated in /path/to/output/myapp/\n```\n\nAll options specified (native executable):\n\n```bash\n./e2m \\\n  --groupId com.example \\\n  --artifactId myapp \\\n  --artifactVersion 1.0 \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\nInteractive input (options omitted):\n\n```bash\n./e2m /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyEclipseProject]: myapp\nartifactVersion [1.0-SNAPSHOT]:\n# → generated in /path/to/output/myapp/\n```\n\n## Character Encoding Conversion (--convertToUtf8)\n\nIf an Eclipse project is written in a legacy encoding such as Shift_JIS, the `--convertToUtf8` option converts source files to UTF-8 as they are copied.\n\n### Basic Usage\n\n```bash\n./e2m --convertToUtf8 -e Shift_JIS \\\n  /path/to/eclipse-project \\\n  /path/to/output\n```\n\nIf `-e` / `--sourceEncoding` is omitted, the tool prompts for it after analysing the project.\n\n```bash\n./e2m --convertToUtf8 /path/to/eclipse-project /path/to/output\n\ngroupId: com.example\nartifactId [MyApp]:\nartifactVersion [1.0-SNAPSHOT]:\nsourceEncoding: Shift_JIS\n```\n\n### Conversion Rules by File Type\n\n#### `.java` files\n\nRead using the encoding specified by `--sourceEncoding` and written as UTF-8.\n\n#### `.properties` files\n\nRead using `--sourceEncoding`, Unicode escape sequences in `\\uXXXX` format are expanded to Unicode characters, then written as UTF-8.\n\nThe output directory depends on the **Java target version**:\n\n| javaTargetVersion | Output directory | Reason |\n|---|---|---|\n| 9 or later | `src/main/resources/` | Java 9+ can load `.properties` files directly as UTF-8 |\n| 8 or earlier | `src/main/resources-utf8/` | Java 8 and below cannot load UTF-8 `.properties` directly (see below) |\n\n**For Java 8 and below:** UTF-8 `.properties` files placed in `src/main/resources-utf8/` are converted back to `\\uXXXX` format by `native2ascii-maven-plugin` during the build and placed in the equivalent of `src/main/resources/`. The following plugin configuration is automatically added to `pom.xml`:\n\n```xml\n<plugin>\n  <groupId>org.codehaus.mojo</groupId>\n  <artifactId>native2ascii-maven-plugin</artifactId>\n  <version>2.1.1</version>\n  <executions>\n    <execution>\n      <id>native2ascii-utf8-resources</id>\n      <phase>process-resources</phase>\n      <goals><goal>resources</goal></goals>\n      <configuration>\n        <encoding>UTF-8</encoding>\n        <srcDir>${project.basedir}/src/main/resources-utf8</srcDir>\n        <outputDir>${project.build.outputDirectory}</outputDir>\n      </configuration>\n    </execution>\n  </executions>\n</plugin>\n```\n\n#### `.jsp` files\n\nThe first 4 KB of each file is read as ISO-8859-1 to detect the `<%@ page pageEncoding=\"...\" %>` directive.\n\n| Situation | Behaviour |\n|---|---|\n| `pageEncoding` detected and not UTF-8 | File is read using the detected encoding; `pageEncoding` attribute value is rewritten to `UTF-8` on output |\n| `pageEncoding` not detected | File is read using `--sourceEncoding` and written as UTF-8 |\n| `pageEncoding` is already `UTF-8` | Copied as binary without conversion |\n\n#### Other files\n\nThe following files are copied as binary without conversion because modifying them could affect application behaviour:\n\n- `.html` / `.htm` — rewriting `<meta charset>` would affect app behaviour\n- `.css` / `.js` — would affect app behaviour\n- `.xml` / `.tag` / `.tld` — UTF-8 is already the conventional encoding; no conversion needed\n- `.jar` / images / other binary files\n\n### Output Directory Structure After Conversion (Java 8 and below)\n\n```\noutput/<artifactId>\n├── pom.xml              ← native2ascii-maven-plugin already configured\n└── src/\n    └── main/\n        ├── java/\n        ├── resources-utf8/  ← UTF-8 converted .properties (converted during build)\n        └── webapp/\n```\n\n## Troubleshooting\n\nIf the conversion result is not as expected, re-run with the `--debug` option.  \nAfter conversion completes, `<outputDir>/e2m_debug_<datetime>.zip` is generated.\n\n```bash\n./e2m --debug \\\n  -g com.example \\\n  -a myapp \\\n  /path/to/eclipse-project \\\n  /path/to/output\n# → /path/to/output/e2m_debug_20250101_120000.zip is generated\n```\n\nThe ZIP file contains the following debug information:\n\n| File | Contents |\n|---|---|\n| `eclipse/.project` | Eclipse project definition file |\n| `eclipse/.classpath` | Eclipse classpath definition file |\n| `eclipse/.factorypath` | Eclipse factory path definition file |\n| `eclipse/.settings/…` | All files under the `.settings/` directory |\n| `eclipse_files.json` | List of all directories and files in the Eclipse project (name, size, date; JAR files include SHA-1 hash) |\n| `pom.xml` | The `pom.xml` of the generated Maven project |\n| `maven_files.json` | List of all directories and files in the generated Maven project (name, size, date) |\n\nIf the issue persists, please open an [Issue](../../issues) and attach the generated ZIP file.\n\n## Output Directory Structure\n\n### Java Project\n\n```\noutput/<artifactId>\n├── pom.xml\n└── src/\n    ├── main/\n    │   ├── java/        ← .java files from Eclipse src folders\n    │   └── resources/   ← non-.java files from Eclipse src folders\n    └── test/\n        ├── java/        ← .java files from src folders whose name contains \"test\"\n        └── resources/   ← non-.java files from src folders whose name contains \"test\"\n```\n\n### WTP Web Project\n\n```\noutput/<artifactId>\n├── pom.xml              ← includes <packaging>war</packaging>\n└── src/\n    └── main/\n        ├── java/        ← Java sources\n        ├── resources/   ← resource files\n        └── webapp/      ← Web content (JSP, HTML, WEB-INF/web.xml, etc.)\n```\n\n## Web Content Root Resolution\n\nThe Web content root directory is not hard-coded to `WebContent` or similar. It is resolved dynamically from the `tag=\"defaultRootSource\"` entry in `.settings/org.eclipse.wst.common.component`.\n\n```xml\n<!-- Example: .settings/org.eclipse.wst.common.component -->\n<wb-module deploy-name=\"MyApp\">\n  <wb-resource deploy-path=\"/\" source-path=\"/WebContent\" tag=\"defaultRootSource\"/>\n</wb-module>\n```\n\n## Testing\n\n```bash\nmvn test\n```\n\n## License\n\nApache License, Version 2.0 — see [LICENSE](LICENSE).\n\n## Author\n\nTakakiyo Tanaka (IBM Japan)\n",
+                  "patch": "Index: file:///Users/takakiyo/ibmbob/e2m/README.md\n===================================================================\n--- file:///Users/takakiyo/ibmbob/e2m/README.md\n+++ file:///Users/takakiyo/ibmbob/e2m/README.md\n@@ -1,96 +1,98 @@\n # e2m — Eclipse to Maven Converter\n \n-EclipseのJavaプロジェクトをMavenの標準ディレクトリ構造に変換するコマンドラインツールです。\n+**[English](README.md)** | [日本語](README.ja.md)\n \n-## 機能\n+A command-line tool that converts Eclipse Java projects to the standard Maven directory structure.\n \n-- **Eclipse Javaプロジェクト**（`.project` / `.classpath`）の変換に対応\n-- **Eclipse WTP Webプロジェクト**（`.settings/org.eclipse.wst.common.component`）の変換に対応\n-- `.classpath` に記載されたJARファイルのSHA-1ハッシュを計算し、**Maven Central**を自動検索して `<dependency>` を生成\n-  - 見つからないJARはsystemスコープの依存として `pom.xml` に出力\n-- Javaソースを `src/main/java`（テストは `src/test/java`）にコピー\n-- リソースファイルを `src/main/resources`（テストは `src/test/resources`）にコピー\n-- WebコンテンツをMaven標準の `src/main/webapp` にコピー\n-- `<packaging>war</packaging>` をWTPプロジェクトに自動付与\n-- **文字エンコード変換**（`--convertToUtf8`）：Shift_JIS などのレガシーエンコードで書かれたソースを UTF-8 に変換してコピー\n+## Features\n \n-## 動作要件\n+- Supports **Eclipse Java projects** (`.project` / `.classpath`)\n+- Supports **Eclipse WTP Web projects** (`.settings/org.eclipse.wst.common.component`)\n+- Computes SHA-1 hashes of JAR files listed in `.classpath`, searches **Maven Central** automatically, and generates `<dependency>` entries\n+  - JARs not found in Maven Central are added as system-scoped dependencies in `pom.xml`\n+- Copies Java sources to `src/main/java` (tests to `src/test/java`)\n+- Copies resource files to `src/main/resources` (tests to `src/test/resources`)\n+- Copies Web content to the Maven standard `src/main/webapp`\n+- Automatically adds `<packaging>war</packaging>` for WTP projects\n+- **Character encoding conversion** (`--convertToUtf8`): converts sources written in a legacy encoding such as Shift_JIS to UTF-8 during copy\n \n-- Java 17以上\n-- Maven 3.8以上（ビルド時のみ）\n-- GraalVM 21以上（ネイティブイメージビルド時のみ）\n-- インターネット接続（Maven Central検索時）\n+## Requirements\n \n-## ビルド\n+- Java 17 or later\n+- Maven 3.8 or later (build only)\n+- GraalVM 21 or later (native image build only)\n+- Internet access (for Maven Central lookup)\n \n+## Build\n+\n ### Fat JAR\n \n ```bash\n mvn package\n ```\n \n-`target/e2m.jar` が生成されます。\n+Produces `target/e2m.jar`.\n \n-### ネイティブ実行ファイル（GraalVM Native Image）\n+### Native Executable (GraalVM Native Image)\n \n-GraalVM JDKが `JAVA_HOME` に設定されている環境で実行してください。\n+Run in an environment where a GraalVM JDK is set as `JAVA_HOME`.\n \n ```bash\n mvn -Pnative package\n ```\n \n-`target/e2m`（macOS/Linux）または `target/e2m.exe`（Windows）が生成されます。\n+Produces `target/e2m` (macOS/Linux) or `target/e2m.exe` (Windows).\n \n-## 使い方\n+## Usage\n \n ```\n e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]\n     [--convertToUtf8 [-e <encoding>]]\n     <inputDir> <outputDir>\n ```\n \n-オプションを省略した場合は、プロジェクト解析後に対話的に入力を求めます。\n-`artifactId` のデフォルトは Eclipse のプロジェクト名、`artifactVersion` のデフォルトは `1.0-SNAPSHOT` です。\n+If options are omitted, the tool prompts for input interactively after analysing the project.  \n+The default for `artifactId` is the Eclipse project name; the default for `artifactVersion` is `1.0-SNAPSHOT`.\n \n-出力先は `<outputDir>/<artifactId>/` ディレクトリに生成されます。\n+Output is placed in `<outputDir>/<artifactId>/`.\n \n-### オプション\n+### Options\n \n-| オプション | 説明 |\n+| Option | Description |\n |---|---|\n-| `-g`, `--groupId` | 生成するpom.xmlのgroupId（省略時は対話入力） |\n-| `-a`, `--artifactId` | 生成するpom.xmlのartifactId（省略時はプロジェクト名がデフォルト） |\n-| `-v`, `--artifactVersion` | 生成するpom.xmlのversion（省略時は `1.0-SNAPSHOT`） |\n-| `--javaTargetVersion` | 生成するpom.xmlの `maven.compiler.target` を上書きする（省略時はEclipseプロジェクトの設定値を使用。ソースバージョンより低い値は指定不可） |\n-| `--convertToUtf8` | ソースファイルをUTF-8に変換してコピーする（詳細は後述） |\n-| `-e`, `--sourceEncoding` | 変換元エンコーディング（例: `Shift_JIS`）。`--convertToUtf8` 指定時のみ有効。省略時は対話入力 |\n-| `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |\n-| `-h`, `--help` | ヘルプを表示 |\n-| `-V`, `--version` | バージョンを表示 |\n+| `-g`, `--groupId` | `groupId` in the generated `pom.xml` (prompted if omitted) |\n+| `-a`, `--artifactId` | `artifactId` in the generated `pom.xml` (defaults to the project name) |\n+| `-v`, `--artifactVersion` | `version` in the generated `pom.xml` (defaults to `1.0-SNAPSHOT`) |\n+| `--javaTargetVersion` | Overrides `maven.compiler.target` in the generated `pom.xml` (defaults to the Eclipse project setting; cannot be lower than the source version) |\n+| `--convertToUtf8` | Converts source files to UTF-8 during copy (see below) |\n+| `-e`, `--sourceEncoding` | Source encoding (e.g. `Shift_JIS`). Only valid with `--convertToUtf8`; prompted if omitted |\n+| `--debug` | Outputs debug information as a ZIP file (see below) |\n+| `-h`, `--help` | Show help |\n+| `-V`, `--version` | Show version |\n \n-### 引数\n+### Arguments\n \n-| 引数 | 説明 |\n+| Argument | Description |\n |---|---|\n-| `<inputDir>` | 変換元のEclipseプロジェクトディレクトリ |\n-| `<outputDir>` | 変換先のMavenプロジェクトを生成するベースディレクトリ |\n+| `<inputDir>` | Source Eclipse project directory |\n+| `<outputDir>` | Base directory where the Maven project will be generated |\n \n-### 実行例\n+### Examples\n \n-オプションをすべて指定する場合（Fat JAR）:\n+All options specified (Fat JAR):\n \n ```bash\n java -jar target/e2m-1.0.jar \\\n   -g com.example \\\n   -a myapp \\\n   -v 1.0 \\\n   /path/to/eclipse-project \\\n   /path/to/output\n-# → /path/to/output/myapp/ に生成される\n+# → generated in /path/to/output/myapp/\n ```\n \n-オプションをすべて指定する場合（ネイティブ実行ファイル）:\n+All options specified (native executable):\n \n ```bash\n ./e2m \\\n   --groupId com.example \\\n@@ -99,32 +101,32 @@\n   /path/to/eclipse-project \\\n   /path/to/output\n ```\n \n-オプションを省略して対話入力する場合:\n+Interactive input (options omitted):\n \n ```bash\n ./e2m /path/to/eclipse-project /path/to/output\n \n groupId: com.example\n artifactId [MyEclipseProject]: myapp\n artifactVersion [1.0-SNAPSHOT]:\n-# → /path/to/output/myapp/ に生成される\n+# → generated in /path/to/output/myapp/\n ```\n \n-## 文字エンコード変換（--convertToUtf8）\n+## Character Encoding Conversion (--convertToUtf8)\n \n-Eclipseプロジェクトがレガシーエンコード（Shift_JIS など）で書かれている場合、`--convertToUtf8` オプションを指定することで、コピーと同時に UTF-8 へ変換できます。\n+If an Eclipse project is written in a legacy encoding such as Shift_JIS, the `--convertToUtf8` option converts source files to UTF-8 as they are copied.\n \n-### 基本的な使い方\n+### Basic Usage\n \n ```bash\n ./e2m --convertToUtf8 -e Shift_JIS \\\n   /path/to/eclipse-project \\\n   /path/to/output\n ```\n \n-`-e` / `--sourceEncoding` を省略した場合は、プロジェクト解析後に対話入力を求めます。\n+If `-e` / `--sourceEncoding` is omitted, the tool prompts for it after analysing the project.\n \n ```bash\n ./e2m --convertToUtf8 /path/to/eclipse-project /path/to/output\n \n@@ -133,26 +135,26 @@\n artifactVersion [1.0-SNAPSHOT]:\n sourceEncoding: Shift_JIS\n ```\n \n-### ファイル種別ごとの変換仕様\n+### Conversion Rules by File Type\n \n-#### `.java` ファイル\n+#### `.java` files\n \n-`--sourceEncoding` で指定されたエンコードで読み込み、UTF-8 で書き出します。\n+Read using the encoding specified by `--sourceEncoding` and written as UTF-8.\n \n-#### `.properties` ファイル\n+#### `.properties` files\n \n-`--sourceEncoding` で読み込み、`\\uXXXX` 形式の Unicode エスケープシーケンスを Unicode 文字に展開したうえで UTF-8 で書き出します。\n+Read using `--sourceEncoding`, Unicode escape sequences in `\\uXXXX` format are expanded to Unicode characters, then written as UTF-8.\n \n-出力先は **Javaターゲットバージョン** によって変わります。\n+The output directory depends on the **Java target version**:\n \n-| javaTargetVersion | 出力先 | 理由 |\n+| javaTargetVersion | Output directory | Reason |\n |---|---|---|\n-| 9 以上 | `src/main/resources/` | Java 9 以降は `.properties` を UTF-8 で直接読み込めるため |\n-| 8 以下 | `src/main/resources-utf8/` | Java 8 以下は UTF-8 の `.properties` を直接読み込めないため（後述） |\n+| 9 or later | `src/main/resources/` | Java 9+ can load `.properties` files directly as UTF-8 |\n+| 8 or earlier | `src/main/resources-utf8/` | Java 8 and below cannot load UTF-8 `.properties` directly (see below) |\n \n-**Java 8 以下の場合：** `src/main/resources-utf8/` に配置した UTF-8 の `.properties` を、ビルド時に `native2ascii-maven-plugin` が `\\uXXXX` 形式に変換して `src/main/resources/` 相当の出力ディレクトリに配置します。このため `pom.xml` に以下のプラグイン設定が自動追加されます。\n+**For Java 8 and below:** UTF-8 `.properties` files placed in `src/main/resources-utf8/` are converted back to `\\uXXXX` format by `native2ascii-maven-plugin` during the build and placed in the equivalent of `src/main/resources/`. The following plugin configuration is automatically added to `pom.xml`:\n \n ```xml\n <plugin>\n   <groupId>org.codehaus.mojo</groupId>\n@@ -172,115 +174,115 @@\n   </executions>\n </plugin>\n ```\n \n-#### `.jsp` ファイル\n+#### `.jsp` files\n \n-ファイル先頭の最大 4KB を ISO-8859-1 で読み込み、`<%@ page pageEncoding=\"...\" %>` ディレクティブを検出します。\n+The first 4 KB of each file is read as ISO-8859-1 to detect the `<%@ page pageEncoding=\"...\" %>` directive.\n \n-| 状況 | 動作 |\n+| Situation | Behaviour |\n |---|---|\n-| `pageEncoding` が検出でき、かつ UTF-8 以外 | 検出されたエンコードでファイルを読み込み、`pageEncoding` 属性値を `UTF-8` に書き換えて出力 |\n-| `pageEncoding` が検出できない | `--sourceEncoding` の値でファイルを読み込み、UTF-8 で出力 |\n-| `pageEncoding` が既に `UTF-8` | 変換せずバイナリコピー |\n+| `pageEncoding` detected and not UTF-8 | File is read using the detected encoding; `pageEncoding` attribute value is rewritten to `UTF-8` on output |\n+| `pageEncoding` not detected | File is read using `--sourceEncoding` and written as UTF-8 |\n+| `pageEncoding` is already `UTF-8` | Copied as binary without conversion |\n \n-#### その他のファイル\n+#### Other files\n \n-以下のファイルはアプリケーションの動作に直接影響するため、変換せずにバイナリコピーします。\n+The following files are copied as binary without conversion because modifying them could affect application behaviour:\n \n-- `.html` / `.htm` — `<meta charset>` の書き換えはアプリ動作に影響するため\n-- `.css` / `.js` — アプリ動作に影響するため\n-- `.xml` / `.tag` / `.tld` — 従来より UTF-8 の使用が慣習であり変換不要のため\n-- `.jar` / 画像 / バイナリファイル\n+- `.html` / `.htm` — rewriting `<meta charset>` would affect app behaviour\n+- `.css` / `.js` — would affect app behaviour\n+- `.xml` / `.tag` / `.tld` — UTF-8 is already the conventional encoding; no conversion needed\n+- `.jar` / images / other binary files\n \n-### 変換後のディレクトリ構造（Java 8 以下の場合）\n+### Output Directory Structure After Conversion (Java 8 and below)\n \n ```\n output/<artifactId>\n-├── pom.xml              ← native2ascii-maven-plugin が追加済み\n+├── pom.xml              ← native2ascii-maven-plugin already configured\n └── src/\n     └── main/\n         ├── java/\n-        ├── resources-utf8/  ← UTF-8 に変換した .properties（ビルド時に変換される）\n+        ├── resources-utf8/  ← UTF-8 converted .properties (converted during build)\n         └── webapp/\n ```\n \n-## 変換がうまくいかない場合\n+## Troubleshooting\n \n-変換結果が期待どおりにならない場合は、`--debug` オプションを付けて再実行してください。\n-変換完了後に `<outputDir>/e2m_debug_<日付時刻>.zip` が生成されます。\n+If the conversion result is not as expected, re-run with the `--debug` option.  \n+After conversion completes, `<outputDir>/e2m_debug_<datetime>.zip` is generated.\n \n ```bash\n ./e2m --debug \\\n   -g com.example \\\n   -a myapp \\\n   /path/to/eclipse-project \\\n   /path/to/output\n-# → /path/to/output/e2m_debug_20250101_120000.zip が生成される\n+# → /path/to/output/e2m_debug_20250101_120000.zip is generated\n ```\n \n-ZIPファイルには以下のデバッグ情報が含まれます。\n+The ZIP file contains the following debug information:\n \n-| ファイル | 内容 |\n+| File | Contents |\n |---|---|\n-| `eclipse/.project` | Eclipseプロジェクト定義ファイル |\n-| `eclipse/.classpath` | Eclipseクラスパス定義ファイル |\n-| `eclipse/.factorypath` | Eclipseファクトリパス定義ファイル |\n-| `eclipse/.settings/…` | `.settings/` ディレクトリ以下の全ファイル |\n-| `eclipse_files.json` | Eclipseプロジェクト内の全ディレクトリ・ファイルの一覧（名前・サイズ・日付。JARファイルにはSHA1ハッシュも含む） |\n-| `pom.xml` | 生成したMavenプロジェクトの `pom.xml` |\n-| `maven_files.json` | 生成したMavenプロジェクトの全ディレクトリ・ファイルの一覧（名前・サイズ・日付） |\n+| `eclipse/.project` | Eclipse project definition file |\n+| `eclipse/.classpath` | Eclipse classpath definition file |\n+| `eclipse/.factorypath` | Eclipse factory path definition file |\n+| `eclipse/.settings/…` | All files under the `.settings/` directory |\n+| `eclipse_files.json` | List of all directories and files in the Eclipse project (name, size, date; JAR files include SHA-1 hash) |\n+| `pom.xml` | The `pom.xml` of the generated Maven project |\n+| `maven_files.json` | List of all directories and files in the generated Maven project (name, size, date) |\n \n-問題が解決しない場合は、生成された ZIP ファイルを添付して [Issues](../../issues) にご報告ください。\n+If the issue persists, please open an [Issue](../../issues) and attach the generated ZIP file.\n \n-## 変換結果のディレクトリ構造\n+## Output Directory Structure\n \n-### Javaプロジェクト\n+### Java Project\n \n ```\n output/<artifactId>\n ├── pom.xml\n └── src/\n     ├── main/\n-    │   ├── java/        ← Eclipseのsrcフォルダ以下の.javaファイル\n-    │   └── resources/   ← Eclipseのsrcフォルダ以下の非.javaファイル\n+    │   ├── java/        ← .java files from Eclipse src folders\n+    │   └── resources/   ← non-.java files from Eclipse src folders\n     └── test/\n-        ├── java/        ← 名前に\"test\"を含むsrcフォルダ以下の.javaファイル\n-        └── resources/   ← 名前に\"test\"を含むsrcフォルダ以下の非.javaファイル\n+        ├── java/        ← .java files from src folders whose name contains \"test\"\n+        └── resources/   ← non-.java files from src folders whose name contains \"test\"\n ```\n \n-### WTP Webプロジェクト\n+### WTP Web Project\n \n ```\n output/<artifactId>\n-├── pom.xml              ← <packaging>war</packaging> を含む\n+├── pom.xml              ← includes <packaging>war</packaging>\n └── src/\n     └── main/\n-        ├── java/        ← Javaソース\n-        ├── resources/   ← リソースファイル\n-        └── webapp/      ← Webコンテンツ (JSP, HTML, WEB-INF/web.xml など)\n+        ├── java/        ← Java sources\n+        ├── resources/   ← resource files\n+        └── webapp/      ← Web content (JSP, HTML, WEB-INF/web.xml, etc.)\n ```\n \n-## Webコンテンツルートの解決\n+## Web Content Root Resolution\n \n-Webコンテンツのルートディレクトリは `WebContent` 等に固定せず、`.settings/org.eclipse.wst.common.component` の `tag=\"defaultRootSource\"` エントリから動的に解決します。\n+The Web content root directory is not hard-coded to `WebContent` or similar. It is resolved dynamically from the `tag=\"defaultRootSource\"` entry in `.settings/org.eclipse.wst.common.component`.\n \n ```xml\n-<!-- .settings/org.eclipse.wst.common.component の例 -->\n+<!-- Example: .settings/org.eclipse.wst.common.component -->\n <wb-module deploy-name=\"MyApp\">\n   <wb-resource deploy-path=\"/\" source-path=\"/WebContent\" tag=\"defaultRootSource\"/>\n </wb-module>\n ```\n \n-## テスト\n+## Testing\n \n ```bash\n mvn test\n ```\n \n-## ライセンス\n+## License\n \n-Apache License, Version 2.0 — [LICENSE](LICENSE) を参照してください。\n+Apache License, Version 2.0 — see [LICENSE](LICENSE).\n \n-## 作者\n+## Author\n \n Takakiyo Tanaka (IBM Japan)\n"
+                }
+              },
+              "fileMtimes": {
+                "file:///Users/takakiyo/ibmbob/e2m/README.md": 1784619073847
+              },
+              "durationMs": 6087,
+              "timestamp": 1784619074890
+            },
+            "id": "fd5bfb885db885457aee71352767007d"
+          },
+          "createdAt": 1784619086830
+        },
+        {
+          "id": "b8305aa078fe6943560b75c58930c401",
+          "role": "tool",
+          "data": {
+            "role": "tool",
+            "content": "To do list updated: 2 items total.\n\nTo do list completed.",
+            "toolUsage": {
+              "signature": {
+                "id": "tooluse_34A6lOOcqVtoAnPILgDtMK",
+                "name": "update_todo_list",
+                "arguments": {
+                  "todos": "\n[x] README.ja.md を作成（現在の README.md に言語切替リンクを追加）\n[x] 英語版 README.md を新規作成（言語切替リンク付き）\n"
+                },
+                "isError": false
+              },
+              "labels": {
+                "displayName": "Todoリストを更新",
+                "error": "Todoリストの更新に失敗しました",
+                "running": "Todoリストを更新中",
+                "success": "Todoリストを更新しました"
+              },
+              "permission": "todo",
+              "isOutsideWorkspace": false
+            },
+            "_meta": {
+              "todos": [
+                {
+                  "description": "README.ja.md を作成（現在の README.md に言語切替リンクを追加）",
+                  "state": "done"
+                },
+                {
+                  "description": "英語版 README.md を新規作成（言語切替リンク付き）",
+                  "state": "done"
+                }
+              ],
+              "durationMs": 1358,
+              "timestamp": 1784619080855
+            },
+            "id": "b8305aa078fe6943560b75c58930c401"
+          },
+          "createdAt": 1784619086831
+        },
+        {
+          "id": "0661d58eaa311494ba02f961fcd3e9ff",
+          "role": "assistant",
+          "data": {
+            "role": "assistant",
+            "content": "完了しました。以下の2ファイルを作成・更新しました：\n\n---\n\n### [`README.md`](README.md)（新規：英語版）\n- 先頭に **`[English]`** | `[日本語]` のナビゲーションリンクを追加\n- 全文を英語に翻訳（見出し・表・コメント・説明文すべて）\n\n### [`README.ja.md`](README.ja.md)（新規：日本語版）\n- 元の [`README.md`](README.md) の内容をそのまま使用\n- 先頭に `[English]` | **`[日本語]`** のナビゲーションリンクを追加（現在地をボールド）\n\n両ファイルの冒頭にあるリンクをクリックすることで、英語版 ↔ 日本語版 を相互に行き来できます。",
+            "id": "0661d58eaa311494ba02f961fcd3e9ff",
+            "_meta": {
+              "timestamp": 1784619083490,
+              "spend": {
+                "input": 29620,
+                "output": 256,
+                "cacheRead": 20030,
+                "cacheWrite": 9589,
+                "cost": 0.07469,
+                "contextTokens": 29876,
+                "reasoningTokens": 0
+              }
+            },
+            "stop": true
+          },
+          "createdAt": 1784619086831
+        },
+        {
+          "id": "ec9f4ca447ae8e8912a1379eec81e940",
+          "role": "user",
+          "data": {
+            "role": "user",
+            "content": "<environment_details>\n<active_file>\nActive file: /Users/takakiyo/ibmbob/e2m/README.ja.md\n</active_file>\n</environment_details>\n\n\n<user_query>\n英文でコミットメッセージを作成し，現在の変更内容をCommitして下ださい。\n</user_query>",
+            "availableTools": [
+              "GetSymbolsOverview",
+              "FindSymbol",
+              "FindReferencingSymbols",
+              "use_skill",
+              "apply_diff",
+              "create_html_artifact",
+              "insert_content",
+              "list_files",
+              "read_file",
+              "read_xlsx",
+              "search_and_replace",
+              "update_todo_list",
+              "switch_mode",
+              "write_file",
+              "execute_command",
+              "glob",
+              "grep",
+              "spawn_subagent",
+              "ask_followup_question",
+              "start_subtask",
+              "start_workflow"
+            ],
+            "_meta": {
+              "mentionEditorState": {
+                "root": {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "detail": 0,
+                          "format": 0,
+                          "mode": "normal",
+                          "style": "",
+                          "text": "英文でコミットメッセージを作成し，現在の変更内容をCommitして下ださい。",
+                          "type": "text",
+                          "version": 1
+                        }
+                      ],
+                      "direction": null,
+                      "format": "",
+                      "indent": 0,
+                      "type": "paragraph",
+                      "version": 1,
+                      "textFormat": 0,
+                      "textStyle": ""
+                    }
+                  ],
+                  "direction": null,
+                  "format": "",
+                  "indent": 0,
+                  "type": "root",
+                  "version": 1
+                }
+              },
+              "mask": "英文でコミットメッセージを作成し，現在の変更内容をCommitして下ださい。",
+              "mode": {
+                "id": "agent",
+                "name": "Agent",
+                "description": "Take your idea, or plan, and bring it to life",
+                "groups": [
+                  "read",
+                  "edit",
+                  "execute",
+                  "mcp",
+                  "skill",
+                  "todo",
+                  "artifact",
+                  "subtask",
+                  "subagent",
+                  "mode"
+                ],
+                "roleDefinition": "You are Bob, a highly skilled software engineer with extensive knowledge in many programming languages, frameworks, design patterns, and best practices.",
+                "customInstructions": "You can write, modify, and refactor code in any programming language or framework. Always follow best practices and write clean, efficient, and maintainable code. Make sure to test your code thoroughly before submitting it. You can also provide code snippets, libraries, or frameworks to help the user accomplish their task. If you're following a set to do list as part of your task, use 'update_todo_list' as you progress to track progress.",
+                "whenToUse": "Use this mode when you need to write, modify, or refactor code. Ideal for implementing features, fixing bugs, creating new files, or making code improvements across any programming language or framework.",
+                "scope": "builtin",
+                "sourceId": "bob",
+                "sourceName": "Bob"
+              },
+              "timestamp": 1784619137074
+            },
+            "id": "ec9f4ca447ae8e8912a1379eec81e940"
+          },
+          "createdAt": 1784619137040
+        },
+        {
+          "id": "9968ee01ae0b6c1fe0e926127dc587f6",
+          "role": "assistant",
+          "data": {
+            "role": "assistant",
+            "content": "まず現在の git の状態を確認します。",
+            "id": "9968ee01ae0b6c1fe0e926127dc587f6",
+            "_meta": {
+              "timestamp": 1784619141305,
+              "spend": {
+                "input": 30222,
+                "output": 133,
+                "cacheRead": 29967,
+                "cacheWrite": 254,
+                "cost": 0.075887,
+                "contextTokens": 30355,
+                "reasoningTokens": 0
+              }
+            },
+            "toolCalls": [
+              {
+                "id": "tooluse_YK7Kk7ihHXK3go6PzrsbhN",
+                "name": "execute_command",
+                "arguments": {
+                  "command": "git status && git diff --stat"
+                },
+                "isError": false
+              },
+              {
+                "id": "tooluse_5ulAgIby8FUcEOnNacCCLO",
+                "name": "execute_command",
+                "arguments": {
+                  "command": "git add README.md README.ja.md && git commit -m \"docs: add English README and convert existing README to Japanese\n\n- Rename the original Japanese README.md content to README.ja.md\n- Create a new English README.md translated from the Japanese original\n- Add language switcher links ([English] / [日本語]) at the top of both files\""
+                },
+                "isError": false
+              }
+            ]
+          },
+          "createdAt": 1784619145237
+        },
+        {
+          "id": "bfb107cbe0305ae2f443921050d8dab0",
+          "role": "tool",
+          "data": {
+            "role": "tool",
+            "content": "On branch master\nYour branch is up to date with 'origin/master'.\n\nChanges not staged for commit:\n  (use \"git add <file>...\" to update what will be committed)\n  (use \"git restore <file>...\" to discard changes in working directory)\n\tmodified:   README.md\n\nUntracked files:\n  (use \"git add <file>...\" to include in what will be committed)\n\tREADME.ja.md\n\nno changes added to commit (use \"git add\" and/or \"git commit -a\")\n README.md | 220 +++++++++++++++++++++++++++++++-------------------------------\n 1 file changed, 111 insertions(+), 109 deletions(-)",
+            "toolUsage": {
+              "signature": {
+                "id": "tooluse_YK7Kk7ihHXK3go6PzrsbhN",
+                "name": "execute_command",
+                "arguments": {
+                  "command": "git status && git diff --stat"
+                },
+                "isError": false
+              },
+              "labels": {
+                "displayName": "コマンドを実行",
+                "error": "コマンドが失敗しました",
+                "running": "実行中",
+                "success": "実行しました",
+                "runningLong": [
+                  "実行中...",
+                  "コマンド実行中...",
+                  "一部のコマンドには時間がかかります...",
+                  "プロセスを待機中...",
+                  "ターミナルが考えています...",
+                  "すべてのコマンドが高速というわけではありません...",
+                  "辛抱強く待っています..."
+                ]
+              },
+              "permission": "execute",
+              "commandUse": {
+                "unverifiable": false,
+                "commands": [
+                  "git status",
+                  "git diff --stat"
+                ],
+                "requiresSecurityApproval": false,
+                "commandVariants": [
+                  "git status",
+                  "git",
+                  "git diff --stat"
+                ]
+              },
+              "isOutsideWorkspace": false
+            },
+            "_meta": {
+              "cwd": ".",
+              "durationMs": 3922,
+              "timestamp": 1784619145236
+            },
+            "id": "bfb107cbe0305ae2f443921050d8dab0"
+          },
+          "createdAt": 1784619145242
+        },
+        {
+          "id": "3dcef4d1bd2846749b0ca12990ff06cf",
+          "role": "tool",
+          "data": {
+            "role": "tool",
+            "content": "[master f2360ea] docs: add English README and convert existing README to Japanese\n 2 files changed, 399 insertions(+), 109 deletions(-)\n create mode 100644 README.ja.md",
+            "toolUsage": {
+              "signature": {
+                "id": "tooluse_5ulAgIby8FUcEOnNacCCLO",
+                "name": "execute_command",
+                "arguments": {
+                  "command": "git add README.md README.ja.md && git commit -m \"docs: add English README and convert existing README to Japanese\n\n- Rename the original Japanese README.md content to README.ja.md\n- Create a new English README.md translated from the Japanese original\n- Add language switcher links ([English] / [日本語]) at the top of both files\""
+                },
+                "isError": false
+              },
+              "labels": {
+                "displayName": "コマンドを実行",
+                "error": "コマンドが失敗しました",
+                "running": "実行中",
+                "success": "実行しました",
+                "runningLong": [
+                  "実行中...",
+                  "コマンド実行中...",
+                  "一部のコマンドには時間がかかります...",
+                  "プロセスを待機中...",
+                  "ターミナルが考えています...",
+                  "すべてのコマンドが高速というわけではありません...",
+                  "辛抱強く待っています..."
+                ]
+              },
+              "permission": "execute",
+              "commandUse": {
+                "unverifiable": false,
+                "commands": [
+                  "git add README.md README.ja.md",
+                  "git commit -m \"docs: add English README and convert existing README to Japanese\n\n- Rename the original Japanese README.md content to README.ja.md\n- Create a new English README.md translated from the Japanese original\n- Add language switcher links ([English] / [日本語]) at the top of both files\""
+                ],
+                "requiresSecurityApproval": false,
+                "commandVariants": [
+                  "git add README.md README.ja.md",
+                  "git",
+                  "git commit -m \"docs: add English README and convert existing README to Japanese\n\n- Rename the original Japanese README.md content to README.ja.md\n- Create a new English README.md translated from the Japanese original\n- Add language switcher links ([English] / [日本語]) at the top of both files\""
+                ]
+              },
+              "isOutsideWorkspace": false
+            },
+            "_meta": {
+              "cwd": ".",
+              "durationMs": 5474,
+              "timestamp": 1784619154391
+            },
+            "id": "3dcef4d1bd2846749b0ca12990ff06cf"
+          },
+          "createdAt": 1784619154391
+        },
+        {
+          "id": "61d01f3f0ba8850764afcfc601711b65",
+          "role": "assistant",
+          "data": {
+            "role": "assistant",
+            "content": "コミット完了しました。\n\n```\n[master f2360ea] docs: add English README and convert existing README to Japanese\n 2 files changed, 399 insertions(+), 109 deletions(-)\n create mode 100644 README.ja.md\n```\n\nコミットメッセージの内容：\n\n- **件名**: `docs: add English README and convert existing README to Japanese`\n- **本文**:\n  - `README.md` の元の日本語内容を [`README.ja.md`](README.ja.md) として保存\n  - 日本語原文を翻訳した英語版 [`README.md`](README.md) を新規作成\n  - 両ファイル冒頭に `[English]` / `[日本語]` 言語切替リンクを追加",
+            "id": "61d01f3f0ba8850764afcfc601711b65",
+            "_meta": {
+              "timestamp": 1784619157177,
+              "spend": {
+                "input": 30441,
+                "output": 213,
+                "cacheRead": 29967,
+                "cacheWrite": 473,
+                "cost": 0.076635,
+                "contextTokens": 30654,
+                "reasoningTokens": 0
+              }
+            },
+            "stop": true
+          },
+          "createdAt": 1784619158642
+        }
+      ]
+    }
+  ]
+}
