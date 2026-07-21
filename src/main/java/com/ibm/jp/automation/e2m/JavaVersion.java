@@ -16,6 +16,8 @@
 
 package com.ibm.jp.automation.e2m;
 
+import java.util.HashMap;
+
 /**
  * Javaのバージョン番号を表す不変クラス。
  *
@@ -37,8 +39,33 @@ public final class JavaVersion implements Comparable<JavaVersion> {
      * 内部値は {@code -1} であり、全ての有効な {@link JavaVersion} より小さい。
      */
     private static final int UNKNOWN_VERSION = -1;
+
+    /**
+     * 有効なJavaVersionについては，シングルインスタンスを返す。
+     * なので，{@code if (version == JavaVersion.Java8)}などの比較が可能。
+     */
     public static final JavaVersion Java8 = new JavaVersion(8, "1.8");
     public static final JavaVersion Java9 = new JavaVersion(9, "9");
+    private static HashMap<Integer,JavaVersion> cache;
+    static {
+        cache = new HashMap<>();
+        cache.put(8, Java8);
+        cache.put(9, Java9);
+    }
+    private static JavaVersion getCache(int version) {
+        JavaVersion ret = cache.get(version);
+        if (ret != null) {
+            return ret;
+        } else {
+            if (version <= 8) {
+                ret = new JavaVersion(version, "1." + Integer.toString(version));
+            } else {
+                ret = new JavaVersion(version, Integer.toString(version));
+            }
+            cache.put(version, ret);
+            return ret;
+        }
+    }
 
     /** 内部的に保持する整数バージョン番号（例: 1.8 → 8、17 → 17。UNKNOWN は -1）。 */
     private final int value;
@@ -80,7 +107,7 @@ public final class JavaVersion implements Comparable<JavaVersion> {
                 if (minor < 0 || minor > 8) {
                     return new JavaVersion(UNKNOWN_VERSION, v);
                 }
-                return new JavaVersion(minor, v);
+                return getCache(minor);
             } catch (NumberFormatException e) {
                 return new JavaVersion(UNKNOWN_VERSION, v);
             }
@@ -92,8 +119,8 @@ public final class JavaVersion implements Comparable<JavaVersion> {
             if (n < 5) {
                 return new JavaVersion(UNKNOWN_VERSION, v);
             }
-            if (n < 9) {
-                return new JavaVersion(n, "1." + v);
+            if (n < 26) {
+                return getCache(n);
             } else {
                 return new JavaVersion(n, v);
             }
