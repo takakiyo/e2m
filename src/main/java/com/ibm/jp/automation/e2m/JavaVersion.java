@@ -119,11 +119,7 @@ public final class JavaVersion implements Comparable<JavaVersion> {
             if (n < 5) {
                 return new JavaVersion(UNKNOWN_VERSION, v);
             }
-            if (n < 26) {
-                return getCache(n);
-            } else {
-                return new JavaVersion(n, v);
-            }
+            return getCache(n);
         } catch (NumberFormatException e) {
             return new JavaVersion(UNKNOWN_VERSION, v);
         }
