@@ -151,8 +151,7 @@ public class DependencyResolver {
             return parseResponse(json, baseName, path.toAbsolutePath().toString(), scope, jarFile.exported());
         } catch (Exception e) {
             log.error("  [ERROR] Maven Central API呼び出しに失敗しました: {} → {}", jarFileName, e.getMessage());
-            log.info("  → API error (system scope): {}", jarFileName);
-            return new MavenDependency(baseName, baseName, "0.0.0", "system", path.toAbsolutePath().toString(), jarFile.exported());
+            throw new RuntimeException("Maven Central API呼び出しに失敗しました: " + jarFileName, e);
         }
     }
 

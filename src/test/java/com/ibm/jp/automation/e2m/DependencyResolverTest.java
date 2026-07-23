@@ -169,11 +169,9 @@ class DependencyResolverTest {
             }
         };
 
-        List<MavenDependency> results = invokeResolveViaReflection(
-                errorResolver, List.of(jar.toString()), tempDir);
-
-        assertEquals(1, results.size());
-        assertEquals("system", results.get(0).scope());
+        // API呼び出し失敗は致命的エラーとして RuntimeException がスローされる
+        assertThrows(RuntimeException.class, () ->
+                invokeResolveViaReflection(errorResolver, List.of(jar.toString()), tempDir));
     }
 
     // ─────────────────────────────────────────────────────────────
