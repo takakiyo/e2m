@@ -140,6 +140,7 @@ class ProjectCopierTest {
         // 実在するJARファイルをinputDir内に作成
         Path jarFile = createFile(inputDir, "lib/mylib.jar", "dummy");
 
+        // exported=false（デフォルト）→ libs/provided にコピーされる
         MavenDependency systemDep = new MavenDependency(
                 "mylib", "mylib", "0.0.0", "system", jarFile.toAbsolutePath().toString());
 
@@ -148,8 +149,29 @@ class ProjectCopierTest {
 
         copyNoConvert(project, List.of(systemDep));
 
-        assertTrue(Files.exists(outputDir.resolve("libs/mylib.jar")),
-                "system スコープの JAR が libs/ にコピーされる");
+        assertTrue(Files.exists(outputDir.resolve("libs/provided/mylib.jar")),
+                "system スコープの JAR（exported=false）が libs/provided/ にコピーされる");
+        assertFalse(Files.exists(outputDir.resolve("libs/compile/mylib.jar")),
+                "exported=false の JAR は libs/compile/ にはコピーされない");
+    }
+
+    @Test
+    void copy_systemScopeJar_exported_copiedToLibsCompile() throws Exception {
+        // exported=true → libs/compile にコピーされる
+        Path jarFile = createFile(inputDir, "lib/exported.jar", "dummy");
+
+        MavenDependency systemDep = new MavenDependency(
+                "exported", "exported", "0.0.0", "system", jarFile.toAbsolutePath().toString(), true);
+
+        EclipseProject project = new EclipseProject("App", false, List.of(), "bin",
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
+
+        copyNoConvert(project, List.of(systemDep));
+
+        assertTrue(Files.exists(outputDir.resolve("libs/compile/exported.jar")),
+                "system スコープの JAR（exported=true）が libs/compile/ にコピーされる");
+        assertFalse(Files.exists(outputDir.resolve("libs/provided/exported.jar")),
+                "exported=true の JAR は libs/provided/ にはコピーされない");
     }
 
     @Test

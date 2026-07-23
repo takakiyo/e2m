@@ -116,16 +116,19 @@ public class ProjectCopier {
             }
         }
 
-        // system スコープの JAR を libs/ にコピー
+        // system スコープの JAR を libs/compile または libs/provided にコピー
         for (MavenDependency dep : dependencies) {
             if ("system".equals(dep.scope()) && dep.systemPath() != null) {
                 Path src = Path.of(dep.systemPath());
                 if (Files.isRegularFile(src)) {
-                    Path libsDir = outputDir.resolve("libs");
+                    // exported=true → libs/compile（WARのWEB-INF/libに含める）
+                    // exported=false → libs/provided（WARには含めない）
+                    String subDir = dep.exported() ? "libs/compile" : "libs/provided";
+                    Path libsDir = outputDir.resolve(subDir);
                     Files.createDirectories(libsDir);
                     Path dest = libsDir.resolve(src.getFileName());
                     Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
-                    log.debug("  Copied JAR to libs/: {}", dest.getFileName());
+                    log.debug("  Copied JAR to {}/: {}", subDir, dest.getFileName());
                 }
             }
         }

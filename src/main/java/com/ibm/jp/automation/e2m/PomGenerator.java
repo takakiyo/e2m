@@ -99,6 +99,9 @@ public class PomGenerator {
 
         // <dependencies>
         boolean hasDependencies = !dependencies.isEmpty() || eclipseProject.webProject();
+        // libs/compile に JAR があるか（system スコープかつ exported=true）を判定
+        boolean hasCompileLibs = dependencies.stream()
+                .anyMatch(d -> "system".equals(d.scope()) && d.exported());
         if (hasDependencies) {
             Element deps = doc.createElement("dependencies");
             for (MavenDependency dep : dependencies) {
@@ -110,10 +113,11 @@ public class PomGenerator {
                     addTextElement(doc, dependency, "scope", dep.scope());
                 }
                 if (dep.systemPath() != null) {
-                    // system スコープの JAR は libs/ にコピーされるため ${project.basedir}/libs/<ファイル名> で参照
+                    // system スコープの JAR は libs/compile または libs/provided にコピーされる
                     String fileName = Path.of(dep.systemPath()).getFileName().toString();
+                    String subDir = dep.exported() ? "libs/compile" : "libs/provided";
                     addTextElement(doc, dependency, "systemPath",
-                            "${project.basedir}/libs/" + fileName);
+                            "${project.basedir}/" + subDir + "/" + fileName);
                 }
                 deps.appendChild(dependency);
             }
@@ -155,6 +159,18 @@ public class PomGenerator {
             addTextElement(doc, warPlugin, "version", MAVEN_WAR_PLUGIN_VERSION);
             Element configuration = doc.createElement("configuration");
             addTextElement(doc, configuration, "failOnMissingWebXml", "false");
+            // libs/compile に JAR がある場合は WEB-INF/lib へコピーする webResources 設定を追加
+            if (hasCompileLibs) {
+                Element webResources = doc.createElement("webResources");
+                Element resource = doc.createElement("resource");
+                addTextElement(doc, resource, "directory", "${project.basedir}/libs/compile");
+                addTextElement(doc, resource, "targetPath", "WEB-INF/lib");
+                Element includes = doc.createElement("includes");
+                addTextElement(doc, includes, "include", "*.jar");
+                resource.appendChild(includes);
+                webResources.appendChild(resource);
+                configuration.appendChild(webResources);
+            }
             warPlugin.appendChild(configuration);
             plugins.appendChild(warPlugin);
         }

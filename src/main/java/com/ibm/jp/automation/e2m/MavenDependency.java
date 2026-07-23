@@ -24,11 +24,19 @@ package com.ibm.jp.automation.e2m;
  * @param version    バージョン文字列
  * @param scope      スコープ（nullまたは空の場合はscope要素を出力しない。systemスコープの場合は "system"）
  * @param systemPath systemスコープの場合のJARファイルの絶対パス。それ以外はnull
+ * @param exported   WARのWEB-INF/libに含めるか（{@code true} の場合はlibs/compileへ、{@code false} の場合はlibs/providedへコピー）。デフォルトはfalse
  */
 public record MavenDependency(
         String groupId,
         String artifactId,
         String version,
         String scope,
-        String systemPath
-) {}
+        String systemPath,
+        boolean exported
+) {
+    /** exported=false のデフォルトコンストラクタ互換ファクトリ（既存コードとの互換用）。 */
+    public MavenDependency(String groupId, String artifactId, String version,
+                           String scope, String systemPath) {
+        this(groupId, artifactId, version, scope, systemPath, false);
+    }
+}

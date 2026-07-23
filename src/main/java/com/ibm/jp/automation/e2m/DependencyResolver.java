@@ -134,7 +134,7 @@ public class DependencyResolver {
         if (!Files.exists(path)) {
             log.warn("  [WARN] JARファイルが見つかりません: {} → systemスコープとして扱います", path);
             log.info("  → not found (system scope): {}", jarFileName);
-            return new MavenDependency(baseName, baseName, "0.0.0", "system", jarPath);
+            return new MavenDependency(baseName, baseName, "0.0.0", "system", jarPath, jarFile.exported());
         }
 
         String sha1;
@@ -143,16 +143,16 @@ public class DependencyResolver {
         } catch (Exception e) {
             log.error("  [ERROR] SHA1計算に失敗しました: {} → {}", path, e.getMessage());
             log.info("  → SHA1 error (system scope): {}", jarFileName);
-            return new MavenDependency(baseName, baseName, "0.0.0", "system", path.toAbsolutePath().toString());
+            return new MavenDependency(baseName, baseName, "0.0.0", "system", path.toAbsolutePath().toString(), jarFile.exported());
         }
 
         try {
             String json = callMavenCentralApi(sha1);
-            return parseResponse(json, baseName, path.toAbsolutePath().toString(), scope);
+            return parseResponse(json, baseName, path.toAbsolutePath().toString(), scope, jarFile.exported());
         } catch (Exception e) {
             log.error("  [ERROR] Maven Central API呼び出しに失敗しました: {} → {}", jarFileName, e.getMessage());
             log.info("  → API error (system scope): {}", jarFileName);
-            return new MavenDependency(baseName, baseName, "0.0.0", "system", path.toAbsolutePath().toString());
+            return new MavenDependency(baseName, baseName, "0.0.0", "system", path.toAbsolutePath().toString(), jarFile.exported());
         }
     }
 
@@ -183,17 +183,18 @@ public class DependencyResolver {
     /**
      * Maven Central APIのJSONレスポンスをパースしてMavenDependencyを返す。
      *
-     * <p>Maven Central で見つかった場合のスコープは {@code scope} をそのまま使う。</p>
+     * <p>Maven Central で見つかった場合のスコープは {@code scope} をそのまま使う。
+     * 見つからなかった場合（system スコープ）は {@code exported} を MavenDependency にコピーする。</p>
      */
     private static MavenDependency parseResponse(String json, String baseName,
-                                                 String absolutePath, String scope) {
+                                                 String absolutePath, String scope, boolean exported) {
         // numFound:0 なら見つからなかった
         Matcher numFoundMatcher = NUM_FOUND_PATTERN.matcher(json);
         if (numFoundMatcher.find()) {
             int numFound = Integer.parseInt(numFoundMatcher.group(1));
             if (numFound == 0) {
                 log.info("  → not found in Maven Central (system scope): {}", baseName);
-                return new MavenDependency(baseName, baseName, "0.0.0", "system", absolutePath);
+                return new MavenDependency(baseName, baseName, "0.0.0", "system", absolutePath, exported);
             }
         }
 
@@ -212,6 +213,6 @@ public class DependencyResolver {
         // パースに失敗した場合もsystemスコープ
         log.warn("  [WARN] Maven Central APIレスポンスのパースに失敗しました: {}", baseName);
         log.info("  → parse error (system scope): {}", baseName);
-        return new MavenDependency(baseName, baseName, "0.0.0", "system", absolutePath);
+        return new MavenDependency(baseName, baseName, "0.0.0", "system", absolutePath, exported);
     }
 }

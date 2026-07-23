@@ -139,6 +139,7 @@ class PomGeneratorTest {
 
     @Test
     void dependency_systemScope_hasScopeAndSystemPath() throws Exception {
+        // exported=false → libs/provided へ
         MavenDependency dep = new MavenDependency("mylib", "mylib", "0.0.0", "system", "/opt/libs/mylib.jar");
         generateNoConvert(javaProject(), List.of(dep), "com.example", "myapp", "1.0", null);
         Document doc = parsePom();
@@ -147,10 +148,10 @@ class PomGeneratorTest {
         assertEquals(1, scopes.getLength());
         assertEquals("system", scopes.item(0).getTextContent());
 
-        // systemPath は ${project.basedir}/libs/<ファイル名> 形式で出力される
+        // systemPath は ${project.basedir}/libs/provided/<ファイル名> 形式で出力される
         NodeList systemPaths = doc.getElementsByTagName("systemPath");
         assertEquals(1, systemPaths.getLength());
-        assertEquals("${project.basedir}/libs/mylib.jar", systemPaths.item(0).getTextContent());
+        assertEquals("${project.basedir}/libs/provided/mylib.jar", systemPaths.item(0).getTextContent());
     }
 
     @Test
@@ -240,6 +241,58 @@ class PomGeneratorTest {
     // =========================================================
     // native2ascii-maven-plugin テスト
     // =========================================================
+
+    @Test
+    void dependency_systemScope_exported_hasScopeAndSystemPath() throws Exception {
+        // exported=true → libs/compile へ
+        MavenDependency dep = new MavenDependency("mylib", "mylib", "0.0.0", "system", "/opt/libs/mylib.jar", true);
+        generateNoConvert(javaProject(), List.of(dep), "com.example", "myapp", "1.0", null);
+        Document doc = parsePom();
+
+        NodeList systemPaths = doc.getElementsByTagName("systemPath");
+        assertEquals(1, systemPaths.getLength());
+        assertEquals("${project.basedir}/libs/compile/mylib.jar", systemPaths.item(0).getTextContent());
+    }
+
+    @Test
+    void webProject_hasCompileLibs_webResourcesAdded() throws Exception {
+        // exported=true の system スコープ JAR がある場合、webResources 設定が追加される
+        MavenDependency dep = new MavenDependency("mylib", "mylib", "0.0.0", "system", "/opt/libs/mylib.jar", true);
+        generateNoConvert(webProject(), List.of(dep), "com.example", "webapp", "1.0", null);
+        Document doc = parsePom();
+
+        NodeList directories = doc.getElementsByTagName("directory");
+        boolean foundCompileLibs = false;
+        for (int i = 0; i < directories.getLength(); i++) {
+            if ("${project.basedir}/libs/compile".equals(directories.item(i).getTextContent())) {
+                foundCompileLibs = true;
+            }
+        }
+        assertTrue(foundCompileLibs, "libs/compile JAR がある場合は webResources/resource/directory が出力される");
+
+        NodeList targetPaths = doc.getElementsByTagName("targetPath");
+        boolean foundWebInfLib = false;
+        for (int i = 0; i < targetPaths.getLength(); i++) {
+            if ("WEB-INF/lib".equals(targetPaths.item(i).getTextContent())) {
+                foundWebInfLib = true;
+            }
+        }
+        assertTrue(foundWebInfLib, "targetPath=WEB-INF/lib が出力される");
+    }
+
+    @Test
+    void webProject_noCompileLibs_noWebResources() throws Exception {
+        // exported=false（デフォルト）の system スコープ JAR のみの場合、webResources は追加されない
+        MavenDependency dep = new MavenDependency("mylib", "mylib", "0.0.0", "system", "/opt/libs/mylib.jar");
+        generateNoConvert(webProject(), List.of(dep), "com.example", "webapp", "1.0", null);
+        Document doc = parsePom();
+
+        NodeList directories = doc.getElementsByTagName("directory");
+        for (int i = 0; i < directories.getLength(); i++) {
+            assertNotEquals("${project.basedir}/libs/compile", directories.item(i).getTextContent(),
+                    "exported=false の場合は libs/compile の webResources は出力されない");
+        }
+    }
 
     @Test
     void convertToUtf8_java8_hasNative2AsciiPlugin() throws Exception {
