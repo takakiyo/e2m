@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -68,12 +69,51 @@ class EclipseProjectParserTest {
     }
 
     @Test
-    void javaProject_jarPaths() throws Exception {
+    void javaProject_jarFiles() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-java-project"));
-        // sample-java-project/.classpath: commons-lang3 と slf4j-api の2本
-        assertEquals(2, project.jarPaths().size());
-        assertTrue(project.jarPaths().contains("lib/commons-lang3-3.12.0.jar"));
-        assertTrue(project.jarPaths().contains("lib/slf4j-api-2.0.0.jar"));
+        // sample-java-project/.classpath: commons-lang3, slf4j-api, servlet-api, junit-5 の4本
+        List<JarFile> jarFiles = project.jarFiles();
+        assertEquals(4, jarFiles.size());
+    }
+
+    @Test
+    void javaProject_jarFiles_noAttributes() throws Exception {
+        EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-java-project"));
+        // commons-lang3 と slf4j-api は属性指定なし → test=false, exported=false
+        List<JarFile> jarFiles = project.jarFiles();
+        JarFile commonsLang = jarFiles.stream()
+                .filter(f -> f.path().equals("lib/commons-lang3-3.12.0.jar"))
+                .findFirst().orElseThrow();
+        assertFalse(commonsLang.test());
+        assertFalse(commonsLang.exported());
+
+        JarFile slf4j = jarFiles.stream()
+                .filter(f -> f.path().equals("lib/slf4j-api-2.0.0.jar"))
+                .findFirst().orElseThrow();
+        assertFalse(slf4j.test());
+        assertFalse(slf4j.exported());
+    }
+
+    @Test
+    void javaProject_jarFiles_exportedAttribute() throws Exception {
+        EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-java-project"));
+        // servlet-api は exported="true" → exported=true
+        JarFile servletApi = project.jarFiles().stream()
+                .filter(f -> f.path().equals("lib/servlet-api.jar"))
+                .findFirst().orElseThrow();
+        assertTrue(servletApi.exported());
+        assertFalse(servletApi.test());
+    }
+
+    @Test
+    void javaProject_jarFiles_testAttribute() throws Exception {
+        EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-java-project"));
+        // junit-5 は <attribute name="test" value="true"/> → test=true
+        JarFile junit = project.jarFiles().stream()
+                .filter(f -> f.path().equals("lib/junit-5.jar"))
+                .findFirst().orElseThrow();
+        assertTrue(junit.test());
+        assertFalse(junit.exported());
     }
 
     @Test
@@ -129,10 +169,10 @@ class EclipseProjectParserTest {
     }
 
     @Test
-    void webProject_noJarPaths() throws Exception {
+    void webProject_jarFiles_empty() throws Exception {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-web-project"));
-        // sample-web-project/.classpath: lib エントリなし
-        assertTrue(project.jarPaths().isEmpty());
+        // sample-web-project/.classpath: lib エントリなし、WEB-INF/lib ディレクトリも存在しない
+        assertTrue(project.jarFiles().isEmpty());
     }
 
     @Test

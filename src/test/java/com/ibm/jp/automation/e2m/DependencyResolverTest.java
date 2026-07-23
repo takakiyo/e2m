@@ -196,7 +196,8 @@ class DependencyResolverTest {
             System.out.println("test.jar.path システムプロパティが未設定のためスキップします");
             return;
         }
-        List<MavenDependency> results = DependencyResolver.resolve(List.of(jarPath), tempDir);
+        List<MavenDependency> results = DependencyResolver.resolve(
+                List.of(new JarFile(jarPath, false, true)), tempDir);
         assertEquals(1, results.size());
         System.out.println("Integration result: " + results.get(0));
     }
@@ -216,11 +217,12 @@ class DependencyResolverTest {
             DependencyResolver resolver, List<String> jarPaths, Path inputDir) {
         try {
             var method = DependencyResolver.class.getDeclaredMethod(
-                    "resolveJar", String.class, Path.class);
+                    "resolveJar", JarFile.class, Path.class);
             method.setAccessible(true);
             List<MavenDependency> results = new java.util.ArrayList<>();
             for (String jarPath : jarPaths) {
-                results.add((MavenDependency) method.invoke(resolver, jarPath, inputDir));
+                results.add((MavenDependency) method.invoke(
+                        resolver, new JarFile(jarPath, false, true), inputDir));
             }
             return results;
         } catch (Exception e) {

@@ -16,19 +16,17 @@
 
 package com.ibm.jp.automation.e2m;
 
-import java.util.List;
-
 /**
- * Eclipseプロジェクトのメタデータを保持するレコード。
+ * 実際のJARファイル1件分のパスと、Eclipseの classpathentry 属性を保持するレコード。
+ *
+ * <p>スコープの決定は {@link DependencyResolver} 内で行う。</p>
+ *
+ * @param path     JARファイルへのパス文字列（Eclipseプロジェクトルートからの相対パス、または絶対パス）
+ * @param test     {@code <attribute name="test" value="true"/>} 子要素が存在するか
+ * @param exported {@code exported="true"} 属性が存在するか
  */
-public record EclipseProject(
-        String projectName,
-        boolean webProject,
-        List<String> sourceFolders,
-        String outputFolder,
-        List<JarFile> jarFiles,
-        String webContentRoot,
-        JavaVersion javaSourceVersion,
-        JavaVersion javaTargetVersion,
-        String webVersion
+public record JarFile(
+        String path,
+        boolean test,
+        boolean exported
 ) {}

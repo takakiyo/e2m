@@ -74,7 +74,7 @@ public class EclipseProjectParser {
         cpDoc.getDocumentElement().normalize();
 
         List<String> sourceFolders = new ArrayList<>();
-        List<String> jarPaths = new ArrayList<>();
+        List<ClasspathEntry> libEntries = new ArrayList<>();
         String outputFolder = null;
 
         NodeList entries = cpDoc.getElementsByTagName("classpathentry");
@@ -90,8 +90,15 @@ public class EclipseProjectParser {
                     }
                 }
                 case "output" -> outputFolder = path;
-                case "lib" -> jarPaths.add(path);
+                case "lib" -> {
+                    boolean exported = "true".equals(entry.getAttribute("exported"));
+                    boolean test = hasAttribute(entry, "test", "true");
+                    libEntries.add(new ClasspathEntry(kind, path, exported, test));
+                }
                 case "con" -> {
+                    if ("org.eclipse.jst.j2ee.internal.web.container".equals(path)) {
+                        libEntries.add(new ClasspathEntry(kind, path, false, false));
+                    }
                 }
             }
         }
@@ -108,20 +115,17 @@ public class EclipseProjectParser {
         if (webProject) {
             webContentRoot = parseWebContentRoot(inputDir, builder);
             webVersion = parseWebVersion(inputDir, builder);
-            if (webContentRoot != null) {
-                Path webInfLib = inputDir.resolve(webContentRoot).resolve("WEB-INF/lib");
-                if (Files.isDirectory(webInfLib)) {
-                    jarPaths.add(webContentRoot + "/WEB-INF/lib");
-                }
-            }
         }
+
+        // ── ClasspathEntry リスト → JarFile リスト ─────────────────
+        List<JarFile> jarFiles = buildJarFiles(libEntries, webContentRoot, inputDir);
 
         return new EclipseProject(
                 projectName,
                 webProject,
                 List.copyOf(sourceFolders),
                 outputFolder,
-                List.copyOf(jarPaths),
+                List.copyOf(jarFiles),
                 webContentRoot,
                 javaSourceVersion,
                 javaTargetVersion,
@@ -209,11 +213,60 @@ public class EclipseProjectParser {
     }
 
     /**
-     * {@code classpathentry} 要素が optional かどうかを返す。
-     * {@code <attributes>} 子要素内に {@code <attribute name="optional" value="true"/>} が
-     * 存在する場合に {@code true} を返す。
+     * {@code ClasspathEntry} のリストから {@link JarFile} のリストを構築する。
+     *
+     * <ul>
+     *   <li>{@code path} が {@code .jar} で終わるエントリ: {@code test} 属性・{@code exported}
+     *       属性をそのまま {@link JarFile} に引き継ぐ。スコープの決定は
+     *       {@link DependencyResolver} 内で行う。</li>
+     *   <li>{@code path} が {@code org.eclipse.jst.j2ee.internal.web.container} のエントリ:
+     *       {@code webContentRoot} が非 null の場合、対応する {@code WEB-INF/lib} ディレクトリを
+     *       走査して各 {@code .jar} ファイルを {@code exported=true} として追加する。</li>
+     *   <li>それ以外は無視する。</li>
+     * </ul>
+     *
+     * @param libEntries     {@code .classpath} パースで収集した {@link ClasspathEntry} のリスト
+     * @param webContentRoot Webコンテンツルートの相対パス（null の場合は web container エントリを無視）
+     * @param inputDir       Eclipseプロジェクトのルートディレクトリ
+     * @return 構築した {@link JarFile} のリスト
      */
-    private static boolean isOptional(Element entry) {
+    private static List<JarFile> buildJarFiles(List<ClasspathEntry> libEntries,
+                                               String webContentRoot, Path inputDir) {
+        List<JarFile> jarFiles = new ArrayList<>();
+        for (ClasspathEntry e : libEntries) {
+            if (e.path().endsWith(".jar")) {
+                jarFiles.add(new JarFile(e.path(), e.test(), e.exported()));
+            } else if ("org.eclipse.jst.j2ee.internal.web.container".equals(e.path())
+                    && webContentRoot != null) {
+                Path webInfLib = inputDir.resolve(webContentRoot).resolve("WEB-INF/lib");
+                if (Files.isDirectory(webInfLib)) {
+                    try (var stream = Files.list(webInfLib)) {
+                        // WEB-INF/lib 配下のJARはコンテナが提供するものではなくWARに同梱されるため
+                        // exported=true として扱う
+                        stream.filter(p -> p.getFileName().toString().endsWith(".jar"))
+                              .sorted()
+                              .forEach(p -> jarFiles.add(
+                                      new JarFile(inputDir.relativize(p).toString(), false, true)));
+                    } catch (IOException ex) {
+                        // 読み取り失敗時は無視
+                    }
+                }
+            }
+            // それ以外は無視
+        }
+        return jarFiles;
+    }
+
+    /**
+     * {@code classpathentry} 要素の {@code <attributes>} 子要素内に、
+     * 指定した名前と値を持つ {@code <attribute>} 要素が存在するかどうかを返す。
+     *
+     * @param entry 検査する {@code classpathentry} 要素
+     * @param name  属性名
+     * @param value 属性値
+     * @return 存在する場合は {@code true}
+     */
+    private static boolean hasAttribute(Element entry, String name, String value) {
         NodeList attributesList = entry.getElementsByTagName("attributes");
         if (attributesList.getLength() == 0) {
             return false;
@@ -221,12 +274,21 @@ public class EclipseProjectParser {
         NodeList attributes = ((Element) attributesList.item(0)).getElementsByTagName("attribute");
         for (int i = 0; i < attributes.getLength(); i++) {
             Element attr = (Element) attributes.item(i);
-            if ("optional".equals(attr.getAttribute("name"))
-                    && "true".equals(attr.getAttribute("value"))) {
+            if (name.equals(attr.getAttribute("name"))
+                    && value.equals(attr.getAttribute("value"))) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * {@code classpathentry} 要素が optional かどうかを返す。
+     * {@code <attributes>} 子要素内に {@code <attribute name="optional" value="true"/>} が
+     * 存在する場合に {@code true} を返す。
+     */
+    private static boolean isOptional(Element entry) {
+        return hasAttribute(entry, "optional", "true");
     }
 
     /**

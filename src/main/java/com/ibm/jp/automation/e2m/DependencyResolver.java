@@ -79,38 +79,46 @@ public class DependencyResolver {
     }
 
     /**
-     * JARが置かれたディレクトリパスのリストを受け取り、Maven依存関係リストに解決して返す。
-     * 各ディレクトリに含まれる全ての {@code .jar} ファイルについて解決を行う。
+     * {@link JarFile} のリストを受け取り、Maven依存関係リストに解決して返す。
      *
-     * @param jarPaths Eclipseの.classpathから取得したディレクトリパス文字列のリスト
+     * @param jarFiles Eclipseの.classpathから構築した {@link JarFile} のリスト
      * @param inputDir Eclipseプロジェクトのルートディレクトリ（相対パス解決の基準）
      * @return 解決済みの {@link MavenDependency} リスト
      */
-    public static List<MavenDependency> resolve(List<String> jarPaths, Path inputDir) {
+    public static List<MavenDependency> resolve(List<JarFile> jarFiles, Path inputDir) {
         DependencyResolver resolver = new DependencyResolver();
         List<MavenDependency> results = new ArrayList<>();
-        for (String jarPath : jarPaths) {
-            Path dir = Path.of(jarPath).isAbsolute()
-                    ? Path.of(jarPath)
-                    : inputDir.resolve(jarPath);
-            if (!Files.isDirectory(dir)) {
-                continue;
-            }
-            try (var stream = Files.list(dir)) {
-                stream.filter(p -> p.getFileName().toString().endsWith(".jar"))
-                      .sorted()
-                      .forEach(p -> results.add(resolver.resolveJar(p.toString(), inputDir)));
-            } catch (IOException e) {
-                log.warn("  [WARN] ディレクトリの読み取りに失敗しました: {}", dir);
-            }
+        for (JarFile jarFile : jarFiles) {
+            results.add(resolver.resolveJar(jarFile, inputDir));
         }
         return results;
     }
 
     /**
-     * 1つのJARパスを解決する。
+     * 1つの {@link JarFile} を解決する。
+     *
+     * <p>スコープは {@link JarFile} の {@code test} / {@code exported} 属性から決定する：</p>
+     * <ul>
+     *   <li>{@code test=true} → Maven {@code test} スコープ</li>
+     *   <li>{@code exported=true} → Maven compile スコープ（scope要素なし）</li>
+     *   <li>それ以外 → Maven {@code provided} スコープ</li>
+     * </ul>
+     *
+     * @param jarFile  解決対象の {@link JarFile}
+     * @param inputDir Eclipseプロジェクトのルートディレクトリ
+     * @return 解決済みの {@link MavenDependency}
      */
-    private MavenDependency resolveJar(String jarPath, Path inputDir) {
+    private MavenDependency resolveJar(JarFile jarFile, Path inputDir) {
+        String jarPath = jarFile.path();
+        // JarFile の属性からスコープを決定する
+        final String scope;
+        if (jarFile.test()) {
+            scope = "test";
+        } else if (jarFile.exported()) {
+            scope = null; // compile (Maven デフォルト)
+        } else {
+            scope = "provided";
+        }
         Path path = Path.of(jarPath).isAbsolute()
                 ? Path.of(jarPath)
                 : inputDir.resolve(jarPath);
@@ -140,7 +148,7 @@ public class DependencyResolver {
 
         try {
             String json = callMavenCentralApi(sha1);
-            return parseResponse(json, baseName, path.toAbsolutePath().toString());
+            return parseResponse(json, baseName, path.toAbsolutePath().toString(), scope);
         } catch (Exception e) {
             log.error("  [ERROR] Maven Central API呼び出しに失敗しました: {} → {}", jarFileName, e.getMessage());
             log.info("  → API error (system scope): {}", jarFileName);
@@ -174,8 +182,11 @@ public class DependencyResolver {
 
     /**
      * Maven Central APIのJSONレスポンスをパースしてMavenDependencyを返す。
+     *
+     * <p>Maven Central で見つかった場合のスコープは {@code scope} をそのまま使う。</p>
      */
-    private static MavenDependency parseResponse(String json, String baseName, String absolutePath) {
+    private static MavenDependency parseResponse(String json, String baseName,
+                                                 String absolutePath, String scope) {
         // numFound:0 なら見つからなかった
         Matcher numFoundMatcher = NUM_FOUND_PATTERN.matcher(json);
         if (numFoundMatcher.find()) {
@@ -195,7 +206,7 @@ public class DependencyResolver {
             String artifactId = aMatcher.group(1);
             String version    = vMatcher.group(1);
             log.info("  → found: {}:{}:{}", groupId, artifactId, version);
-            return new MavenDependency(groupId, artifactId, version, null, null);
+            return new MavenDependency(groupId, artifactId, version, scope, null);
         }
 
         // パースに失敗した場合もsystemスコープ

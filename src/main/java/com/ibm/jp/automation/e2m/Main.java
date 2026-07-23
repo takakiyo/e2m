@@ -128,7 +128,7 @@ public class Main implements Callable<Integer> {
             if (eclipseProject.webProject()) {
                 log.info("  Webコンテンツフォルダ: {}", eclipseProject.webContentRoot());
             }
-            log.info("  JARファイル数: {}", eclipseProject.jarPaths().size());
+            log.info("  JARファイル数: {}", eclipseProject.jarFiles().size());
 
             if (eclipseProject.javaSourceVersion().isUnknown()) {
                 log.error("Javaソースバージョンを認識できませんでした: {}", eclipseProject.javaSourceVersion());
@@ -201,7 +201,7 @@ public class Main implements Callable<Integer> {
             // 3.(続き) JAR依存関係を解決
             log.info("");
             log.info("[3/5] JAR依存関係を解決中...");
-            List<MavenDependency> dependencies = DependencyResolver.resolve(eclipseProject.jarPaths(), inputPath);
+            List<MavenDependency> dependencies = DependencyResolver.resolve(eclipseProject.jarFiles(), inputPath);
             long found = dependencies.stream().filter(d -> !"system".equals(d.scope())).count();
             long system = dependencies.stream().filter(d -> "system".equals(d.scope())).count();
             log.info("  Maven Central で見つかった依存: {} 件", found);
