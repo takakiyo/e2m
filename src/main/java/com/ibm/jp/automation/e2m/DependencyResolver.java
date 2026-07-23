@@ -140,6 +140,7 @@ public class DependencyResolver {
         String sha1;
         try {
             sha1 = FileUtils.computeSha1(path);
+            log.debug("    SHA: {}", sha1);
         } catch (Exception e) {
             log.error("  [ERROR] SHA1計算に失敗しました: {} → {}", path, e.getMessage());
             log.info("  → SHA1 error (system scope): {}", jarFileName);
@@ -148,6 +149,7 @@ public class DependencyResolver {
 
         try {
             String json = callMavenCentralApi(sha1);
+            log.debug("    JSON Response: {}", json);
             return parseResponse(json, baseName, path.toAbsolutePath().toString(), scope, jarFile.exported());
         } catch (Exception e) {
             log.error("  [ERROR] Maven Central API呼び出しに失敗しました: {} → {}", jarFileName, e.getMessage());

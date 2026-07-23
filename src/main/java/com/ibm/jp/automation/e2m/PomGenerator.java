@@ -67,6 +67,7 @@ public class PomGenerator {
             boolean convertToUtf8,
             Path outputDir) throws Exception {
 
+        log.debug("  generate開始");
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.newDocument();
@@ -85,6 +86,7 @@ public class PomGenerator {
         addTextElement(doc, project, "version", version);
 
         if (eclipseProject.webProject()) {
+            log.debug("  packaging: war");
             addTextElement(doc, project, "packaging", "war");
         }
 
@@ -129,7 +131,7 @@ public class PomGenerator {
                 JavaEEVersion javaEE = JavaEEVersion.of(resolvedVersion);
                 Element dependency = doc.createElement("dependency");
                 if (tooOld) {
-                    log.debug("Web APIのバージョン {} は古すぎるため、3.0に置き換えて依存関係を追加します。", webVersion);
+                    log.debug("  Web APIのバージョン {} は古すぎるため、3.0に置き換えて依存関係を追加", webVersion);
                     deps.appendChild(doc.createComment(
                             " WARNING: Servlet " + webVersion + " は古すぎるため対応する javaee-api dependency が存在しません。"
                             + " Java EE 6 (javaee-api:6.0) に置き換えています。マイグレーションが必要です。 "));
@@ -161,6 +163,7 @@ public class PomGenerator {
             addTextElement(doc, configuration, "failOnMissingWebXml", "false");
             // libs/compile に JAR がある場合は WEB-INF/lib へコピーする webResources 設定を追加
             if (hasCompileLibs) {
+                log.debug("${project.basedir}/libs/compile以下のJARファイルをコピーするようmaven-war-pluginを構成");
                 Element webResources = doc.createElement("webResources");
                 Element resource = doc.createElement("resource");
                 addTextElement(doc, resource, "directory", "${project.basedir}/libs/compile");

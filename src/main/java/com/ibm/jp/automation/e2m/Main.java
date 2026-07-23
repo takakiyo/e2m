@@ -25,6 +25,7 @@ import picocli.CommandLine.Parameters;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -92,14 +93,15 @@ public class Main implements Callable<Integer> {
             log.debug("e2mバージョン={}", e2mVersion);
         }
 
-        Path inputPath = inputDir.toPath();
+        Path eclipsePath = inputDir.toPath();
+        Path mavenPath = null; 
 
         // 1. 引数の確認
         if (!inputDir.isDirectory()) {
             log.error("入力ディレクトリが見つかりません: {}", inputDir);
             return 1;
         }
-        if (!inputPath.resolve(".project").toFile().exists()) {
+        if (!eclipsePath.resolve(".project").toFile().exists()) {
             log.error("Eclipseプロジェクトではありません (.project ファイルが見つかりません): {}", inputDir);
             return 1;
         }
@@ -116,7 +118,7 @@ public class Main implements Callable<Integer> {
             // 2. Eclipseプロジェクト情報をパース
             log.info("");
             log.info("[1/5] Eclipseプロジェクトを解析中...");
-            EclipseProject eclipseProject = EclipseProjectParser.parse(inputPath);
+            EclipseProject eclipseProject = EclipseProjectParser.parse(eclipsePath);
             log.info("  プロジェクト名: {}", eclipseProject.projectName());
             log.info("  種別: {}", eclipseProject.webProject() ? "Webプロジェクト (WTP)" : "Javaプロジェクト");
             log.info("  Javaソースバージョン: {}", eclipseProject.javaSourceVersion());
@@ -187,21 +189,21 @@ public class Main implements Callable<Integer> {
             }
 
             // 出力先は outputDir/artifactId
-            Path outputPath = outputDir.toPath().resolve(artifactId);
-            if (outputPath.toFile().exists()) {
-                log.error("出力先ディレクトリがすでに存在しています: {}", outputPath);
+            mavenPath = outputDir.toPath().resolve(artifactId);
+            if (mavenPath.toFile().exists()) {
+                log.error("出力先ディレクトリがすでに存在しています: {}", mavenPath);
                 return 1;
             }
 
             log.info("");
             log.info("=== e2m: Eclipse → Maven 変換開始 ===");
-            log.info("  入力: {}", inputPath.toAbsolutePath());
-            log.info("  出力: {}", outputPath.toAbsolutePath());
+            log.info("  入力: {}", eclipsePath.toAbsolutePath());
+            log.info("  出力: {}", mavenPath.toAbsolutePath());
 
             // 3.(続き) JAR依存関係を解決
             log.info("");
             log.info("[3/5] JAR依存関係を解決中...");
-            List<MavenDependency> dependencies = DependencyResolver.resolve(eclipseProject.jarFiles(), inputPath);
+            List<MavenDependency> dependencies = DependencyResolver.resolve(eclipseProject.jarFiles(), eclipsePath);
             long found = dependencies.stream().filter(d -> !"system".equals(d.scope())).count();
             long system = dependencies.stream().filter(d -> "system".equals(d.scope())).count();
             log.info("  Maven Central で見つかった依存: {} 件", found);
@@ -224,7 +226,7 @@ public class Main implements Callable<Integer> {
                     ? javaTargetVersion
                     : eclipseProject.javaTargetVersion();
             PomGenerator.generate(eclipseProject, dependencies, groupId, artifactId, artifactVersion,
-                    effectiveTargetVersion, convertToUtf8, outputPath);
+                    effectiveTargetVersion, convertToUtf8, mavenPath);
 
             // 5. ソース・Webコンテンツをコピー
             log.info("");
@@ -232,17 +234,12 @@ public class Main implements Callable<Integer> {
             if (convertToUtf8) {
                 log.info("  エンコーディング変換モード: {} → UTF-8", sourceEncoding);
             }
-            ProjectCopier.copy(eclipseProject, dependencies, inputPath, outputPath,
+            ProjectCopier.copy(eclipseProject, dependencies, eclipsePath, mavenPath,
                     convertToUtf8, srcCharset, effectiveTargetVersion);
 
             log.info("");
             log.info("=== 変換完了 ===");
-            log.info("出力先: {}", outputPath.toAbsolutePath());
-
-            // --debug オプション: デバッグ ZIP を生成
-            if (debug) {
-                DebugArchiver.archive(inputPath, outputDir.toPath(), outputPath, rawArgs);
-            }
+            log.info("出力先: {}", mavenPath.toAbsolutePath());
 
             return 0;
 
@@ -250,6 +247,13 @@ public class Main implements Callable<Integer> {
             log.error("変換中にエラーが発生しました: {}", e.getMessage());
             log.debug("スタックトレース:", e);
             return 2;
+        } finally {
+            // --debug オプション: デバッグ ZIP を生成
+            if (debug) try {
+                DebugArchiver.archive(eclipsePath, outputDir.toPath(), mavenPath, rawArgs);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
