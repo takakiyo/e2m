@@ -1,0 +1,6 @@
+{
+  "task_date": "2026-07-25T20:38:00+09:00",
+  "commit_message": "実行環境に応じて変換メッセージを切り替えられるようにする\n\nEclipse から Maven への変換時に表示される案内や警告が\n日本語固定だったため、日本語環境以外では扱いづらかった。\n\n実行環境のロケールに応じて日本語と英語のメッセージを\n切り替えられるようにし、対話プロンプトや pom.xml 内の\nユーザー向けコメントも同じ方針で統一した。\n\nデバッグ出力や例外メッセージは対象外のままとし、\n利用者向けの表示だけを最小限の変更で国際化した。",
+  "changed_files": ["src/main/java/com/ibm/jp/automation/e2m/DependencyResolver.java", "src/main/java/com/ibm/jp/automation/e2m/Main.java", "src/main/java/com/ibm/jp/automation/e2m/PomGenerator.java", "src/main/java/com/ibm/jp/automation/e2m/ProjectCopier.java", "src/main/java/com/ibm/jp/automation/e2m/i18n/Messages.java", "src/main/resources/messages_ja.properties", "src/main/resources/messages_en.properties", "i18n-log-messages-plan.md", "chatlog/20260725_203800_jikkokankyo-ni-ojite-henkan-messeji.json"],
+  "conversation_summary": "日本語固定だった変換メッセージを、実行環境のロケールが日本語なら日本語、それ以外なら英語で表示するよう変更した。Messages クラスを i18n 用パッケージへ移動し、CLI の進捗ログ、警告、対話プロンプト、pom.xml に出力するユーザー向け XML コメントをリソースファイル経由で切り替えるようにした。デバッグ出力と例外メッセージは対象外のままとした。"
+}

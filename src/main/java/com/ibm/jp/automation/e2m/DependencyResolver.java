@@ -16,6 +16,7 @@
 
 package com.ibm.jp.automation.e2m;
 
+import com.ibm.jp.automation.e2m.i18n.Messages;
 import org.slf4j.Logger;
 
 import javax.net.ssl.SSLContext;
@@ -129,11 +130,11 @@ public class DependencyResolver {
                 ? jarFileName.substring(0, jarFileName.length() - 4)
                 : jarFileName;
 
-        log.info("  Resolving: {} ...", jarFileName);
+        log.info(Messages.get("dependency.resolving", jarFileName));
 
         if (!Files.exists(path)) {
-            log.warn("  [WARN] JARファイルが見つかりません: {} → systemスコープとして扱います", path);
-            log.info("  → not found (system scope): {}", jarFileName);
+            log.warn(Messages.get("dependency.jarNotFound", path));
+            log.info(Messages.get("dependency.notFoundSystemScope", jarFileName));
             return new MavenDependency(baseName, baseName, "0.0.0", "system", jarPath, jarFile.exported());
         }
 
@@ -142,8 +143,8 @@ public class DependencyResolver {
             sha1 = FileUtils.computeSha1(path);
             log.debug("    SHA: {}", sha1);
         } catch (Exception e) {
-            log.error("  [ERROR] SHA1計算に失敗しました: {} → {}", path, e.getMessage());
-            log.info("  → SHA1 error (system scope): {}", jarFileName);
+            log.error(Messages.get("dependency.sha1CalculationFailed", path, e.getMessage()));
+            log.info(Messages.get("dependency.sha1ErrorSystemScope", jarFileName));
             return new MavenDependency(baseName, baseName, "0.0.0", "system", path.toAbsolutePath().toString(), jarFile.exported());
         }
 
@@ -152,8 +153,8 @@ public class DependencyResolver {
             log.debug("    JSON Response: {}", json);
             return parseResponse(json, baseName, path.toAbsolutePath().toString(), scope, jarFile.exported());
         } catch (Exception e) {
-            log.error("  [ERROR] Maven Central API呼び出しに失敗しました: {} → {}", jarFileName, e.getMessage());
-            throw new RuntimeException("Maven Central API呼び出しに失敗しました: " + jarFileName, e);
+            log.error(Messages.get("dependency.mavenCentralApiFailed", jarFileName, e.getMessage()));
+            throw new RuntimeException("Maven Central API call failed: " + jarFileName, e);
         }
     }
 
@@ -194,7 +195,7 @@ public class DependencyResolver {
         if (numFoundMatcher.find()) {
             int numFound = Integer.parseInt(numFoundMatcher.group(1));
             if (numFound == 0) {
-                log.info("  → not found in Maven Central (system scope): {}", baseName);
+                log.info(Messages.get("dependency.notFoundInMavenCentral", baseName));
                 return new MavenDependency(baseName, baseName, "0.0.0", "system", absolutePath, exported);
             }
         }
@@ -207,13 +208,13 @@ public class DependencyResolver {
             String groupId    = gMatcher.group(1);
             String artifactId = aMatcher.group(1);
             String version    = vMatcher.group(1);
-            log.info("  → found: {}:{}:{}", groupId, artifactId, version);
+            log.info(Messages.get("dependency.found", groupId, artifactId, version));
             return new MavenDependency(groupId, artifactId, version, scope, null);
         }
 
         // パースに失敗した場合もsystemスコープ
-        log.warn("  [WARN] Maven Central APIレスポンスのパースに失敗しました: {}", baseName);
-        log.info("  → parse error (system scope): {}", baseName);
+        log.warn(Messages.get("dependency.parseFailed", baseName));
+        log.info(Messages.get("dependency.parseErrorSystemScope", baseName));
         return new MavenDependency(baseName, baseName, "0.0.0", "system", absolutePath, exported);
     }
 }

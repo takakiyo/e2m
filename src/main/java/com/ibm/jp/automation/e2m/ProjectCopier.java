@@ -16,6 +16,7 @@
 
 package com.ibm.jp.automation.e2m;
 
+import com.ibm.jp.automation.e2m.i18n.Messages;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -87,7 +88,7 @@ public class ProjectCopier {
         for (String sourceFolder : sourceFolders) {
             Path srcPath = resolveSourcePath(inputDir, sourceFolder);
             if (!Files.isDirectory(srcPath)) {
-                log.warn("  [WARN] ソースフォルダが見つかりません: {}", srcPath);
+                log.warn(Messages.get("projectCopier.sourceFolderNotFound", srcPath));
                 continue;
             }
             boolean isTest = isTestFolder(sourceFolder);
@@ -110,9 +111,9 @@ public class ProjectCopier {
             if (Files.isDirectory(webContentPath)) {
                 Path webappDest = outputDir.resolve("src/main/webapp");
                 copyWebContents(webContentPath, webappDest, convertToUtf8, sourceEncoding);
-                log.info("  Copied web content: {} → {}", webContentPath, webappDest);
+                log.info(Messages.get("projectCopier.copiedWebContent", webContentPath, webappDest));
             } else {
-                log.warn("  [WARN] Webコンテンツルートが見つかりません: {}", webContentPath);
+                log.warn(Messages.get("projectCopier.webContentRootNotFound", webContentPath));
             }
         }
 
@@ -190,7 +191,7 @@ public class ProjectCopier {
                     throw new RuntimeException("ファイルコピーに失敗しました: " + srcFile, e);
                 }
             });
-        log.info("  Copied source folder: {} → {}", currentDir, javaDestBase);
+        log.info(Messages.get("projectCopier.copiedSourceFolder", currentDir, javaDestBase));
     }
 
     /**
@@ -328,7 +329,7 @@ public class ProjectCopier {
             return Charset.forName(encodingName);
         } catch (Exception e) {
             // 不明なエンコーディング名の場合は fallback を使用
-            log.warn("  [WARN] JSP の pageEncoding が不明です: {} → fallback を使用", encodingName);
+            log.warn(Messages.get("projectCopier.unknownJspPageEncoding", encodingName));
             return fallback;
         }
     }

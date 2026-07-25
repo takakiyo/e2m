@@ -16,6 +16,7 @@
 
 package com.ibm.jp.automation.e2m;
 
+import com.ibm.jp.automation.e2m.i18n.Messages;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -94,6 +95,9 @@ public class PomGenerator {
         JavaVersion javaSourceVersion = eclipseProject.javaSourceVersion();
         JavaVersion javaTargetVersion = effectiveTargetVersion;
         Element properties = doc.createElement("properties");
+        if (!convertToUtf8) {
+            properties.appendChild(doc.createComment(Messages.get("pom.sourceEncodingNotice")));
+        }
         addTextElement(doc, properties, "project.build.sourceEncoding", "UTF-8");
         addTextElement(doc, properties, "maven.compiler.source", javaSourceVersion.toString());
         addTextElement(doc, properties, "maven.compiler.target", javaTargetVersion.toString());
@@ -133,8 +137,7 @@ public class PomGenerator {
                 if (tooOld) {
                     log.debug("  Web APIのバージョン {} は古すぎるため、3.0に置き換えて依存関係を追加", webVersion);
                     deps.appendChild(doc.createComment(
-                            " WARNING: Servlet " + webVersion + " は古すぎるため対応する javaee-api dependency が存在しません。"
-                            + " Java EE 6 (javaee-api:6.0) に置き換えています。マイグレーションが必要です。 "));
+                            Messages.get("pom.legacyServletWarning", webVersion)));
                 }
                 addTextElement(doc, dependency, "groupId", javaEE.getGroupId());
                 addTextElement(doc, dependency, "artifactId", javaEE.getArtifactId());
@@ -163,7 +166,7 @@ public class PomGenerator {
             addTextElement(doc, configuration, "failOnMissingWebXml", "false");
             // libs/compile に JAR がある場合は WEB-INF/lib へコピーする webResources 設定を追加
             if (hasCompileLibs) {
-                log.debug("${project.basedir}/libs/compile以下のJARファイルをコピーするようmaven-war-pluginを構成");
+                log.debug("  ${project.basedir}/libs/compile以下のJARファイルをコピーするようmaven-war-pluginを構成");
                 Element webResources = doc.createElement("webResources");
                 Element resource = doc.createElement("resource");
                 addTextElement(doc, resource, "directory", "${project.basedir}/libs/compile");
@@ -215,7 +218,7 @@ public class PomGenerator {
         Path pomPath = outputDir.resolve("pom.xml");
         transformer.transform(new DOMSource(doc), new StreamResult(pomPath.toFile()));
 
-        log.info("Generated: {}", pomPath);
+        log.info(Messages.get("pom.generated", pomPath));
     }
 
     private static void addTextElement(Document doc, Element parent, String tagName, String text) {
