@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-package com.ibm.jp.automation.e2m;
+package com.ibm.jp.automation.e2m.eclipse;
 
 import org.junit.jupiter.api.Test;
 
-import com.ibm.jp.automation.e2m.eclipse.EclipseProject;
-import com.ibm.jp.automation.e2m.eclipse.EclipseProjectParser;
-import com.ibm.jp.automation.e2m.eclipse.JarFile;
 import com.ibm.jp.automation.e2m.spec.JavaVersion;
 
 import java.net.URL;

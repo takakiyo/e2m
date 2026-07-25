@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package com.ibm.jp.automation.e2m;
+package com.ibm.jp.automation.e2m.maven;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.ibm.jp.automation.e2m.eclipse.EclipseProject;
-import com.ibm.jp.automation.e2m.maven.MavenDependency;
-import com.ibm.jp.automation.e2m.maven.ProjectCopier;
 import com.ibm.jp.automation.e2m.spec.JavaVersion;
 
 import java.nio.charset.Charset;
