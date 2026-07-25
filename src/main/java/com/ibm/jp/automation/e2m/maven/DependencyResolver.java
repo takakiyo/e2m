@@ -170,7 +170,7 @@ public class DependencyResolver {
         String url = String.format(MAVEN_SEARCH_URL, sha1);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .timeout(Duration.ofSeconds(10))
+                .timeout(Duration.ofSeconds(60))
                 .GET()
                 .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
