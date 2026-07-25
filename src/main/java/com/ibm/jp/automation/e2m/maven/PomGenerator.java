@@ -137,7 +137,7 @@ public class PomGenerator {
                 String webVersion = eclipseProject.webVersion();
                 boolean tooOld = webVersion.startsWith("2");
                 String resolvedVersion = tooOld ? "3.0" : webVersion;
-                JavaEEVersion javaEE = JavaEEVersion.of(resolvedVersion);
+                JavaEEVersion javaEE = JavaEEVersion.fromWebVersion(resolvedVersion);
                 Element dependency = doc.createElement("dependency");
                 if (tooOld) {
                     log.debug("  Web APIのバージョン {} は古すぎるため、3.0に置き換えて依存関係を追加", webVersion);

@@ -31,6 +31,13 @@ package com.ibm.jp.automation.e2m.spec;
  */
 public class JavaEEVersion {
 
+    public static final JavaEEVersion JAVA_EE_6 = new JavaEEVersion("javax", "javaee-api", "6.0");
+    public static final JavaEEVersion JAVA_EE_7 = new JavaEEVersion("javax", "javaee-api", "7.0");
+    public static final JavaEEVersion JAVA_EE_8 = new JavaEEVersion("javax", "javaee-api", "8.0");
+    public static final JavaEEVersion JAKARTA_EE_9 = new JavaEEVersion("jakarta.platform", "jakarta.jakartaee-api", "9.1.0");
+    public static final JavaEEVersion JAKARTA_EE_10 = new JavaEEVersion("jakarta.platform", "jakarta.jakartaee-api", "10.0.0");
+    public static final JavaEEVersion JAKARTA_EE_11 = new JavaEEVersion("jakarta.platform", "jakarta.jakartaee-api", "11.0.0");
+
     private final String groupId;
     private final String artifactId;
     private final String version;
@@ -42,7 +49,7 @@ public class JavaEEVersion {
     }
 
     /**
-     * Servlet 仕様のバージョン文字列から {@link JavaEEVersion} インスタンスを返す。
+     * Web(Servlet仕様)のバージョン文字列から {@link JavaEEVersion} インスタンスを返す。
      *
      * <table>
      *   <tr><th>Servlet</th><th>仕様</th><th>groupId</th><th>artifactId</th><th>version</th></tr>
@@ -58,14 +65,14 @@ public class JavaEEVersion {
      * @return 対応する {@link JavaEEVersion} インスタンス
      * @throws IllegalArgumentException 未知の webVersion が指定された場合
      */
-    public static JavaEEVersion of(String webVersion) {
+    public static JavaEEVersion fromWebVersion(String webVersion) {
         return switch (webVersion) {
-            case "3.0" -> new JavaEEVersion("javax", "javaee-api", "6.0");
-            case "3.1" -> new JavaEEVersion("javax", "javaee-api", "7.0");
-            case "4.0" -> new JavaEEVersion("javax", "javaee-api", "8.0");
-            case "5.0" -> new JavaEEVersion("jakarta.platform", "jakarta.jakartaee-api", "9.1.0");
-            case "6.0" -> new JavaEEVersion("jakarta.platform", "jakarta.jakartaee-api", "10.0.0");
-            case "6.1" -> new JavaEEVersion("jakarta.platform", "jakarta.jakartaee-api", "11.0.0");
+            case "3.0" -> JAVA_EE_6;
+            case "3.1" -> JAVA_EE_7;
+            case "4.0" -> JAVA_EE_8;
+            case "5.0" -> JAKARTA_EE_9;
+            case "6.0" -> JAKARTA_EE_10;
+            case "6.1" -> JAKARTA_EE_11;
             default    -> throw new IllegalArgumentException("Unknown Servlet version: " + webVersion);
         };
     }
