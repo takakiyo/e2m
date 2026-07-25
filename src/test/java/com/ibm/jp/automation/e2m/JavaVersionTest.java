@@ -18,6 +18,8 @@ package com.ibm.jp.automation.e2m;
 
 import org.junit.jupiter.api.Test;
 
+import com.ibm.jp.automation.e2m.spec.JavaVersion;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class JavaVersionTest {

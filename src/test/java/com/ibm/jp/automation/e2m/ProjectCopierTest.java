@@ -19,6 +19,11 @@ package com.ibm.jp.automation.e2m;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.ibm.jp.automation.e2m.eclipse.EclipseProject;
+import com.ibm.jp.automation.e2m.maven.MavenDependency;
+import com.ibm.jp.automation.e2m.maven.ProjectCopier;
+import com.ibm.jp.automation.e2m.spec.JavaVersion;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

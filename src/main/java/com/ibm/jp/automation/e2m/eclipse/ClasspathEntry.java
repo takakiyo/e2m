@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-package com.ibm.jp.automation.e2m;
+package com.ibm.jp.automation.e2m.eclipse;
 
 /**
- * 実際のJARファイル1件分のパスと、Eclipseの classpathentry 属性を保持するレコード。
+ * Eclipse {@code .classpath} ファイルの {@code classpathentry} 要素1件分の属性情報を保持するレコード。
  *
- * <p>スコープの決定は {@link DependencyResolver} 内で行う。</p>
+ * <p>classpathentry 要素に直接書かれる属性と、子要素 {@code <attributes>} で定義される属性の
+ * 両方を管理する。</p>
  *
- * @param path     JARファイルへのパス文字列（Eclipseプロジェクトルートからの相対パス、または絶対パス）
- * @param test     {@code <attribute name="test" value="true"/>} 子要素が存在するか
+ * @param kind     {@code kind} 属性値（{@code "lib"}, {@code "con"}, {@code "src"}, {@code "output"} など）
+ * @param path     {@code path} 属性値
  * @param exported {@code exported="true"} 属性が存在するか
+ * @param test     {@code <attribute name="test" value="true"/>} 子要素が存在するか
  */
-public record JarFile(
+public record ClasspathEntry(
+        String kind,
         String path,
-        boolean test,
-        boolean exported
+        boolean exported,
+        boolean test
 ) {}

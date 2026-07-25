@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.jp.automation.e2m;
+package com.ibm.jp.automation.e2m.maven;
 
 /**
  * Maven依存関係情報を保持するレコード。

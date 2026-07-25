@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.jp.automation.e2m;
+package com.ibm.jp.automation.e2m.spec;
 
 /**
  * Java EE / Jakarta EE 仕様のバージョン情報を保持するクラス。

@@ -16,7 +16,17 @@
 
 package com.ibm.jp.automation.e2m;
 
+import com.ibm.jp.automation.e2m.eclipse.EclipseProject;
+import com.ibm.jp.automation.e2m.eclipse.EclipseProjectParser;
 import com.ibm.jp.automation.e2m.i18n.Messages;
+import com.ibm.jp.automation.e2m.maven.DependencyResolver;
+import com.ibm.jp.automation.e2m.maven.MavenDependency;
+import com.ibm.jp.automation.e2m.maven.PomGenerator;
+import com.ibm.jp.automation.e2m.maven.ProjectCopier;
+import com.ibm.jp.automation.e2m.spec.JavaVersion;
+import com.ibm.jp.automation.e2m.util.AppLogger;
+import com.ibm.jp.automation.e2m.util.DebugArchiver;
+
 import org.slf4j.Logger;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;

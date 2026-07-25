@@ -20,6 +20,11 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.ibm.jp.automation.e2m.eclipse.JarFile;
+import com.ibm.jp.automation.e2m.maven.DependencyResolver;
+import com.ibm.jp.automation.e2m.maven.MavenDependency;
+import com.ibm.jp.automation.e2m.util.FileUtils;
+
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;

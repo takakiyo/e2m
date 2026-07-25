@@ -18,6 +18,11 @@ package com.ibm.jp.automation.e2m;
 
 import org.junit.jupiter.api.Test;
 
+import com.ibm.jp.automation.e2m.eclipse.EclipseProject;
+import com.ibm.jp.automation.e2m.eclipse.EclipseProjectParser;
+import com.ibm.jp.automation.e2m.eclipse.JarFile;
+import com.ibm.jp.automation.e2m.spec.JavaVersion;
+
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;

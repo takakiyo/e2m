@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.jp.automation.e2m;
+package com.ibm.jp.automation.e2m.spec;
 
 import java.util.HashMap;
 

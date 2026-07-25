@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package com.ibm.jp.automation.e2m;
+package com.ibm.jp.automation.e2m.eclipse;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import com.ibm.jp.automation.e2m.maven.DependencyResolver;
+import com.ibm.jp.automation.e2m.spec.JavaVersion;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;

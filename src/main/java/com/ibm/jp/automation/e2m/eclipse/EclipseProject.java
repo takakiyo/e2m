@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package com.ibm.jp.automation.e2m;
+package com.ibm.jp.automation.e2m.eclipse;
 
 import java.util.List;
+
+import com.ibm.jp.automation.e2m.spec.JavaVersion;
 
 /**
  * Eclipseプロジェクトのメタデータを保持するレコード。

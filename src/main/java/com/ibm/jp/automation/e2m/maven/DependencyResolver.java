@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-package com.ibm.jp.automation.e2m;
+package com.ibm.jp.automation.e2m.maven;
 
+import com.ibm.jp.automation.e2m.eclipse.JarFile;
 import com.ibm.jp.automation.e2m.i18n.Messages;
+import com.ibm.jp.automation.e2m.util.AppLogger;
+import com.ibm.jp.automation.e2m.util.FileUtils;
+
 import org.slf4j.Logger;
 
 import javax.net.ssl.SSLContext;

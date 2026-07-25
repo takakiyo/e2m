@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.jp.automation.e2m;
+package com.ibm.jp.automation.e2m.util;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;

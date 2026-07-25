@@ -21,6 +21,11 @@ import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
+import com.ibm.jp.automation.e2m.eclipse.EclipseProject;
+import com.ibm.jp.automation.e2m.maven.MavenDependency;
+import com.ibm.jp.automation.e2m.maven.PomGenerator;
+import com.ibm.jp.automation.e2m.spec.JavaVersion;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.nio.file.Path;

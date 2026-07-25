@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.jp.automation.e2m;
+package com.ibm.jp.automation.e2m.util;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
