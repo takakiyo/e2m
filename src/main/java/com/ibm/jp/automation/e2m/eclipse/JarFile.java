@@ -16,12 +16,8 @@
 
 package com.ibm.jp.automation.e2m.eclipse;
 
-import com.ibm.jp.automation.e2m.maven.DependencyResolver;
-
 /**
  * 実際のJARファイル1件分のパスと、Eclipseの classpathentry 属性を保持するレコード。
- *
- * <p>スコープの決定は {@link DependencyResolver} 内で行う。</p>
  *
  * @param path     JARファイルへのパス文字列（Eclipseプロジェクトルートからの相対パス、または絶対パス）
  * @param test     {@code <attribute name="test" value="true"/>} 子要素が存在するか
