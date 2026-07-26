@@ -70,7 +70,18 @@ public class DependencyResolver {
         TrustManager[] trustAll = new TrustManager[]{
             new X509TrustManager() {
                 @Override public void checkClientTrusted(X509Certificate[] chain, String authType) {}
-                @Override public void checkServerTrusted(X509Certificate[] chain, String authType) {}
+                @Override public void checkServerTrusted(X509Certificate[] chain, String authType) {
+                    if (log.isDebugEnabled() && chain != null) {
+                        log.debug("  SSLチェックは省略されます");
+                        for (X509Certificate cert : chain) {
+                            log.debug("  Server certificate: subject={}, issuer={}, notBefore={}, notAfter={}",
+                                    cert.getSubjectX500Principal(),
+                                    cert.getIssuerX500Principal(),
+                                    cert.getNotBefore(),
+                                    cert.getNotAfter());
+                        }
+                    }
+                }
                 @Override public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
             }
         };
@@ -79,7 +90,7 @@ public class DependencyResolver {
             ctx.init(null, trustAll, new java.security.SecureRandom());
             return ctx;
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            throw new IllegalStateException("SSL証明書検証バイパス用SSLContextの生成に失敗しました", e);
+            throw new IllegalStateException(Messages.get("dependency.sslcontext.initerr"), e);
         }
     }
 

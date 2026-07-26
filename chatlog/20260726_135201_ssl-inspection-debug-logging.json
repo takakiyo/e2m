@@ -1,0 +1,10 @@
+{
+  "task_date": "2026-07-26T13:52:01+09:00",
+  "commit_message": "SSLインスペクション環境でのデバッグ性を向上させる\n\nTrustAllなSSLContextのcheckServerTrustedで、受け取ったサーバー証明書の\nSubject・Issuer・有効期限をlog.debugで出力するようにした。\nSSLインスペクション環境での接続問題の調査を容易にするための変更。\n\nまた、SSLContextの初期化エラーメッセージをi18n対応のMessages.get()に\n切り替え、関連するメッセージキー（dependency.sslcontext.initerr）を\nmessages_en.properties / messages_ja.properties に追加した。",
+  "changed_files": [
+    "src/main/java/com/ibm/jp/automation/e2m/maven/DependencyResolver.java",
+    "src/main/resources/messages_en.properties",
+    "src/main/resources/messages_ja.properties"
+  ],
+  "conversation_summary": "DependencyResolverクラスのcreateT rustAllSslContext()内にあるcheckServerTrustedメソッド（74行目）に、受け取ったサーバー証明書チェーンの情報（Subject DN、Issuer DN、notBefore、notAfter）をlog.debugで出力するコードを追加した。isDebugEnabled()ガードとnullチェックを含む。また、SSLContextの初期化エラーメッセージがハードコードされていた箇所をMessages.get()によるi18n対応に切り替え、messages_en.propertiesとmessages_ja.propertiesにdependency.sslcontext.initerrキーを追加した。"
+}
