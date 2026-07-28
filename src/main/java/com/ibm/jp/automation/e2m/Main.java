@@ -20,6 +20,7 @@ import com.ibm.jp.automation.e2m.eclipse.EclipseProject;
 import com.ibm.jp.automation.e2m.eclipse.EclipseProjectParser;
 import com.ibm.jp.automation.e2m.i18n.Messages;
 import com.ibm.jp.automation.e2m.maven.DependencyResolver;
+import com.ibm.jp.automation.e2m.maven.LibertyServerXmlGenerator;
 import com.ibm.jp.automation.e2m.maven.MavenDependency;
 import com.ibm.jp.automation.e2m.maven.PomGenerator;
 import com.ibm.jp.automation.e2m.maven.ProjectCopier;
@@ -77,6 +78,9 @@ public class Main implements Callable<Integer> {
 
     @Option(names = {"--debug"}, description = "Output debug information as e2m_debug_<datetime>.zip in the output directory")
     private boolean debug;
+
+    @Option(names = {"-n", "--noLiberty"}, description = "Do not add Liberty support (liberty-maven-plugin and server.xml) to the output project")
+    private boolean noLiberty;
 
     @Parameters(index = "0", paramLabel = "<inputDir>", description = "Eclipse project directory to convert")
     private File inputDir;
@@ -238,7 +242,12 @@ public class Main implements Callable<Integer> {
                     ? javaTargetVersion
                     : eclipseProject.javaTargetVersion();
             PomGenerator.generate(eclipseProject, dependencies, groupId, artifactId, artifactVersion,
-                    effectiveTargetVersion, convertToUtf8, mavenPath);
+                    effectiveTargetVersion, convertToUtf8, noLiberty, mavenPath);
+
+            // 4.(続き) Liberty 対応: server.xml を生成（webProject かつ --noLiberty 未指定の場合のみ）
+            if (!noLiberty && eclipseProject.webProject()) {
+                LibertyServerXmlGenerator.generate(eclipseProject, artifactId, mavenPath);
+            }
 
             // 5. ソース・Webコンテンツをコピー
             log.info("");

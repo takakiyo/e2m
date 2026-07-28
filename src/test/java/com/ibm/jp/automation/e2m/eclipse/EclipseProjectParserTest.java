@@ -210,4 +210,17 @@ class EclipseProjectParserTest {
         EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-java-project"));
         assertNull(project.webVersion(), "通常の Java プロジェクトは webVersion=null であるべき");
     }
+
+    @Test
+    void webProject_webContextRoot() throws Exception {
+        EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-web-project"));
+        // sample-web-project/.settings/org.eclipse.wst.common.component: <property name="context-root" value="SampleWebProject"/>
+        assertEquals("SampleWebProject", project.webContextRoot());
+    }
+
+    @Test
+    void javaProject_webContextRootIsNull() throws Exception {
+        EclipseProject project = EclipseProjectParser.parse(resourceDir("sample-java-project"));
+        assertNull(project.webContextRoot(), "通常の Java プロジェクトは webContextRoot=null であるべき");
+    }
 }

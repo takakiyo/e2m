@@ -14,6 +14,7 @@ A command-line tool that converts Eclipse Java projects to the standard Maven di
 - Copies resource files to `src/main/resources` (tests to `src/test/resources`)
 - Copies Web content to the Maven standard `src/main/webapp`
 - Automatically adds `<packaging>war</packaging>` for WTP projects
+- **Liberty support**: adds `liberty-maven-plugin` to `pom.xml` and generates `src/main/liberty/config/server.xml` for WTP projects (disable with `--noLiberty`)
 - **Character encoding conversion** (`--convertToUtf8`): converts sources written in a legacy encoding such as Shift_JIS to UTF-8 during copy
 
 ## Requirements
@@ -47,7 +48,7 @@ Produces `target/e2m` (macOS/Linux) or `target/e2m.exe` (Windows).
 
 ```
 e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]
-    [--convertToUtf8 [-e <encoding>]]
+    [--convertToUtf8 [-e <encoding>]] [-n]
     <inputDir> <outputDir>
 ```
 
@@ -66,6 +67,7 @@ Output is placed in `<outputDir>/<artifactId>/`.
 | `--javaTargetVersion` | Overrides `maven.compiler.target` in the generated `pom.xml` (defaults to the Eclipse project setting; cannot be lower than the source version) |
 | `--convertToUtf8` | Converts source files to UTF-8 during copy (see below) |
 | `-e`, `--sourceEncoding` | Source encoding (e.g. `Shift_JIS`). Only valid with `--convertToUtf8`; prompted if omitted |
+| `-n`, `--noLiberty` | Disables Liberty support; generates a plain WAR project without `liberty-maven-plugin` or `server.xml` |
 | `--debug` | Outputs debug information as a ZIP file (see below) |
 | `-h`, `--help` | Show help |
 | `-V`, `--version` | Show version |
@@ -254,13 +256,18 @@ output/<artifactId>
 
 ```
 output/<artifactId>
-├── pom.xml              ← includes <packaging>war</packaging>
+├── pom.xml              ← includes <packaging>war</packaging> and liberty-maven-plugin
 └── src/
     └── main/
         ├── java/        ← Java sources
+        ├── liberty/
+        │   └── config/
+        │       └── server.xml  ← Liberty server configuration
         ├── resources/   ← resource files
         └── webapp/      ← Web content (JSP, HTML, WEB-INF/web.xml, etc.)
 ```
+
+With `--noLiberty`, `liberty-maven-plugin` and `server.xml` are not generated.
 
 ## Web Content Root Resolution
 

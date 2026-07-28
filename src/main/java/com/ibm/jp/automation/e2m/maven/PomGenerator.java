@@ -47,6 +47,7 @@ public class PomGenerator {
     private static final String MAVEN_COMPILER_PLUGIN_VERSION = "3.15.0";
     private static final String MAVEN_WAR_PLUGIN_VERSION = "3.5.1";
     private static final String NATIVE2ASCII_PLUGIN_VERSION = "2.1.1";
+    private static final String LIBERTY_MAVEN_PLUGIN_VERSION = "3.12.0";
 
     private PomGenerator() {}
 
@@ -71,6 +72,7 @@ public class PomGenerator {
             String version,
             JavaVersion effectiveTargetVersion,
             boolean convertToUtf8,
+            boolean noLiberty,
             Path outputDir) throws Exception {
 
         log.debug("  generate開始");
@@ -155,6 +157,7 @@ public class PomGenerator {
 
         // <build><plugins><plugin> maven-compiler-plugin
         Element build = doc.createElement("build");
+        addTextElement(doc, build, "finalName", artifactId);
         Element plugins = doc.createElement("plugins");
         Element compilerPlugin = doc.createElement("plugin");
         addTextElement(doc, compilerPlugin, "groupId", "org.apache.maven.plugins");
@@ -184,6 +187,14 @@ public class PomGenerator {
             }
             warPlugin.appendChild(configuration);
             plugins.appendChild(warPlugin);
+            // Liberty 対応: --noLiberty 未指定の場合は liberty-maven-plugin を追加
+            if (!noLiberty) {
+                Element libertyPlugin = doc.createElement("plugin");
+                addTextElement(doc, libertyPlugin, "groupId", "io.openliberty.tools");
+                addTextElement(doc, libertyPlugin, "artifactId", "liberty-maven-plugin");
+                addTextElement(doc, libertyPlugin, "version", LIBERTY_MAVEN_PLUGIN_VERSION);
+                plugins.appendChild(libertyPlugin);
+            }
         }
         // --convert-to-utf8 かつ javaTargetVersion <= 8 の場合は native2ascii-maven-plugin を追加
         // javaTargetVersion は 93-96 行で確定済み（javaTargetOverride 優先）

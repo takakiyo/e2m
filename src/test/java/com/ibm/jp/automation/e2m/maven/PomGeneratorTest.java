@@ -38,17 +38,17 @@ class PomGeneratorTest {
 
     private EclipseProject javaProject() {
         return new EclipseProject("MyApp", false, List.of("src"), "bin",
-                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null, null);
     }
 
     private EclipseProject javaProject8() {
         return new EclipseProject("MyApp", false, List.of("src"), "bin",
-                List.of(), null, JavaVersion.of("1.8"), JavaVersion.of("1.8"), null);
+                List.of(), null, JavaVersion.of("1.8"), JavaVersion.of("1.8"), null, null);
     }
 
     private EclipseProject webProject() {
         return new EclipseProject("MyWebApp", true, List.of("src"), "build/classes",
-                List.of(), "WebContent", JavaVersion.of("11"), JavaVersion.of("1.8"), "3.0");
+                List.of(), "WebContent", JavaVersion.of("11"), JavaVersion.of("1.8"), "3.0", null);
     }
 
     private Document parsePom() throws Exception {
@@ -57,7 +57,7 @@ class PomGeneratorTest {
         return db.parse(tempDir.resolve("pom.xml").toFile());
     }
 
-    /** 変換なしで generate() を呼ぶ際の共通ヘルパー */
+    /** 変換なしで generate() を呼ぶ際の共通ヘルパー（noLiberty=true でLiberty対応なし） */
     private void generateNoConvert(EclipseProject project, List<MavenDependency> deps,
                                     String groupId, String artifactId, String version,
                                     JavaVersion targetOverride) throws Exception {
@@ -65,7 +65,7 @@ class PomGeneratorTest {
         JavaVersion effective = (targetOverride != null && !targetOverride.isUnknown())
                 ? targetOverride : project.javaTargetVersion();
         PomGenerator.generate(project, deps, groupId, artifactId, version,
-                effective, false, tempDir);
+                effective, false, true, tempDir);
     }
 
     @Test
@@ -242,6 +242,55 @@ class PomGeneratorTest {
     }
 
     // =========================================================
+    // liberty-maven-plugin テスト
+    // =========================================================
+
+    @Test
+    void webProject_liberty_hasLibertyMavenPlugin() throws Exception {
+        // noLiberty=false（デフォルト）の webProject には liberty-maven-plugin が出力される
+        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0",
+                JavaVersion.of("1.8"), false, false, tempDir);
+        Document doc = parsePom();
+
+        NodeList artifactIds = doc.getElementsByTagName("artifactId");
+        boolean found = false;
+        for (int i = 0; i < artifactIds.getLength(); i++) {
+            if ("liberty-maven-plugin".equals(artifactIds.item(i).getTextContent())) {
+                found = true;
+            }
+        }
+        assertTrue(found, "noLiberty=false の webProject には liberty-maven-plugin が出力される");
+    }
+
+    @Test
+    void webProject_noLiberty_noLibertyMavenPlugin() throws Exception {
+        // noLiberty=true の webProject には liberty-maven-plugin は出力されない
+        PomGenerator.generate(webProject(), List.of(), "com.example", "webapp", "1.0",
+                JavaVersion.of("1.8"), false, true, tempDir);
+        Document doc = parsePom();
+
+        NodeList artifactIds = doc.getElementsByTagName("artifactId");
+        for (int i = 0; i < artifactIds.getLength(); i++) {
+            assertNotEquals("liberty-maven-plugin", artifactIds.item(i).getTextContent(),
+                    "noLiberty=true では liberty-maven-plugin は出力されない");
+        }
+    }
+
+    @Test
+    void javaProject_liberty_noLibertyMavenPlugin() throws Exception {
+        // noLiberty=false でも Java プロジェクトには liberty-maven-plugin は出力されない
+        PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0",
+                JavaVersion.of("17"), false, false, tempDir);
+        Document doc = parsePom();
+
+        NodeList artifactIds = doc.getElementsByTagName("artifactId");
+        for (int i = 0; i < artifactIds.getLength(); i++) {
+            assertNotEquals("liberty-maven-plugin", artifactIds.item(i).getTextContent(),
+                    "Java プロジェクトには liberty-maven-plugin は出力されない");
+        }
+    }
+
+    // =========================================================
     // native2ascii-maven-plugin テスト
     // =========================================================
 
@@ -301,7 +350,7 @@ class PomGeneratorTest {
     void convertToUtf8_java8_hasNative2AsciiPlugin() throws Exception {
         // Java 8 + convertToUtf8=true → native2ascii-maven-plugin が追加される
         PomGenerator.generate(javaProject8(), List.of(), "com.example", "myapp", "1.0",
-                JavaVersion.of("1.8"), true, tempDir);
+                JavaVersion.of("1.8"), true, true, tempDir);
         Document doc = parsePom();
 
         NodeList artifactIds = doc.getElementsByTagName("artifactId");
@@ -318,7 +367,7 @@ class PomGeneratorTest {
     void convertToUtf8_java17_noNative2AsciiPlugin() throws Exception {
         // Java 17 + convertToUtf8=true → native2ascii-maven-plugin は追加されない
         PomGenerator.generate(javaProject(), List.of(), "com.example", "myapp", "1.0",
-                JavaVersion.of("17"), true, tempDir);
+                JavaVersion.of("17"), true, true, tempDir);
         Document doc = parsePom();
 
         NodeList artifactIds = doc.getElementsByTagName("artifactId");
@@ -332,7 +381,7 @@ class PomGeneratorTest {
     void convertToUtf8_false_noNative2AsciiPlugin() throws Exception {
         // Java 8 でも convertToUtf8=false → native2ascii-maven-plugin は追加されない
         PomGenerator.generate(javaProject8(), List.of(), "com.example", "myapp", "1.0",
-                JavaVersion.of("1.8"), false, tempDir);
+                JavaVersion.of("1.8"), false, true, tempDir);
         Document doc = parsePom();
 
         NodeList artifactIds = doc.getElementsByTagName("artifactId");
@@ -346,7 +395,7 @@ class PomGeneratorTest {
     void convertToUtf8_java8_native2AsciiPlugin_configuration() throws Exception {
         // native2ascii-maven-plugin の設定値が正しいことを確認
         PomGenerator.generate(javaProject8(), List.of(), "com.example", "myapp", "1.0",
-                JavaVersion.of("1.8"), true, tempDir);
+                JavaVersion.of("1.8"), true, true, tempDir);
         Document doc = parsePom();
 
         // srcDir の値

@@ -67,7 +67,7 @@ class ProjectCopierTest {
         createFile(inputDir, "src/com/example/Foo.java", "public class Foo {}");
 
         EclipseProject project = new EclipseProject("Foo", false, List.of("src"), "bin",
-                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null, null);
 
         copyNoConvert(project, List.of());
 
@@ -80,7 +80,7 @@ class ProjectCopierTest {
         createFile(inputDir, "src/config.properties", "key=value");
 
         EclipseProject project = new EclipseProject("App", false, List.of("src"), "bin",
-                List.of(), null, JavaVersion.of("11"), JavaVersion.of("11"), null);
+                List.of(), null, JavaVersion.of("11"), JavaVersion.of("11"), null, null);
 
         copyNoConvert(project, List.of());
 
@@ -93,7 +93,7 @@ class ProjectCopierTest {
         createFile(inputDir, "test/com/example/FooTest.java", "public class FooTest {}");
 
         EclipseProject project = new EclipseProject("Foo", false, List.of("test"), "bin",
-                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null, null);
 
         copyNoConvert(project, List.of());
 
@@ -107,7 +107,7 @@ class ProjectCopierTest {
         createFile(inputDir, "WebContent/WEB-INF/web.xml", "<web-app/>");
 
         EclipseProject project = new EclipseProject("WebApp", true, List.of("src"), "build/classes",
-                List.of(), "WebContent", JavaVersion.of("11"), JavaVersion.of("11"), "3.0");
+                List.of(), "WebContent", JavaVersion.of("11"), JavaVersion.of("11"), "3.0", null);
 
         copyNoConvert(project, List.of());
 
@@ -120,7 +120,7 @@ class ProjectCopierTest {
     @Test
     void copy_missingSourceFolder_doesNotThrow() throws Exception {
         EclipseProject project = new EclipseProject("App", false, List.of("nonexistent"), "bin",
-                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null, null);
         // 存在しないフォルダは警告を出してスキップ（例外は投げない）
         assertDoesNotThrow(() -> copyNoConvert(project, List.of()));
     }
@@ -130,7 +130,7 @@ class ProjectCopierTest {
         createFile(inputDir, "WebContent/index.jsp", "<%@ page %>");
 
         EclipseProject project = new EclipseProject("WebApp", true, List.of("src"), "bin",
-                List.of(), "/WebContent", JavaVersion.of("11"), JavaVersion.of("11"), "3.0");  // 先頭スラッシュあり
+                List.of(), "/WebContent", JavaVersion.of("11"), JavaVersion.of("11"), "3.0", null);  // 先頭スラッシュあり
 
         copyNoConvert(project, List.of());
 
@@ -148,7 +148,7 @@ class ProjectCopierTest {
                 "mylib", "mylib", "0.0.0", "system", jarFile.toAbsolutePath().toString());
 
         EclipseProject project = new EclipseProject("App", false, List.of(), "bin",
-                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null, null);
 
         copyNoConvert(project, List.of(systemDep));
 
@@ -167,7 +167,7 @@ class ProjectCopierTest {
                 "exported", "exported", "0.0.0", "system", jarFile.toAbsolutePath().toString(), true);
 
         EclipseProject project = new EclipseProject("App", false, List.of(), "bin",
-                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null, null);
 
         copyNoConvert(project, List.of(systemDep));
 
@@ -183,7 +183,7 @@ class ProjectCopierTest {
                 "mylib", "mylib", "0.0.0", "system", "/nonexistent/path/mylib.jar");
 
         EclipseProject project = new EclipseProject("App", false, List.of(), "bin",
-                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null, null);
 
         // ファイルが存在しない場合はスキップ（例外は投げない）
         assertDoesNotThrow(() -> copyNoConvert(project, List.of(systemDep)));
@@ -206,7 +206,7 @@ class ProjectCopierTest {
         Files.write(javaFile, content.getBytes(SHIFT_JIS));
 
         EclipseProject project = new EclipseProject("App", false, List.of("src"), "bin",
-                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null, null);
         ProjectCopier.copy(project, List.of(), inputDir, outputDir, true, SHIFT_JIS, JavaVersion.of("17"));
 
         Path dest = outputDir.resolve("src/main/java/Hello.java");
@@ -224,7 +224,7 @@ class ProjectCopierTest {
         Files.write(propFile, content.getBytes(SHIFT_JIS));
 
         EclipseProject project = new EclipseProject("App", false, List.of("src"), "bin",
-                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null, null);
         ProjectCopier.copy(project, List.of(), inputDir, outputDir, true, SHIFT_JIS, JavaVersion.of("17"));
 
         // Java 17 → src/main/resources/ へ
@@ -243,7 +243,7 @@ class ProjectCopierTest {
         Files.write(propFile, content.getBytes(SHIFT_JIS));
 
         EclipseProject project = new EclipseProject("App", false, List.of("src"), "bin",
-                List.of(), null, JavaVersion.of("1.8"), JavaVersion.of("1.8"), null);
+                List.of(), null, JavaVersion.of("1.8"), JavaVersion.of("1.8"), null, null);
         ProjectCopier.copy(project, List.of(), inputDir, outputDir, true, SHIFT_JIS, JavaVersion.of("1.8"));
 
         // Java 8 → src/main/resources-utf8/ へ
@@ -264,7 +264,7 @@ class ProjectCopierTest {
         Files.write(propFile, content.getBytes(SHIFT_JIS));
 
         EclipseProject project = new EclipseProject("App", false, List.of("src"), "bin",
-                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null, null);
         ProjectCopier.copy(project, List.of(), inputDir, outputDir, true, SHIFT_JIS, JavaVersion.of("17"));
 
         Path dest = outputDir.resolve("src/main/resources/msg.properties");
@@ -284,7 +284,7 @@ class ProjectCopierTest {
         Files.write(jspFile, jspContent.getBytes(SHIFT_JIS));
 
         EclipseProject project = new EclipseProject("WebApp", true, List.of("src"), "bin",
-                List.of(), "WebContent", JavaVersion.of("11"), JavaVersion.of("11"), "3.0");
+                List.of(), "WebContent", JavaVersion.of("11"), JavaVersion.of("11"), "3.0", null);
         ProjectCopier.copy(project, List.of(), inputDir, outputDir, true, SHIFT_JIS, JavaVersion.of("11"));
 
         Path dest = outputDir.resolve("src/main/webapp/hello.jsp");
@@ -303,7 +303,7 @@ class ProjectCopierTest {
         Files.write(jspFile, jspContent.getBytes(SHIFT_JIS));
 
         EclipseProject project = new EclipseProject("WebApp", true, List.of("src"), "bin",
-                List.of(), "WebContent", JavaVersion.of("11"), JavaVersion.of("11"), "3.0");
+                List.of(), "WebContent", JavaVersion.of("11"), JavaVersion.of("11"), "3.0", null);
         ProjectCopier.copy(project, List.of(), inputDir, outputDir, true, SHIFT_JIS, JavaVersion.of("11"));
 
         Path dest = outputDir.resolve("src/main/webapp/hello.jsp");
@@ -321,7 +321,7 @@ class ProjectCopierTest {
         Files.write(jspFile, jspContent.getBytes(StandardCharsets.UTF_8));
 
         EclipseProject project = new EclipseProject("WebApp", true, List.of("src"), "bin",
-                List.of(), "WebContent", JavaVersion.of("11"), JavaVersion.of("11"), "3.0");
+                List.of(), "WebContent", JavaVersion.of("11"), JavaVersion.of("11"), "3.0", null);
         ProjectCopier.copy(project, List.of(), inputDir, outputDir, true, SHIFT_JIS, JavaVersion.of("11"));
 
         Path dest = outputDir.resolve("src/main/webapp/hello.jsp");
@@ -340,7 +340,7 @@ class ProjectCopierTest {
         Files.write(javaFile, sjisBytes);
 
         EclipseProject project = new EclipseProject("App", false, List.of("src"), "bin",
-                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null);
+                List.of(), null, JavaVersion.of("17"), JavaVersion.of("17"), null, null);
         ProjectCopier.copy(project, List.of(), inputDir, outputDir, false, null, JavaVersion.of("17"));
 
         Path dest = outputDir.resolve("src/main/java/Hello.java");

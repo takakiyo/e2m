@@ -114,9 +114,12 @@ public class EclipseProjectParser {
 
         // ── WTP: .settings/org.eclipse.wst.common.component ──────
         String webContentRoot = null;
+        String webContextRoot = null;
         String webVersion = null;
         if (webProject) {
-            webContentRoot = parseWebContentRoot(inputDir, builder);
+            String[] webComponent = parseWebComponent(inputDir, builder);
+            webContentRoot = webComponent[0];
+            webContextRoot = webComponent[1];
             webVersion = parseWebVersion(inputDir, builder);
         }
 
@@ -132,7 +135,8 @@ public class EclipseProjectParser {
                 webContentRoot,
                 javaSourceVersion,
                 javaTargetVersion,
-                webVersion
+                webVersion,
+                webContextRoot
         );
     }
 
@@ -180,22 +184,32 @@ public class EclipseProjectParser {
     }
 
     /**
-     * `.settings/org.eclipse.wst.common.component` を解析して Webコンテンツルートを返す。
-     * ファイルが存在しない場合は null を返す。
-     * 先頭の "/" は除去した相対パスとして返す。
+     * `.settings/org.eclipse.wst.common.component` を解析して
+     * [webContentRoot, webContextRoot] の2要素配列を返す。
+     *
+     * <ul>
+     *   <li>webContentRoot: {@code tag="defaultRootSource"} の {@code source-path}（先頭の "/" を除去）</li>
+     *   <li>webContextRoot: {@code <property name="context-root">} の {@code value}</li>
+     * </ul>
+     *
+     * ファイルが存在しない、またはそれぞれの値が見つからない場合は null を設定して返す。
      */
-    private static String parseWebContentRoot(Path inputDir, DocumentBuilder builder) {
+    private static String[] parseWebComponent(Path inputDir, DocumentBuilder builder) {
         Path componentFile = inputDir.resolve(".settings")
                 .resolve("org.eclipse.wst.common.component");
 
         if (!Files.exists(componentFile)) {
-            return null;
+            return new String[]{null, null};
         }
+
+        String webContentRoot = null;
+        String webContextRoot = null;
 
         try {
             Document doc = builder.parse(componentFile.toFile());
             doc.getDocumentElement().normalize();
 
+            // webContentRoot: tag="defaultRootSource" の source-path
             NodeList resources = doc.getElementsByTagName("wb-resource");
             for (int i = 0; i < resources.getLength(); i++) {
                 Element res = (Element) resources.item(i);
@@ -205,14 +219,25 @@ public class EclipseProjectParser {
                     if (sourcePath.startsWith("/")) {
                         sourcePath = sourcePath.substring(1);
                     }
-                    return sourcePath;
+                    webContentRoot = sourcePath;
+                    break;
+                }
+            }
+
+            // webContextRoot: <property name="context-root" value="...">
+            NodeList properties = doc.getElementsByTagName("property");
+            for (int i = 0; i < properties.getLength(); i++) {
+                Element prop = (Element) properties.item(i);
+                if ("context-root".equals(prop.getAttribute("name"))) {
+                    webContextRoot = prop.getAttribute("value");
+                    break;
                 }
             }
         } catch (Exception e) {
             // ファイルが壊れている場合は null を返す
         }
 
-        return null;
+        return new String[]{webContentRoot, webContextRoot};
     }
 
     /**

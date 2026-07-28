@@ -32,5 +32,6 @@ public record EclipseProject(
         String webContentRoot,
         JavaVersion javaSourceVersion,
         JavaVersion javaTargetVersion,
-        String webVersion
+        String webVersion,
+        String webContextRoot
 ) {}

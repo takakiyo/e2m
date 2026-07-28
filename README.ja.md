@@ -14,6 +14,7 @@ EclipseのJavaプロジェクトをMavenの標準ディレクトリ構造に変�
 - リソースファイルを `src/main/resources`（テストは `src/test/resources`）にコピー
 - WebコンテンツをMaven標準の `src/main/webapp` にコピー
 - `<packaging>war</packaging>` をWTPプロジェクトに自動付与
+- **Liberty対応**：WTPプロジェクトに対して `liberty-maven-plugin` を `pom.xml` に追加し、`src/main/liberty/config/server.xml` を生成（`--noLiberty` で無効化可能）
 - **文字エンコード変換**（`--convertToUtf8`）：Shift_JIS などのレガシーエンコードで書かれたソースを UTF-8 に変換してコピー
 
 ## 動作要件
@@ -47,7 +48,7 @@ mvn -Pnative package
 
 ```
 e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]
-    [--convertToUtf8 [-e <encoding>]]
+    [--convertToUtf8 [-e <encoding>]] [-n]
     <inputDir> <outputDir>
 ```
 
@@ -66,6 +67,7 @@ e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <versio
 | `--javaTargetVersion` | 生成するpom.xmlの `maven.compiler.target` を上書きする（省略時はEclipseプロジェクトの設定値を使用。ソースバージョンより低い値は指定不可） |
 | `--convertToUtf8` | ソースファイルをUTF-8に変換してコピーする（詳細は後述） |
 | `-e`, `--sourceEncoding` | 変換元エンコーディング（例: `Shift_JIS`）。`--convertToUtf8` 指定時のみ有効。省略時は対話入力 |
+| `-n`, `--noLiberty` | Liberty対応を無効化し、`liberty-maven-plugin` および `server.xml` を生成しない（通常のWARプロジェクトを出力） |
 | `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |
 | `-h`, `--help` | ヘルプを表示 |
 | `-V`, `--version` | バージョンを表示 |
@@ -254,13 +256,18 @@ output/<artifactId>
 
 ```
 output/<artifactId>
-├── pom.xml              ← <packaging>war</packaging> を含む
+├── pom.xml              ← <packaging>war</packaging> および liberty-maven-plugin を含む
 └── src/
     └── main/
         ├── java/        ← Javaソース
+        ├── liberty/
+        │   └── config/
+        │       └── server.xml  ← Libertyサーバー設定ファイル
         ├── resources/   ← リソースファイル
         └── webapp/      ← Webコンテンツ (JSP, HTML, WEB-INF/web.xml など)
 ```
+
+`--noLiberty` を指定した場合は、`liberty-maven-plugin` および `server.xml` は生成されません。
 
 ## Webコンテンツルートの解決
 
