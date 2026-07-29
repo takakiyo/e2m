@@ -1,30 +1,30 @@
 # e2m — Eclipse to Maven Converter
 
-**[English](README.md)** | [日本語](README.ja.md)
+[English](README.en.md) | **[日本語](README.md)**
 
-A command-line tool that converts Eclipse Java projects to the standard Maven directory structure.
+EclipseのJavaプロジェクトをMavenの標準ディレクトリ構造に変換するコマンドラインツールです。
 
-## Features
+## 機能
 
-- Supports **Eclipse Java projects** (`.project` / `.classpath`)
-- Supports **Eclipse WTP Web projects** (`.settings/org.eclipse.wst.common.component`)
-- Computes SHA-1 hashes of JAR files listed in `.classpath`, searches **Maven Central** automatically, and generates `<dependency>` entries
-  - JARs not found in Maven Central are added as system-scoped dependencies in `pom.xml`
-- Copies Java sources to `src/main/java` (tests to `src/test/java`)
-- Copies resource files to `src/main/resources` (tests to `src/test/resources`)
-- Copies Web content to the Maven standard `src/main/webapp`
-- Automatically adds `<packaging>war</packaging>` for WTP projects
-- **Liberty support**: adds `liberty-maven-plugin` to `pom.xml` and generates `src/main/liberty/config/server.xml` for WTP projects (disable with `--noLiberty`)
-- **Character encoding conversion** (`--convertToUtf8`): converts sources written in a legacy encoding such as Shift_JIS to UTF-8 during copy
+- **Eclipse Javaプロジェクト**（`.project` / `.classpath`）の変換に対応
+- **Eclipse WTP Webプロジェクト**（`.settings/org.eclipse.wst.common.component`）の変換に対応
+- `.classpath` に記載されたJARファイルのSHA-1ハッシュを計算し、**Maven Central**を自動検索して `<dependency>` を生成
+  - 見つからないJARはsystemスコープの依存として `pom.xml` に出力
+- Javaソースを `src/main/java`（テストは `src/test/java`）にコピー
+- リソースファイルを `src/main/resources`（テストは `src/test/resources`）にコピー
+- WebコンテンツをMaven標準の `src/main/webapp` にコピー
+- `<packaging>war</packaging>` をWTPプロジェクトに自動付与
+- **Liberty対応**：WTPプロジェクトに対して `liberty-maven-plugin` を `pom.xml` に追加し、`src/main/liberty/config/server.xml` を生成（`--noLiberty` で無効化可能）
+- **文字エンコード変換**（`--convertToUtf8`）：Shift_JIS などのレガシーエンコードで書かれたソースを UTF-8 に変換してコピー
 
-## Requirements
+## 動作要件
 
-- Java 17 or later
-- Maven 3.8 or later (build only)
-- GraalVM 21 or later (native image build only)
-- Internet access (for Maven Central lookup)
+- Java 17以上
+- Maven 3.8以上（ビルド時のみ）
+- GraalVM 21以上（ネイティブイメージビルド時のみ）
+- インターネット接続（Maven Central検索時）
 
-## Build
+## ビルド
 
 ### Fat JAR
 
@@ -32,19 +32,19 @@ A command-line tool that converts Eclipse Java projects to the standard Maven di
 mvn package
 ```
 
-Produces `target/e2m.jar`.
+`target/e2m.jar` が生成されます。
 
-### Native Executable (GraalVM Native Image)
+### ネイティブ実行ファイル（GraalVM Native Image）
 
-Run in an environment where a GraalVM JDK is set as `JAVA_HOME`.
+GraalVM JDKが `JAVA_HOME` に設定されている環境で実行してください。
 
 ```bash
 mvn -Pnative package
 ```
 
-Produces `target/e2m` (macOS/Linux) or `target/e2m.exe` (Windows).
+`target/e2m`（macOS/Linux）または `target/e2m.exe`（Windows）が生成されます。
 
-## Usage
+## 使い方
 
 ```
 e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]
@@ -52,36 +52,36 @@ e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <versio
     <inputDir> <outputDir>
 ```
 
-If options are omitted, the tool prompts for input interactively after analysing the project.  
-The default for `artifactId` is the Eclipse project name; the default for `artifactVersion` is `1.0-SNAPSHOT`.
+オプションを省略した場合は、プロジェクト解析後に対話的に入力を求めます。
+`artifactId` のデフォルトは Eclipse のプロジェクト名、`artifactVersion` のデフォルトは `1.0-SNAPSHOT` です。
 
-Output is placed in `<outputDir>/<artifactId>/`.
+出力先は `<outputDir>/<artifactId>/` ディレクトリに生成されます。
 
-### Options
+### オプション
 
-| Option | Description |
+| オプション | 説明 |
 |---|---|
-| `-g`, `--groupId` | `groupId` in the generated `pom.xml` (prompted if omitted) |
-| `-a`, `--artifactId` | `artifactId` in the generated `pom.xml` (defaults to the project name) |
-| `-v`, `--artifactVersion` | `version` in the generated `pom.xml` (defaults to `1.0-SNAPSHOT`) |
-| `--javaTargetVersion` | Overrides `maven.compiler.target` in the generated `pom.xml` (defaults to the Eclipse project setting; cannot be lower than the source version) |
-| `--convertToUtf8` | Converts source files to UTF-8 during copy (see below) |
-| `-e`, `--sourceEncoding` | Source encoding (e.g. `Shift_JIS`). Only valid with `--convertToUtf8`; prompted if omitted |
-| `-n`, `--noLiberty` | Disables Liberty support; generates a plain WAR project without `liberty-maven-plugin` or `server.xml` |
-| `--debug` | Outputs debug information as a ZIP file (see below) |
-| `-h`, `--help` | Show help |
-| `-V`, `--version` | Show version |
+| `-g`, `--groupId` | 生成するpom.xmlのgroupId（省略時は対話入力） |
+| `-a`, `--artifactId` | 生成するpom.xmlのartifactId（省略時はプロジェクト名がデフォルト） |
+| `-v`, `--artifactVersion` | 生成するpom.xmlのversion（省略時は `1.0-SNAPSHOT`） |
+| `--javaTargetVersion` | 生成するpom.xmlの `maven.compiler.target` を上書きする（省略時はEclipseプロジェクトの設定値を使用。ソースバージョンより低い値は指定不可） |
+| `--convertToUtf8` | ソースファイルをUTF-8に変換してコピーする（詳細は後述） |
+| `-e`, `--sourceEncoding` | 変換元エンコーディング（例: `Shift_JIS`）。`--convertToUtf8` 指定時のみ有効。省略時は対話入力 |
+| `-n`, `--noLiberty` | Liberty対応を無効化し、`liberty-maven-plugin` および `server.xml` を生成しない（通常のWARプロジェクトを出力） |
+| `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |
+| `-h`, `--help` | ヘルプを表示 |
+| `-V`, `--version` | バージョンを表示 |
 
-### Arguments
+### 引数
 
-| Argument | Description |
+| 引数 | 説明 |
 |---|---|
-| `<inputDir>` | Source Eclipse project directory |
-| `<outputDir>` | Base directory where the Maven project will be generated |
+| `<inputDir>` | 変換元のEclipseプロジェクトディレクトリ |
+| `<outputDir>` | 変換先のMavenプロジェクトを生成するベースディレクトリ |
 
-### Examples
+### 実行例
 
-All options specified (Fat JAR):
+オプションをすべて指定する場合（Fat JAR）:
 
 ```bash
 java -jar target/e2m-1.0.jar \
@@ -90,10 +90,10 @@ java -jar target/e2m-1.0.jar \
   -v 1.0 \
   /path/to/eclipse-project \
   /path/to/output
-# → generated in /path/to/output/myapp/
+# → /path/to/output/myapp/ に生成される
 ```
 
-All options specified (native executable):
+オプションをすべて指定する場合（ネイティブ実行ファイル）:
 
 ```bash
 ./e2m \
@@ -104,7 +104,7 @@ All options specified (native executable):
   /path/to/output
 ```
 
-Interactive input (options omitted):
+オプションを省略して対話入力する場合:
 
 ```bash
 ./e2m /path/to/eclipse-project /path/to/output
@@ -112,14 +112,14 @@ Interactive input (options omitted):
 groupId: com.example
 artifactId [MyEclipseProject]: myapp
 artifactVersion [1.0-SNAPSHOT]:
-# → generated in /path/to/output/myapp/
+# → /path/to/output/myapp/ に生成される
 ```
 
-## Character Encoding Conversion (--convertToUtf8)
+## 文字エンコード変換（--convertToUtf8）
 
-If an Eclipse project is written in a legacy encoding such as Shift_JIS, the `--convertToUtf8` option converts source files to UTF-8 as they are copied.
+Eclipseプロジェクトがレガシーエンコード（Shift_JIS など）で書かれている場合、`--convertToUtf8` オプションを指定することで、コピーと同時に UTF-8 へ変換できます。
 
-### Basic Usage
+### 基本的な使い方
 
 ```bash
 ./e2m --convertToUtf8 -e Shift_JIS \
@@ -127,7 +127,7 @@ If an Eclipse project is written in a legacy encoding such as Shift_JIS, the `--
   /path/to/output
 ```
 
-If `-e` / `--sourceEncoding` is omitted, the tool prompts for it after analysing the project.
+`-e` / `--sourceEncoding` を省略した場合は、プロジェクト解析後に対話入力を求めます。
 
 ```bash
 ./e2m --convertToUtf8 /path/to/eclipse-project /path/to/output
@@ -138,24 +138,24 @@ artifactVersion [1.0-SNAPSHOT]:
 sourceEncoding: Shift_JIS
 ```
 
-### Conversion Rules by File Type
+### ファイル種別ごとの変換仕様
 
-#### `.java` files
+#### `.java` ファイル
 
-Read using the encoding specified by `--sourceEncoding` and written as UTF-8.
+`--sourceEncoding` で指定されたエンコードで読み込み、UTF-8 で書き出します。
 
-#### `.properties` files
+#### `.properties` ファイル
 
-Read using `--sourceEncoding`, Unicode escape sequences in `\uXXXX` format are expanded to Unicode characters, then written as UTF-8.
+`--sourceEncoding` で読み込み、`\uXXXX` 形式の Unicode エスケープシーケンスを Unicode 文字に展開したうえで UTF-8 で書き出します。
 
-The output directory depends on the **Java target version**:
+出力先は **Javaターゲットバージョン** によって変わります。
 
-| javaTargetVersion | Output directory | Reason |
+| javaTargetVersion | 出力先 | 理由 |
 |---|---|---|
-| 9 or later | `src/main/resources/` | Java 9+ can load `.properties` files directly as UTF-8 |
-| 8 or earlier | `src/main/resources-utf8/` | Java 8 and below cannot load UTF-8 `.properties` directly (see below) |
+| 9 以上 | `src/main/resources/` | Java 9 以降は `.properties` を UTF-8 で直接読み込めるため |
+| 8 以下 | `src/main/resources-utf8/` | Java 8 以下は UTF-8 の `.properties` を直接読み込めないため（後述） |
 
-**For Java 8 and below:** UTF-8 `.properties` files placed in `src/main/resources-utf8/` are converted back to `\uXXXX` format by `native2ascii-maven-plugin` during the build and placed in the equivalent of `src/main/resources/`. The following plugin configuration is automatically added to `pom.xml`:
+**Java 8 以下の場合：** `src/main/resources-utf8/` に配置した UTF-8 の `.properties` を、ビルド時に `native2ascii-maven-plugin` が `\uXXXX` 形式に変換して `src/main/resources/` 相当の出力ディレクトリに配置します。このため `pom.xml` に以下のプラグイン設定が自動追加されます。
 
 ```xml
 <plugin>
@@ -177,41 +177,41 @@ The output directory depends on the **Java target version**:
 </plugin>
 ```
 
-#### `.jsp` files
+#### `.jsp` ファイル
 
-The first 4 KB of each file is read as ISO-8859-1 to detect the `<%@ page pageEncoding="..." %>` directive.
+ファイル先頭の最大 4KB を ISO-8859-1 で読み込み、`<%@ page pageEncoding="..." %>` ディレクティブを検出します。
 
-| Situation | Behaviour |
+| 状況 | 動作 |
 |---|---|
-| `pageEncoding` detected and not UTF-8 | File is read using the detected encoding; `pageEncoding` attribute value is rewritten to `UTF-8` on output |
-| `pageEncoding` not detected | File is read using `--sourceEncoding` and written as UTF-8 |
-| `pageEncoding` is already `UTF-8` | Copied as binary without conversion |
+| `pageEncoding` が検出でき、かつ UTF-8 以外 | 検出されたエンコードでファイルを読み込み、`pageEncoding` 属性値を `UTF-8` に書き換えて出力 |
+| `pageEncoding` が検出できない | `--sourceEncoding` の値でファイルを読み込み、UTF-8 で出力 |
+| `pageEncoding` が既に `UTF-8` | 変換せずバイナリコピー |
 
-#### Other files
+#### その他のファイル
 
-The following files are copied as binary without conversion because modifying them could affect application behaviour:
+以下のファイルはアプリケーションの動作に直接影響するため、変換せずにバイナリコピーします。
 
-- `.html` / `.htm` — rewriting `<meta charset>` would affect app behaviour
-- `.css` / `.js` — would affect app behaviour
-- `.xml` / `.tag` / `.tld` — UTF-8 is already the conventional encoding; no conversion needed
-- `.jar` / images / other binary files
+- `.html` / `.htm` — `<meta charset>` の書き換えはアプリ動作に影響するため
+- `.css` / `.js` — アプリ動作に影響するため
+- `.xml` / `.tag` / `.tld` — 従来より UTF-8 の使用が慣習であり変換不要のため
+- `.jar` / 画像 / バイナリファイル
 
-### Output Directory Structure After Conversion (Java 8 and below)
+### 変換後のディレクトリ構造（Java 8 以下の場合）
 
 ```
 output/<artifactId>
-├── pom.xml              ← native2ascii-maven-plugin already configured
+├── pom.xml              ← native2ascii-maven-plugin が追加済み
 └── src/
     └── main/
         ├── java/
-        ├── resources-utf8/  ← UTF-8 converted .properties (converted during build)
+        ├── resources-utf8/  ← UTF-8 に変換した .properties（ビルド時に変換される）
         └── webapp/
 ```
 
-## Troubleshooting
+## 変換がうまくいかない場合
 
-If the conversion result is not as expected, re-run with the `--debug` option.  
-After conversion completes, `<outputDir>/e2m_debug_<datetime>.zip` is generated.
+変換結果が期待どおりにならない場合は、`--debug` オプションを付けて再実行してください。
+変換完了後に `<outputDir>/e2m_debug_<日付時刻>.zip` が生成されます。
 
 ```bash
 ./e2m --debug \
@@ -219,77 +219,77 @@ After conversion completes, `<outputDir>/e2m_debug_<datetime>.zip` is generated.
   -a myapp \
   /path/to/eclipse-project \
   /path/to/output
-# → /path/to/output/e2m_debug_20250101_120000.zip is generated
+# → /path/to/output/e2m_debug_20250101_120000.zip が生成される
 ```
 
-The ZIP file contains the following debug information:
+ZIPファイルには以下のデバッグ情報が含まれます。
 
-| File | Contents |
+| ファイル | 内容 |
 |---|---|
-| `eclipse/.project` | Eclipse project definition file |
-| `eclipse/.classpath` | Eclipse classpath definition file |
-| `eclipse/.factorypath` | Eclipse factory path definition file |
-| `eclipse/.settings/…` | All files under the `.settings/` directory |
-| `eclipse_files.json` | List of all directories and files in the Eclipse project (name, size, date; JAR files include SHA-1 hash) |
-| `pom.xml` | The `pom.xml` of the generated Maven project |
-| `maven_files.json` | List of all directories and files in the generated Maven project (name, size, date) |
+| `eclipse/.project` | Eclipseプロジェクト定義ファイル |
+| `eclipse/.classpath` | Eclipseクラスパス定義ファイル |
+| `eclipse/.factorypath` | Eclipseファクトリパス定義ファイル |
+| `eclipse/.settings/…` | `.settings/` ディレクトリ以下の全ファイル |
+| `eclipse_files.json` | Eclipseプロジェクト内の全ディレクトリ・ファイルの一覧（名前・サイズ・日付。JARファイルにはSHA1ハッシュも含む） |
+| `pom.xml` | 生成したMavenプロジェクトの `pom.xml` |
+| `maven_files.json` | 生成したMavenプロジェクトの全ディレクトリ・ファイルの一覧（名前・サイズ・日付） |
 
-If the issue persists, please open an [Issue](../../issues) and attach the generated ZIP file.
+問題が解決しない場合は、生成された ZIP ファイルを添付して [Issues](../../issues) にご報告ください。
 
-## Output Directory Structure
+## 変換結果のディレクトリ構造
 
-### Java Project
+### Javaプロジェクト
 
 ```
 output/<artifactId>
 ├── pom.xml
 └── src/
     ├── main/
-    │   ├── java/        ← .java files from Eclipse src folders
-    │   └── resources/   ← non-.java files from Eclipse src folders
+    │   ├── java/        ← Eclipseのsrcフォルダ以下の.javaファイル
+    │   └── resources/   ← Eclipseのsrcフォルダ以下の非.javaファイル
     └── test/
-        ├── java/        ← .java files from src folders whose name contains "test"
-        └── resources/   ← non-.java files from src folders whose name contains "test"
+        ├── java/        ← 名前に"test"を含むsrcフォルダ以下の.javaファイル
+        └── resources/   ← 名前に"test"を含むsrcフォルダ以下の非.javaファイル
 ```
 
-### WTP Web Project
+### WTP Webプロジェクト
 
 ```
 output/<artifactId>
-├── pom.xml              ← includes <packaging>war</packaging> and liberty-maven-plugin
+├── pom.xml              ← <packaging>war</packaging> および liberty-maven-plugin を含む
 └── src/
     └── main/
-        ├── java/        ← Java sources
+        ├── java/        ← Javaソース
         ├── liberty/
         │   └── config/
-        │       └── server.xml  ← Liberty server configuration
-        ├── resources/   ← resource files
-        └── webapp/      ← Web content (JSP, HTML, WEB-INF/web.xml, etc.)
+        │       └── server.xml  ← Libertyサーバー設定ファイル
+        ├── resources/   ← リソースファイル
+        └── webapp/      ← Webコンテンツ (JSP, HTML, WEB-INF/web.xml など)
 ```
 
-With `--noLiberty`, `liberty-maven-plugin` and `server.xml` are not generated.
+`--noLiberty` を指定した場合は、`liberty-maven-plugin` および `server.xml` は生成されません。
 
-## Web Content Root Resolution
+## Webコンテンツルートの解決
 
-The Web content root directory is not hard-coded to `WebContent` or similar. It is resolved dynamically from the `tag="defaultRootSource"` entry in `.settings/org.eclipse.wst.common.component`.
+Webコンテンツのルートディレクトリは `WebContent` 等に固定せず、`.settings/org.eclipse.wst.common.component` の `tag="defaultRootSource"` エントリから動的に解決します。
 
 ```xml
-<!-- Example: .settings/org.eclipse.wst.common.component -->
+<!-- .settings/org.eclipse.wst.common.component の例 -->
 <wb-module deploy-name="MyApp">
   <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
 </wb-module>
 ```
 
-## Testing
+## テスト
 
 ```bash
 mvn test
 ```
 
-## License
+## ライセンス
 
-Apache License, Version 2.0 — see [LICENSE](LICENSE).
+Apache License, Version 2.0 — [LICENSE](LICENSE) を参照してください。
 
-## Author
+## 作者
 
 Takakiyo Tanaka (IBM Japan)
