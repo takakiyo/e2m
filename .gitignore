@@ -18,8 +18,14 @@ release.properties
 *.ipr
 *.iws
 .classpath
+!src/test/resources/sample-java-project/.classpath
+!src/test/resources/sample-web-project/.classpath
 .project
+!src/test/resources/sample-java-project/.project
+!src/test/resources/sample-web-project/.project
 .settings/
+!src/test/resources/sample-java-project/.settings/
+!src/test/resources/sample-web-project/.settings/
 *.swp
 *.swo
 
