@@ -166,11 +166,24 @@ public class Main implements Callable<Integer> {
                     log.debug("groupId: {}", groupId);
                     log.debug("artifactId: {}", artifactId);
                     log.debug("version: {}", artifactVersion);
+                    // --convertToUtf8 未指定時は対話入力
+                    if (!convertToUtf8) {
+                        String answer = promptIfAbsent(reader,
+                            Messages.get("main.convertToUtf8"), null, "y/N").toLowerCase();
+                        convertToUtf8 = ("y".equals(answer) || "yes".equals(answer));
+                    }
                     // --convertToUtf8 指定時は sourceEncoding も対話入力
                     if (convertToUtf8) {
-                        sourceEncoding = promptIfAbsent(reader, "sourceEncoding", sourceEncoding, null);
+                        sourceEncoding = promptIfAbsent(reader,
+                            Messages.get("main.sourceEncoding"), sourceEncoding, null);
+                        log.debug("sourceEncoding: {}", sourceEncoding);
                     }
-                    log.debug("sourceEncoding: {}", sourceEncoding);
+                    if (eclipseProject.webProject() && !noLiberty) {
+                        String answer = promptIfAbsent(reader,
+                            Messages.get("main.addLiberty"), null, "Y/n").toLowerCase();
+                        noLiberty = ("n".equals(answer) || "no".equals(answer));
+                    }
+                    log.debug("noLiberty: {}", noLiberty);
                 }
             } else {
                 // 少なくとも--groupIdが指定されていれば，あとは空ならデフォルトを使用する
@@ -187,7 +200,8 @@ public class Main implements Callable<Integer> {
                 if (convertToUtf8 && (sourceEncoding == null || sourceEncoding.isBlank())) {
                     log.debug("対話的入力モード開始");
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-                        sourceEncoding = promptIfAbsent(reader, "sourceEncoding", sourceEncoding, null);
+                        sourceEncoding = promptIfAbsent(reader,
+                            Messages.get("main.sourceEncoding"), sourceEncoding, null);
                     }
                     log.debug("sourceEncoding: {}", sourceEncoding);
                 }
