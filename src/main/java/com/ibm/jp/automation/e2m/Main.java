@@ -22,6 +22,7 @@ import com.ibm.jp.automation.e2m.i18n.Messages;
 import com.ibm.jp.automation.e2m.maven.DependencyResolver;
 import com.ibm.jp.automation.e2m.maven.LibertyServerXmlGenerator;
 import com.ibm.jp.automation.e2m.maven.MavenDependency;
+import com.ibm.jp.automation.e2m.maven.MavenWrapperInstaller;
 import com.ibm.jp.automation.e2m.maven.PomGenerator;
 import com.ibm.jp.automation.e2m.maven.ProjectCopier;
 import com.ibm.jp.automation.e2m.spec.JavaVersion;
@@ -81,6 +82,9 @@ public class Main implements Callable<Integer> {
 
     @Option(names = {"-n", "--noLiberty"}, description = "Do not add Liberty support (liberty-maven-plugin and server.xml) to the output project")
     private boolean noLiberty;
+
+    @Option(names = {"-w", "--addMavenWrapper"}, description = "Add Maven Wrapper files to the output project")
+    private boolean addMavenWrapper;
 
     @Parameters(index = "0", paramLabel = "<inputDir>", description = "Eclipse project directory to convert")
     private File inputDir;
@@ -172,6 +176,7 @@ public class Main implements Callable<Integer> {
                             Messages.get("main.convertToUtf8"), null, "y/N").toLowerCase();
                         convertToUtf8 = ("y".equals(answer) || "yes".equals(answer));
                     }
+                    log.debug("convertToUtf8: {}", convertToUtf8);
                     // --convertToUtf8 指定時は sourceEncoding も対話入力
                     if (convertToUtf8) {
                         sourceEncoding = promptIfAbsent(reader,
@@ -184,6 +189,12 @@ public class Main implements Callable<Integer> {
                         noLiberty = ("n".equals(answer) || "no".equals(answer));
                     }
                     log.debug("noLiberty: {}", noLiberty);
+                    if (!addMavenWrapper) {
+                        String answer = promptIfAbsent(reader,
+                            Messages.get("main.addMavenWrapper"), null, "y/N").toLowerCase();
+                        addMavenWrapper = ("y".equals(answer) || "yes".equals(answer));
+                    }
+                    log.debug("addMavenWrapper: {}", addMavenWrapper);
                 }
             } else {
                 // 少なくとも--groupIdが指定されていれば，あとは空ならデフォルトを使用する
@@ -271,6 +282,13 @@ public class Main implements Callable<Integer> {
             }
             ProjectCopier.copy(eclipseProject, dependencies, eclipsePath, mavenPath,
                     convertToUtf8, srcCharset, effectiveTargetVersion);
+
+            // 6. Maven Wrapper を追加（--addMavenWrapper 指定時のみ）
+            if (addMavenWrapper) {
+                log.info("");
+                log.info(Messages.get("main.step6"));
+                MavenWrapperInstaller.install(mavenPath);
+            }
 
             log.info("");
             log.info(Messages.get("main.conversionComplete"));
