@@ -28,11 +28,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.Enumeration;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 /**
  * Maven Wrapper ファイルを出力先Mavenプロジェクトに追加するクラス。
@@ -62,16 +60,7 @@ public class MavenWrapperInstaller {
      * @throws IOException コピーに失敗した場合
      */
     public static void install(Path outputDir) throws IOException {
-        // 実行中 JAR（または classes ディレクトリ）を取得してリソースを列挙する
-        URL selfUrl = MavenWrapperInstaller.class.getProtectionDomain()
-                .getCodeSource().getLocation();
-        String selfPath = selfUrl.getPath();
-
-        if (selfPath.endsWith(".jar")) {
-            installFromJar(selfPath, outputDir);
-        } else {
-            installFromClassesDir(outputDir);
-        }
+        installResources(outputDir);
 
         // mvnw に実行権限を付与（POSIX 対応OS のみ）
         Path mvnw = outputDir.resolve("mvnw");
@@ -94,56 +83,36 @@ public class MavenWrapperInstaller {
         log.info(Messages.get("mavenWrapper.installed", outputDir.toAbsolutePath()));
     }
 
-    // ── Fat JAR から展開する場合 ──────────────────────────────────────────────
+    // ── リソースをクラスローダー経由で展開する ────────────────────────────────
 
-    private static void installFromJar(String jarPath, Path outputDir) throws IOException {
-        try (JarFile jar = new JarFile(jarPath)) {
-            Enumeration<JarEntry> entries = jar.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                String name = entry.getName();
-                if (!name.startsWith(RESOURCE_PREFIX) || entry.isDirectory()) {
-                    continue;
-                }
-                // maven-wrapper/mvnw → mvnw  /  maven-wrapper/.mvn/... → .mvn/...
-                String relative = name.substring(RESOURCE_PREFIX.length());
-                if (relative.isEmpty()) {
-                    continue;
-                }
-                Path dest = outputDir.resolve(relative);
-                Files.createDirectories(dest.getParent());
-                try (InputStream in = jar.getInputStream(entry)) {
-                    Files.copy(in, dest, StandardCopyOption.REPLACE_EXISTING);
-                }
-                log.debug("  Installed: {}", dest);
+    /** maven-wrapper/ 以下に含まれるファイルの相対パス一覧（リソース検索に使用）。 */
+    private static final List<String> WRAPPER_ENTRIES = List.of(
+            "mvnw",
+            "mvnw.cmd",
+            ".mvn/wrapper/maven-wrapper.jar",
+            ".mvn/wrapper/maven-wrapper.properties"
+    );
+
+    private static void installResources(Path outputDir) throws IOException {
+        ClassLoader cl = MavenWrapperInstaller.class.getClassLoader();
+        boolean anyFound = false;
+        for (String entry : WRAPPER_ENTRIES) {
+            String resourcePath = RESOURCE_PREFIX + entry;
+            URL url = cl.getResource(resourcePath);
+            if (url == null) {
+                log.debug("  Resource not found (skipped): {}", resourcePath);
+                continue;
             }
+            anyFound = true;
+            Path dest = outputDir.resolve(entry);
+            Files.createDirectories(dest.getParent());
+            try (InputStream in = url.openStream()) {
+                Files.copy(in, dest, StandardCopyOption.REPLACE_EXISTING);
+            }
+            log.debug("  Installed: {}", dest);
         }
-    }
-
-    // ── IDE / テスト時（classes ディレクトリ）から展開する場合 ─────────────────
-
-    private static void installFromClassesDir(Path outputDir) throws IOException {
-        URL resourceRoot = MavenWrapperInstaller.class.getClassLoader()
-                .getResource(RESOURCE_PREFIX);
-        if (resourceRoot == null) {
+        if (!anyFound) {
             throw new IOException(Messages.get("mavenWrapper.resourceNotFound"));
         }
-        Path srcRoot = Path.of(resourceRoot.getPath());
-        if (!Files.isDirectory(srcRoot)) {
-            throw new IOException(Messages.get("mavenWrapper.resourceNotFound"));
-        }
-        Files.walk(srcRoot)
-             .filter(Files::isRegularFile)
-             .forEach(src -> {
-                 try {
-                     Path relative = srcRoot.relativize(src);
-                     Path dest = outputDir.resolve(relative);
-                     Files.createDirectories(dest.getParent());
-                     Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
-                     log.debug("  Installed: {}", dest);
-                 } catch (IOException e) {
-                     throw new RuntimeException(e);
-                 }
-             });
     }
 }

@@ -1,0 +1,12 @@
+{
+  "resources": {
+    "includes": [
+      { "pattern": "messages_.*\\.properties" },
+      { "pattern": "maven-wrapper/.*" },
+      { "pattern": "maven-wrapper/.mvn/wrapper/.*" }
+    ]
+  },
+  "bundles": [
+    { "name": "messages" }
+  ]
+}
