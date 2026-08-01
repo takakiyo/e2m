@@ -16,6 +16,7 @@ EclipseのJavaプロジェクトをMavenの標準ディレクトリ構造に変�
 - `<packaging>war</packaging>` をWTPプロジェクトに自動付与
 - **Liberty対応**：WTPプロジェクトに対して `liberty-maven-plugin` を `pom.xml` に追加し、`src/main/liberty/config/server.xml` を生成（`--noLiberty` で無効化可能）
 - **文字エンコード変換**（`--convertToUtf8`）：Shift_JIS などのレガシーエンコードで書かれたソースを UTF-8 に変換してコピー
+- **Maven Wrapper 追加**（`--addMavenWrapper`）：Maven がインストールされていない環境でもビルドできるよう、`mvnw`・`mvnw.cmd`・`.mvn/wrapper/` を生成プロジェクトに追加
 
 ## 動作要件
 
@@ -48,7 +49,7 @@ mvn -Pnative package
 
 ```
 e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]
-    [--convertToUtf8 [-e <encoding>]] [-n]
+    [--convertToUtf8 [-e <encoding>]] [-n] [-w]
     <inputDir> <outputDir>
 ```
 
@@ -68,6 +69,7 @@ e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <versio
 | `--convertToUtf8` | ソースファイルをUTF-8に変換してコピーする（詳細は後述） |
 | `-e`, `--sourceEncoding` | 変換元エンコーディング（例: `Shift_JIS`）。`--convertToUtf8` 指定時のみ有効。省略時は対話入力 |
 | `-n`, `--noLiberty` | Liberty対応を無効化し、`liberty-maven-plugin` および `server.xml` を生成しない（通常のWARプロジェクトを出力） |
+| `-w`, `--addMavenWrapper` | `mvnw`・`mvnw.cmd`・`.mvn/wrapper/` を生成プロジェクトに追加する |
 | `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |
 | `-h`, `--help` | ヘルプを表示 |
 | `-V`, `--version` | バージョンを表示 |

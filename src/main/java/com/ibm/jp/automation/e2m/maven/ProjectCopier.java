@@ -29,6 +29,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -132,7 +136,8 @@ public class ProjectCopier {
                     Path libsDir = outputDir.resolve(subDir);
                     Files.createDirectories(libsDir);
                     Path dest = libsDir.resolve(src.getFileName());
-                    Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING,
+                            StandardCopyOption.COPY_ATTRIBUTES);
                     log.debug("  Copied JAR to {}/: {}", subDir, dest.getFileName());
                 }
             }
@@ -173,9 +178,11 @@ public class ProjectCopier {
                         Files.createDirectories(destFile.getParent());
                         if (convertToUtf8) {
                             copyWithEncodingConversion(srcFile, destFile, sourceEncoding);
+                            preserveTimestampsModified(srcFile, destFile);
                             log.debug("  [Java:UTF-8変換] {}", relative);
                         } else {
-                            Files.copy(srcFile, destFile, StandardCopyOption.REPLACE_EXISTING);
+                            Files.copy(srcFile, destFile, StandardCopyOption.REPLACE_EXISTING,
+                                    StandardCopyOption.COPY_ATTRIBUTES);
                             log.debug("  [Java:バイナリコピー] {}", relative);
                         }
                     } else if (isProperties && convertToUtf8) {
@@ -183,12 +190,14 @@ public class ProjectCopier {
                         Path destFile = resourceDest.resolve(relative);
                         Files.createDirectories(destFile.getParent());
                         copyPropertiesWithConversion(srcFile, destFile, sourceEncoding);
+                        preserveTimestampsModified(srcFile, destFile);
                         log.debug("  [Properties:UTF-8変換] {}", relative);
                     } else {
                         // その他のリソース（バイナリコピー）
                         Path destFile = resourceDestNormal.resolve(relative);
                         Files.createDirectories(destFile.getParent());
-                        Files.copy(srcFile, destFile, StandardCopyOption.REPLACE_EXISTING);
+                        Files.copy(srcFile, destFile, StandardCopyOption.REPLACE_EXISTING,
+                                StandardCopyOption.COPY_ATTRIBUTES);
                         log.debug("  [Resource:バイナリコピー] {}", relative);
                     }
                 } catch (IOException e) {
@@ -233,14 +242,17 @@ public class ProjectCopier {
                                 Charset jspEncoding = extractJspPageEncoding(srcPath, sourceEncoding);
                                 if (jspEncoding != null) {
                                     copyJspWithConversion(srcPath, destPath, jspEncoding);
+                                    preserveTimestampsModified(srcPath, destPath);
                                     log.debug("  [JSP:UTF-8変換] {} (encode={})", relative, jspEncoding);
                                 } else {
                                     // pageEncoding が既に UTF-8 → バイナリコピー
-                                    Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
+                                    Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING,
+                                            StandardCopyOption.COPY_ATTRIBUTES);
                                     log.debug("  [JSP:バイナリコピー] {}", relative);
                                 }
                             } else {
-                                Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
+                                Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING,
+                                        StandardCopyOption.COPY_ATTRIBUTES);
                                 log.debug("  [Web:バイナリコピー] {}", relative);
                             }
                         }
@@ -258,6 +270,24 @@ public class ProjectCopier {
      * @param from 変換元エンコーディング
      * @throws IOException ファイル読み書きに失敗した場合
      */
+    /**
+     * コピー元ファイルの作成日時・最終アクセス日時を保持しつつ、最終変更日時を現在時刻に設定する。
+     * エンコーディング変換を行ったファイルに対して呼び出す。
+     *
+     * @param src  コピー元ファイル
+     * @param dest コピー先ファイル（書き込み済み）
+     * @throws IOException 属性の読み書きに失敗した場合
+     */
+    private static void preserveTimestampsModified(Path src, Path dest) throws IOException {
+        BasicFileAttributes srcAttrs = Files.readAttributes(src, BasicFileAttributes.class);
+        BasicFileAttributeView destView = Files.getFileAttributeView(dest, BasicFileAttributeView.class);
+        destView.setTimes(
+                FileTime.from(Instant.now()),          // lastModifiedTime: 現在時刻
+                srcAttrs.lastAccessTime(),             // lastAccessTime:   コピー元を保持
+                srcAttrs.creationTime()                // creationTime:     コピー元を保持
+        );
+    }
+
     static void copyWithEncodingConversion(Path src, Path dest, Charset from) throws IOException {
         String content = Files.readString(src, from);
         Files.writeString(dest, content, StandardCharsets.UTF_8);

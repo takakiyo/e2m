@@ -16,6 +16,7 @@ A command-line tool that converts Eclipse Java projects to the standard Maven di
 - Automatically adds `<packaging>war</packaging>` for WTP projects
 - **Liberty support**: adds `liberty-maven-plugin` to `pom.xml` and generates `src/main/liberty/config/server.xml` for WTP projects (disable with `--noLiberty`)
 - **Character encoding conversion** (`--convertToUtf8`): converts sources written in a legacy encoding such as Shift_JIS to UTF-8 during copy
+- **Maven Wrapper** (`--addMavenWrapper`): copies Maven Wrapper files (`mvnw`, `mvnw.cmd`, `.mvn/wrapper/`) into the generated project so it can be built without a pre-installed Maven
 
 ## Requirements
 
@@ -48,7 +49,7 @@ Produces `target/e2m` (macOS/Linux) or `target/e2m.exe` (Windows).
 
 ```
 e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]
-    [--convertToUtf8 [-e <encoding>]] [-n]
+    [--convertToUtf8 [-e <encoding>]] [-n] [-w]
     <inputDir> <outputDir>
 ```
 
@@ -68,6 +69,7 @@ Output is placed in `<outputDir>/<artifactId>/`.
 | `--convertToUtf8` | Converts source files to UTF-8 during copy (see below) |
 | `-e`, `--sourceEncoding` | Source encoding (e.g. `Shift_JIS`). Only valid with `--convertToUtf8`; prompted if omitted |
 | `-n`, `--noLiberty` | Disables Liberty support; generates a plain WAR project without `liberty-maven-plugin` or `server.xml` |
+| `-w`, `--addMavenWrapper` | Adds Maven Wrapper files (`mvnw`, `mvnw.cmd`, `.mvn/wrapper/`) to the generated project |
 | `--debug` | Outputs debug information as a ZIP file (see below) |
 | `-h`, `--help` | Show help |
 | `-V`, `--version` | Show version |
