@@ -115,7 +115,7 @@ public class Main implements Callable<Integer> {
         Path eclipsePath = inputDir.toPath();
         Path mavenPath = null; 
 
-        // 1. 引数の確認
+        // 引数の確認
         if (!inputDir.isDirectory()) {
             log.error(Messages.get("main.inputDirNotFound", inputDir));
             return 1;
@@ -134,7 +134,7 @@ public class Main implements Callable<Integer> {
         }
 
         try {
-            // 2. Eclipseプロジェクト情報をパース
+            // Step1. Eclipseプロジェクト情報をパース
             log.info("");
             log.info(Messages.get("main.step1"));
             EclipseProject eclipseProject = EclipseProjectParser.parse(eclipsePath);
@@ -157,6 +157,7 @@ public class Main implements Callable<Integer> {
                 return 1;
             }
 
+            // Step2. 移行先のMavenプロジェクトの決定
             log.info("");
             log.info(Messages.get("main.step2"));
             String defaultArtifactId = convertToArtifactId(eclipseProject.projectName());
@@ -241,7 +242,7 @@ public class Main implements Callable<Integer> {
             log.info(Messages.get("main.input", eclipsePath.toAbsolutePath()));
             log.info(Messages.get("main.output", mavenPath.toAbsolutePath()));
 
-            // 3.(続き) JAR依存関係を解決
+            // Step3. JAR依存関係を解決
             log.info("");
             log.info(Messages.get("main.step3"));
             List<MavenDependency> dependencies = DependencyResolver.resolve(eclipseProject.jarFiles(), eclipsePath);
@@ -250,7 +251,7 @@ public class Main implements Callable<Integer> {
             log.info(Messages.get("main.foundDependencies", found));
             log.info(Messages.get("main.systemDependencies", system));
 
-            // 4. pom.xml を生成
+            // Step4. pom.xml を生成
             log.info("");
             log.info(Messages.get("main.step4"));
             // --javaTargetVersion が指定された場合はソースバージョンと比較してバリデーション
@@ -269,12 +270,7 @@ public class Main implements Callable<Integer> {
             PomGenerator.generate(eclipseProject, dependencies, groupId, artifactId, artifactVersion,
                     effectiveTargetVersion, convertToUtf8, noLiberty, mavenPath);
 
-            // 4.(続き) Liberty 対応: server.xml を生成（webProject かつ --noLiberty 未指定の場合のみ）
-            if (!noLiberty && eclipseProject.webProject()) {
-                LibertyServerXmlGenerator.generate(eclipseProject, artifactId, mavenPath);
-            }
-
-            // 5. ソース・Webコンテンツをコピー
+            // Step5. ソース・Webコンテンツをコピー
             log.info("");
             log.info(Messages.get("main.step5"));
             if (convertToUtf8) {
@@ -283,7 +279,12 @@ public class Main implements Callable<Integer> {
             ProjectCopier.copy(eclipseProject, dependencies, eclipsePath, mavenPath,
                     convertToUtf8, srcCharset, effectiveTargetVersion);
 
-            // 6. Maven Wrapper を追加（--addMavenWrapper 指定時のみ）
+            // Liberty 対応: server.xml を生成（webProject かつ --noLiberty 未指定の場合のみ）
+            if (!noLiberty && eclipseProject.webProject()) {
+                LibertyServerXmlGenerator.generate(eclipseProject, artifactId, mavenPath);
+            }
+
+            // Step6. Maven Wrapper を追加（--addMavenWrapper 指定時のみ）
             if (addMavenWrapper) {
                 log.info("");
                 log.info(Messages.get("main.step6"));
