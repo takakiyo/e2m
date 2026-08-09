@@ -32,3 +32,7 @@ release.properties
 # OS
 .DS_Store
 Thumbs.db
+
+# for test
+tmp/*
+!tmp/.gitkeep

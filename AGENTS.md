@@ -26,6 +26,14 @@ mvn test -Dtest=PomGeneratorTest
 mvn test -Dtest=PomGeneratorTest#javaProject_noPackagingElement
 ```
 
+## Scratch Files for Manual Verification
+
+When manually running the tool or a `main` method to verify behavior (e.g. creating sample
+Eclipse projects, generated output, temporary HTML files), use the project-local `tmp/`
+directory instead of `/tmp` or other system temp directories. `tmp/` is git-ignored
+(see `.gitignore`) but tracked as an existing directory, so it won't pollute the repository
+or leak into commits.
+
 ## Architecture: Conversion Steps
 
 `Main.call()` orchestrates these steps in order:
