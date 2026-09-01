@@ -40,7 +40,7 @@ public final class AppLogger {
     private static final String CONSOLE_PATTERN = "%msg%n";
 
     /** ファイルアペンダーのパターン（タイムスタンプ+レベル+メッセージ）。 */
-    private static final String FILE_PATTERN = "%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n";
+    private static final String FILE_PATTERN = "%date{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level %msg%n";
 
     private static Path logFile = null;
 
