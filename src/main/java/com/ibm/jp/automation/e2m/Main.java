@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
-@Command(name = "e2m", description = "Eclipse project to Maven project converter", version = "1.1.1", mixinStandardHelpOptions = true)
+@Command(name = "e2m", description = "Eclipse project to Maven project converter", version = "1.1.2", mixinStandardHelpOptions = true)
 public class Main implements Callable<Integer> {
 
     private static final Logger log = AppLogger.get(Main.class);

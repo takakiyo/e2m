@@ -23,13 +23,8 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
@@ -44,9 +39,9 @@ import java.util.zip.ZipOutputStream;
  *   <li>実行環境のシステムプロパティ一覧（{@code system_properties.txt}）</li>
  *   <li>Eclipseプロジェクトの {@code .project}，{@code .classpath}，{@code .factorypath}，
  *       {@code .settings/} 以下の全ファイル</li>
- *   <li>Eclipseプロジェクト内の全ファイル一覧（名前・サイズ・日付。JARの場合はSHA1も）</li>
+ *   <li>Eclipseプロジェクト内の全ファイル一覧（HTML形式，名前・サイズ・日付）</li>
  *   <li>生成したMavenプロジェクトの {@code pom.xml}</li>
- *   <li>生成したMavenプロジェクトの全ファイル一覧（名前・サイズ・日付）</li>
+ *   <li>生成したMavenプロジェクトの全ファイル一覧（HTML形式，名前・サイズ・日付）</li>
  * </ul>
  */
 public class DebugArchiver {
@@ -55,8 +50,6 @@ public class DebugArchiver {
 
     private static final DateTimeFormatter TIMESTAMP_FMT =
             DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
-    private static final DateTimeFormatter FILETIME_FMT =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     private DebugArchiver() {}
 
@@ -93,8 +86,8 @@ public class DebugArchiver {
             // ── 1. Eclipseプロジェクトのメタファイル ──────────────────────────
             addEclipseMetaFiles(zos, inputDir);
 
-            // ── 2. Eclipseプロジェクトのファイル一覧（JARはSHA1付き）──────────
-            addText(zos, "eclipse_files.json", buildEclipseFileListing(inputDir));
+            // ── 2. Eclipseプロジェクトのファイル一覧 ──────────────────────────
+            addText(zos, "eclipse_files.html", FileUtils.buildFileListHtml(inputDir));
 
             // ── 3. 生成したMavenプロジェクトのpom.xml ────────────────────────
             if (mavenDir != null) {
@@ -104,7 +97,7 @@ public class DebugArchiver {
                 }
 
                 // ── 4. 生成したMavenプロジェクトのファイル一覧 ──────────────
-                addText(zos, "maven_files.json", buildFileListing(mavenDir));
+                addText(zos, "maven_files.html", FileUtils.buildFileListHtml(mavenDir));
             }
 
             // ── 5. デバッグログファイル ────────────────────────────────────
@@ -183,134 +176,6 @@ public class DebugArchiver {
                         }
                     });
         }
-    }
-
-    /**
-     * Eclipseプロジェクトのファイル一覧を JSON 形式で構築する。
-     * JARファイルの場合は sha1 フィールドも出力する。
-     */
-    private static String buildEclipseFileListing(Path root) throws IOException {
-        List<String> entries = new ArrayList<>();
-
-        if (Files.exists(root)) {
-            for (Path p : (Iterable<Path>) Files.walk(root).sorted()::iterator) {
-                BasicFileAttributes attrs = Files.readAttributes(p, BasicFileAttributes.class);
-                boolean isDir = attrs.isDirectory();
-                long size = isDir ? 0L : attrs.size();
-                Instant instant = attrs.lastModifiedTime().toInstant();
-                String modified = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
-                        .format(FILETIME_FMT);
-                String relative = root.relativize(p).toString().replace('\\', '/');
-                if (relative.isEmpty()) {
-                    relative = ".";
-                }
-
-                StringBuilder entry = new StringBuilder();
-                entry.append("    {");
-                entry.append("\"type\":\"").append(isDir ? "directory" : "file").append("\"");
-                entry.append(",\"path\":\"").append(jsonEscape(relative)).append("\"");
-                entry.append(",\"size\":").append(size);
-                entry.append(",\"lastModified\":\"").append(modified).append("\"");
-
-                if (!isDir && p.getFileName().toString().endsWith(".jar")) {
-                    String sha1;
-                    try {
-                        sha1 = FileUtils.computeSha1(p);
-                    } catch (Exception e) {
-                        sha1 = null;
-                    }
-                    if (sha1 != null) {
-                        entry.append(",\"sha1\":\"").append(sha1).append("\"");
-                    }
-                }
-
-                entry.append("}");
-                entries.add(entry.toString());
-            }
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\n");
-        sb.append("  \"root\":\"").append(jsonEscape(root.toAbsolutePath().toString())).append("\",\n");
-        sb.append("  \"entries\":[\n");
-        for (int i = 0; i < entries.size(); i++) {
-            sb.append(entries.get(i));
-            if (i < entries.size() - 1) sb.append(",");
-            sb.append("\n");
-        }
-        sb.append("  ]\n");
-        sb.append("}\n");
-        return sb.toString();
-    }
-
-    /**
-     * 指定ディレクトリ以下の全ファイル・ディレクトリ一覧を JSON 形式で返す。
-     */
-    private static String buildFileListing(Path root) throws IOException {
-        List<String> entries = new ArrayList<>();
-
-        if (Files.exists(root)) {
-            for (Path p : (Iterable<Path>) Files.walk(root).sorted()::iterator) {
-                BasicFileAttributes attrs = Files.readAttributes(p, BasicFileAttributes.class);
-                boolean isDir = attrs.isDirectory();
-                long size = isDir ? 0L : attrs.size();
-                Instant instant = attrs.lastModifiedTime().toInstant();
-                String modified = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
-                        .format(FILETIME_FMT);
-                String relative = root.relativize(p).toString().replace('\\', '/');
-                if (relative.isEmpty()) {
-                    relative = ".";
-                }
-
-                entries.add("    {" +
-                        "\"type\":\"" + (isDir ? "directory" : "file") + "\"" +
-                        ",\"path\":\"" + jsonEscape(relative) + "\"" +
-                        ",\"size\":" + size +
-                        ",\"lastModified\":\"" + modified + "\"" +
-                        "}");
-            }
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\n");
-        sb.append("  \"root\":\"").append(jsonEscape(root.toAbsolutePath().toString())).append("\",\n");
-        sb.append("  \"entries\":[\n");
-        for (int i = 0; i < entries.size(); i++) {
-            sb.append(entries.get(i));
-            if (i < entries.size() - 1) sb.append(",");
-            sb.append("\n");
-        }
-        sb.append("  ]\n");
-        sb.append("}\n");
-        return sb.toString();
-    }
-
-    /**
-     * JSON 文字列値として安全にエスケープする。
-     * バックスラッシュ・ダブルクォート・制御文字を処理する。
-     */
-    private static String jsonEscape(String s) {
-        StringBuilder sb = new StringBuilder(s.length());
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            switch (c) {
-                case '"'  -> sb.append("\\\"");
-                case '\\' -> sb.append("\\\\");
-                case '\b' -> sb.append("\\b");
-                case '\f' -> sb.append("\\f");
-                case '\n' -> sb.append("\\n");
-                case '\r' -> sb.append("\\r");
-                case '\t' -> sb.append("\\t");
-                default -> {
-                    if (c < 0x20) {
-                        sb.append(String.format("\\u%04x", (int) c));
-                    } else {
-                        sb.append(c);
-                    }
-                }
-            }
-        }
-        return sb.toString();
     }
 
     /** ファイルを ZIP エントリとして追加する。 */
