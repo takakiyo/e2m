@@ -232,9 +232,9 @@ ZIPファイルには以下のデバッグ情報が含まれます。
 | `eclipse/.classpath` | Eclipseクラスパス定義ファイル |
 | `eclipse/.factorypath` | Eclipseファクトリパス定義ファイル |
 | `eclipse/.settings/…` | `.settings/` ディレクトリ以下の全ファイル |
-| `eclipse_files.json` | Eclipseプロジェクト内の全ディレクトリ・ファイルの一覧（名前・サイズ・日付。JARファイルにはSHA1ハッシュも含む） |
+| `eclipse_files.html` | Eclipseプロジェクト内の全ディレクトリ・ファイルの一覧（名前・サイズ・日付。JARファイルにはSHA1ハッシュも含む） |
 | `pom.xml` | 生成したMavenプロジェクトの `pom.xml` |
-| `maven_files.json` | 生成したMavenプロジェクトの全ディレクトリ・ファイルの一覧（名前・サイズ・日付） |
+| `maven_files.html` | 生成したMavenプロジェクトの全ディレクトリ・ファイルの一覧（名前・サイズ・日付） |
 
 問題が解決しない場合は、生成された ZIP ファイルを添付して [Issues](../../issues) にご報告ください。
 

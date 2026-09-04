@@ -232,9 +232,9 @@ The ZIP file contains the following debug information:
 | `eclipse/.classpath` | Eclipse classpath definition file |
 | `eclipse/.factorypath` | Eclipse factory path definition file |
 | `eclipse/.settings/…` | All files under the `.settings/` directory |
-| `eclipse_files.json` | List of all directories and files in the Eclipse project (name, size, date; JAR files include SHA-1 hash) |
+| `eclipse_files.html` | List of all directories and files in the Eclipse project (name, size, date; JAR files include SHA-1 hash) |
 | `pom.xml` | The `pom.xml` of the generated Maven project |
-| `maven_files.json` | List of all directories and files in the generated Maven project (name, size, date) |
+| `maven_files.html` | List of all directories and files in the generated Maven project (name, size, date) |
 
 If the issue persists, please open an [Issue](../../issues) and attach the generated ZIP file.
 
