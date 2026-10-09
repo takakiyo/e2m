@@ -48,7 +48,7 @@ Produces `target/e2m` (macOS/Linux) or `target/e2m.exe` (Windows).
 ## Usage
 
 ```
-e2m [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]
+java -jar e2m.jar [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]
     [--convertToUtf8 [-e <encoding>]] [-n] [-w]
     <inputDir> <outputDir>
 ```
