@@ -53,10 +53,18 @@ public class DependencyResolver {
     private static final String MAVEN_SEARCH_URL =
             "https://search.maven.org/solrsearch/select?q=1:%s&rows=1&wt=json";
 
+    /** デフォルトのAPIリクエストタイムアウト秒数。 */
+    public static final int DEFAULT_API_TIMEOUT_SECONDS = 300;
 
     private final HttpClient httpClient;
+    private final int apiTimeoutSeconds;
 
     public DependencyResolver() {
+        this(DEFAULT_API_TIMEOUT_SECONDS);
+    }
+
+    public DependencyResolver(int apiTimeoutSeconds) {
+        this.apiTimeoutSeconds = apiTimeoutSeconds;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .sslContext(createTrustAllSslContext())
@@ -102,7 +110,19 @@ public class DependencyResolver {
      * @return 解決済みの {@link MavenDependency} リスト
      */
     public static List<MavenDependency> resolve(List<JarFile> jarFiles, Path inputDir) {
-        DependencyResolver resolver = new DependencyResolver();
+        return resolve(jarFiles, inputDir, DEFAULT_API_TIMEOUT_SECONDS);
+    }
+
+    /**
+     * {@link JarFile} のリストを受け取り、Maven依存関係リストに解決して返す。
+     *
+     * @param jarFiles         Eclipseの.classpathから構築した {@link JarFile} のリスト
+     * @param inputDir         Eclipseプロジェクトのルートディレクトリ（相対パス解決の基準）
+     * @param apiTimeoutSeconds Maven Central API呼び出しのタイムアウト秒数
+     * @return 解決済みの {@link MavenDependency} リスト
+     */
+    public static List<MavenDependency> resolve(List<JarFile> jarFiles, Path inputDir, int apiTimeoutSeconds) {
+        DependencyResolver resolver = new DependencyResolver(apiTimeoutSeconds);
         List<MavenDependency> results = new ArrayList<>();
         for (JarFile jarFile : jarFiles) {
             results.add(resolver.resolveJar(jarFile, inputDir));
@@ -181,7 +201,7 @@ public class DependencyResolver {
         String url = String.format(MAVEN_SEARCH_URL, sha1);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .timeout(Duration.ofSeconds(60))
+                .timeout(Duration.ofSeconds(apiTimeoutSeconds))
                 .GET()
                 .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());

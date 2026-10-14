@@ -86,6 +86,10 @@ public class Main implements Callable<Integer> {
     @Option(names = {"-w", "--addMavenWrapper"}, description = "Add Maven Wrapper files to the output project")
     private boolean addMavenWrapper;
 
+    @Option(names = {"--apiTimeout"}, required = false,
+            description = "Timeout in seconds for Maven Central API requests (default: ${DEFAULT-VALUE})")
+    private int apiTimeout = DependencyResolver.DEFAULT_API_TIMEOUT_SECONDS;
+
     @Parameters(index = "0", paramLabel = "<inputDir>", description = "Eclipse project directory to convert")
     private File inputDir;
 
@@ -245,7 +249,7 @@ public class Main implements Callable<Integer> {
             // Step3. JAR依存関係を解決
             log.info("");
             log.info(Messages.get("main.step3"));
-            List<MavenDependency> dependencies = DependencyResolver.resolve(eclipseProject.jarFiles(), eclipsePath);
+            List<MavenDependency> dependencies = DependencyResolver.resolve(eclipseProject.jarFiles(), eclipsePath, apiTimeout);
             long found = dependencies.stream().filter(d -> !"system".equals(d.scope())).count();
             long system = dependencies.stream().filter(d -> "system".equals(d.scope())).count();
             log.info(Messages.get("main.foundDependencies", found));

@@ -49,7 +49,7 @@ mvn -Pnative package
 
 ```
 java -jar e2m.jar [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]
-    [--convertToUtf8 [-e <encoding>]] [-n] [-w]
+    [--convertToUtf8 [-e <encoding>]] [-n] [-w] [--apiTimeout <seconds>]
     <inputDir> <outputDir>
 ```
 
@@ -70,6 +70,7 @@ java -jar e2m.jar [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetV
 | `-e`, `--sourceEncoding` | 変換元エンコーディング（例: `Shift_JIS`）。`--convertToUtf8` 指定時のみ有効。省略時は対話入力 |
 | `-n`, `--noLiberty` | Liberty対応を無効化し、`liberty-maven-plugin` および `server.xml` を生成しない（通常のWARプロジェクトを出力） |
 | `-w`, `--addMavenWrapper` | `mvnw`・`mvnw.cmd`・`.mvn/wrapper/` を生成プロジェクトに追加する |
+| `--apiTimeout` | Maven Central API呼び出しのタイムアウト秒数（デフォルト: `300`） |
 | `--debug` | デバッグ情報をZIPファイルとして出力する（詳細は後述） |
 | `-h`, `--help` | ヘルプを表示 |
 | `-V`, `--version` | バージョンを表示 |

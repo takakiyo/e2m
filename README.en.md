@@ -49,7 +49,7 @@ Produces `target/e2m` (macOS/Linux) or `target/e2m.exe` (Windows).
 
 ```
 java -jar e2m.jar [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]
-    [--convertToUtf8 [-e <encoding>]] [-n] [-w]
+    [--convertToUtf8 [-e <encoding>]] [-n] [-w] [--apiTimeout <seconds>]
     <inputDir> <outputDir>
 ```
 
@@ -70,6 +70,7 @@ Output is placed in `<outputDir>/<artifactId>/`.
 | `-e`, `--sourceEncoding` | Source encoding (e.g. `Shift_JIS`). Only valid with `--convertToUtf8`; prompted if omitted |
 | `-n`, `--noLiberty` | Disables Liberty support; generates a plain WAR project without `liberty-maven-plugin` or `server.xml` |
 | `-w`, `--addMavenWrapper` | Adds Maven Wrapper files (`mvnw`, `mvnw.cmd`, `.mvn/wrapper/`) to the generated project |
+| `--apiTimeout` | Timeout in seconds for Maven Central API requests (default: `300`) |
 | `--debug` | Outputs debug information as a ZIP file (see below) |
 | `-h`, `--help` | Show help |
 | `-V`, `--version` | Show version |
