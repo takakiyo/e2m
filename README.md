@@ -25,27 +25,9 @@ EclipseのJavaプロジェクトをMavenの標準ディレクトリ構造に変�
 - GraalVM 21以上（ネイティブイメージビルド時のみ）
 - インターネット接続（Maven Central検索時）
 
-## ビルド
-
-### Fat JAR
-
-```bash
-mvn package
-```
-
-`target/e2m.jar` が生成されます。
-
-### ネイティブ実行ファイル（GraalVM Native Image）
-
-GraalVM JDKが `JAVA_HOME` に設定されている環境で実行してください。
-
-```bash
-mvn -Pnative package
-```
-
-`target/e2m`（macOS/Linux）または `target/e2m.exe`（Windows）が生成されます。
-
 ## 使い方
+
+ReleaseページからJARファイルをダウンロードして使用してください。GraalVMでビルドしてお使いの環境に合わせたネイティブ実行ファイルを作成することもできます。その場合は`java -jar e2m.jar`を`e2m`に置き換えてください。
 
 ```
 java -jar e2m.jar [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]
@@ -210,6 +192,26 @@ output/<artifactId>
         ├── resources-utf8/  ← UTF-8 に変換した .properties（ビルド時に変換される）
         └── webapp/
 ```
+
+## ビルド
+
+### Fat JAR
+
+```bash
+mvn package
+```
+
+`target/e2m.jar` が生成されます。
+
+### ネイティブ実行ファイル（GraalVM Native Image）
+
+GraalVM JDKが `JAVA_HOME` に設定されている環境で実行してください。
+
+```bash
+mvn -Pnative package
+```
+
+`target/e2m`（macOS/Linux）または `target/e2m.exe`（Windows）が生成されます。
 
 ## 変換がうまくいかない場合
 

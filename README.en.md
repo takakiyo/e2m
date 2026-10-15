@@ -25,27 +25,9 @@ A command-line tool that converts Eclipse Java projects to the standard Maven di
 - GraalVM 21 or later (native image build only)
 - Internet access (for Maven Central lookup)
 
-## Build
-
-### Fat JAR
-
-```bash
-mvn package
-```
-
-Produces `target/e2m.jar`.
-
-### Native Executable (GraalVM Native Image)
-
-Run in an environment where a GraalVM JDK is set as `JAVA_HOME`.
-
-```bash
-mvn -Pnative package
-```
-
-Produces `target/e2m` (macOS/Linux) or `target/e2m.exe` (Windows).
-
 ## Usage
+
+Download the JAR file from the Releases page and use it directly. You can also build a native executable for your platform with GraalVM — in that case, replace `java -jar e2m.jar` with `e2m`.
 
 ```
 java -jar e2m.jar [-g <groupId>] [-a <artifactId>] [-v <version>] [--javaTargetVersion <version>]
@@ -210,6 +192,26 @@ output/<artifactId>
         ├── resources-utf8/  ← UTF-8 converted .properties (converted during build)
         └── webapp/
 ```
+
+## Build
+
+### Fat JAR
+
+```bash
+mvn package
+```
+
+Produces `target/e2m.jar`.
+
+### Native Executable (GraalVM Native Image)
+
+Run in an environment where a GraalVM JDK is set as `JAVA_HOME`.
+
+```bash
+mvn -Pnative package
+```
+
+Produces `target/e2m` (macOS/Linux) or `target/e2m.exe` (Windows).
 
 ## Troubleshooting
 
