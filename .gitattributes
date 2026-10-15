@@ -1,0 +1,2 @@
+# バイナリとして扱い、改行変換を無効化
+src/test/resources/**  -text
